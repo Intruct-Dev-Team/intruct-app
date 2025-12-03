@@ -5,10 +5,12 @@ import { ScreenContainer } from "@/components/screen-container";
 import { StatsCard } from "@/components/stats-card";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
+import { useRouter } from "expo-router";
 import { H2, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const colors = useThemeColors();
+  const router = useRouter();
 
   return (
     <ScreenContainer>
@@ -33,7 +35,7 @@ export default function HomeScreen() {
         <StatsCard icon={Flame} type="streak" value={7} label="Day Streak" />
       </XStack>
 
-      <CreateCourseCard onPress={() => console.log("Create course")} />
+      <CreateCourseCard onPress={() => router.push("/create-course")} />
 
       <YStack gap="$3.5" marginTop="$3">
         <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
