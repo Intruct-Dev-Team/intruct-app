@@ -1,98 +1,220 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Clock, Flame, Plus, TrendingUp } from "@tamagui/lucide-icons";
+import {
+  Button,
+  Card,
+  H2,
+  Progress,
+  ScrollView,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from "tamagui";
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView backgroundColor="#F5F5F5" flex={1}>
+      <YStack padding="$4" paddingTop="$6" gap="$4" paddingBottom="$8">
+        <YStack gap="$2" marginBottom="$2">
+          <H2 fontSize="$9" fontWeight="700" color="$gray12">
+            Welcome back!
+          </H2>
+          <Text color="$gray11" fontSize="$4" fontWeight="400">
+            Continue your learning journey
+          </Text>
+        </YStack>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <XStack gap="$3" justifyContent="space-between">
+          <Card
+            flex={1}
+            padding="$3.5"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={0}
+            shadowColor="$shadowColor"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={8}
+          >
+            <YStack gap="$2.5" alignItems="flex-start">
+              <View
+                backgroundColor="#E8F5E9"
+                padding="$2.5"
+                borderRadius="$3"
+                width={44}
+                height={44}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <TrendingUp size={20} color="#4CAF50" />
+              </View>
+              <Text fontSize="$9" fontWeight="700" color="$gray12">
+                0
+              </Text>
+              <Text color="$gray10" fontSize="$2" fontWeight="500">
+                Completed
+              </Text>
+            </YStack>
+          </Card>
+
+          <Card
+            flex={1}
+            padding="$3.5"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={0}
+            shadowColor="$shadowColor"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={8}
+          >
+            <YStack gap="$2.5" alignItems="flex-start">
+              <View
+                backgroundColor="#F3E5F5"
+                padding="$2.5"
+                borderRadius="$3"
+                width={44}
+                height={44}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Clock size={20} color="#9C27B0" />
+              </View>
+              <Text fontSize="$9" fontWeight="700" color="$gray12">
+                2
+              </Text>
+              <Text
+                color="$gray10"
+                fontSize="$2"
+                fontWeight="500"
+                numberOfLines={2}
+              >
+                Courses in{"\n"}Progress
+              </Text>
+            </YStack>
+          </Card>
+
+          <Card
+            flex={1}
+            padding="$3.5"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={0}
+            shadowColor="$shadowColor"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={8}
+          >
+            <YStack gap="$2.5" alignItems="flex-start">
+              <View
+                backgroundColor="#FFF3E0"
+                padding="$2.5"
+                borderRadius="$3"
+                width={44}
+                height={44}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Flame size={20} color="#FF9800" />
+              </View>
+              <Text fontSize="$9" fontWeight="700" color="$gray12">
+                7
+              </Text>
+              <Text color="$gray10" fontSize="$2" fontWeight="500">
+                Day Streak
+              </Text>
+            </YStack>
+          </Card>
+        </XStack>
+
+        <Card
+          padding="$5"
+          backgroundColor="$blue9"
+          borderRadius="$5"
+          borderWidth={0}
+          marginTop="$2"
+        >
+          <YStack gap="$3.5">
+            <Text color="white" fontSize="$7" fontWeight="600">
+              Create with AI
+            </Text>
+            <Text color="white" fontSize="$4" opacity={0.95}>
+              Attach materials to create a new course
+            </Text>
+            <Button
+              backgroundColor="white"
+              color="$blue9"
+              borderRadius="$4"
+              fontWeight="600"
+              fontSize="$4"
+              height={48}
+              icon={<Plus size={20} />}
+            >
+              Create Course
+            </Button>
+          </YStack>
+        </Card>
+
+        <YStack gap="$3.5" marginTop="$3">
+          <H2 fontSize="$7" fontWeight="700" color="$gray12">
+            My Courses
+          </H2>
+
+          <Card
+            padding="$4"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={0}
+          >
+            <YStack gap="$3">
+              <Text fontSize="$6" fontWeight="600" color="$gray12">
+                Introduction to React
+              </Text>
+              <Text color="$gray11" fontSize="$3">
+                Learn the basics of React and component-based development
+              </Text>
+              <XStack gap="$2" alignItems="center" marginTop="$1">
+                <Text color="$gray10" fontSize="$2" fontWeight="500">
+                  8 lessons
+                </Text>
+                <Text color="$gray9" fontSize="$2">
+                  •
+                </Text>
+                <Text color="$gray10" fontSize="$2" fontWeight="500">
+                  65% complete
+                </Text>
+              </XStack>
+              <Progress
+                value={65}
+                backgroundColor="$gray4"
+                height={6}
+                borderRadius="$2"
+              >
+                <Progress.Indicator
+                  animation="bouncy"
+                  backgroundColor="$blue9"
+                />
+              </Progress>
+            </YStack>
+          </Card>
+
+          <Card
+            padding="$4"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={0}
+          >
+            <YStack gap="$3">
+              <Text fontSize="$6" fontWeight="600" color="$gray12">
+                Advanced TypeScript
+              </Text>
+              <Text color="$gray11" fontSize="$3">
+                Master TypeScript type system and advanced patterns
+              </Text>
+            </YStack>
+          </Card>
+        </YStack>
+      </YStack>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

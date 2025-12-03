@@ -1,6 +1,13 @@
-# Welcome to your Expo app 👋
+# Intruct - AI-Powered Course Platform 🎓
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Мобильное приложение для создания персонализированных курсов при помощи ИИ и выкладывания их в общий каталог.
+
+## Технологии
+
+- **Expo** - React Native framework
+- **Tamagui** - UI библиотека для кросс-платформенного дизайна
+- **Expo Router** - файловая маршрутизация
+- **TypeScript** - типизация
 
 ## Get started
 
