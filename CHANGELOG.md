@@ -195,9 +195,30 @@ All notable changes to the Intruct project will be documented in this file.
 
 ---
 
+#### 🗂 Data Layer
+
+- TypeScript types for all data models
+- Mock data for development
+- API service layer for easy backend integration
+- Simulated network delays
+- Type-safe data access
+
+**Structure:**
+
+- `types/` - All TypeScript interfaces
+- `mockdata/` - Test data (user, courses, settings)
+- `services/api.ts` - API abstraction layer
+
+**Benefits:**
+
+- Easy migration to real API
+- Consistent data access
+- Type safety throughout
+- No hardcoded data in components
+
 ## Notes
 
-This is the initial release of Intruct, an AI-powered course creation platform. The app is fully functional with a complete UI/UX implementation, ready for backend integration and AI service connection.
+This is the initial release of Intruct, an AI-powered course creation platform. The app is fully functional with a complete UI/UX implementation and a clean data layer architecture, ready for backend integration and AI service connection.
 
 **Tech Stack:**
 

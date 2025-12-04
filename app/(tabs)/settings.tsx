@@ -9,6 +9,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileCard } from "@/components/user-profile-card";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
+  accountSettingsItems,
+  aiSettingsItems,
+  supportItems,
+} from "@/mockdata/settings";
+import { userApi } from "@/services/api";
+import type { User } from "@/types";
+import {
   Bell,
   ChevronRight,
   CreditCard,
@@ -19,14 +26,39 @@ import {
   MessageCircle,
   Moon,
   Sparkles,
-  User,
+  User as UserIcon,
 } from "@tamagui/lucide-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { YStack } from "tamagui";
+
+const iconMap: Record<string, any> = {
+  user: UserIcon,
+  bell: Bell,
+  lock: Lock,
+  "credit-card": CreditCard,
+  sparkles: Sparkles,
+  languages: Languages,
+  "help-circle": HelpCircle,
+  "message-circle": MessageCircle,
+};
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const userData = await userApi.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error("Failed to load user:", error);
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -36,76 +68,52 @@ export default function SettingsScreen() {
       />
 
       <YStack gap="$4">
-        <UserProfileCard
-          name="John Doe"
-          email="john.doe@example.com"
-          onPress={() => console.log("Open profile")}
-        />
+        {user && (
+          <UserProfileCard
+            name={user.name}
+            email={user.email}
+            onPress={() => console.log("Open profile")}
+          />
+        )}
 
         <SectionHeader title="Account Settings" />
         <SettingsCard>
-          <SettingsItem
-            icon={<User size={20} color={colors.textSecondary} />}
-            title="Personal Information"
-            description="Update your name, email, and pr..."
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Personal info")}
-            showDivider
-          />
-          <SettingsItem
-            icon={<Bell size={20} color={colors.textSecondary} />}
-            title="Notifications"
-            description="Manage notification preferences"
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Notifications")}
-            showDivider
-          />
-          <SettingsItem
-            icon={<Lock size={20} color={colors.textSecondary} />}
-            title="Privacy & Security"
-            description="Password, two-factor authenticat..."
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Privacy")}
-            showDivider
-          />
-          <SettingsItem
-            icon={<CreditCard size={20} color={colors.textSecondary} />}
-            title="Billing"
-            description="Manage subscription and payme..."
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Billing")}
-          />
+          {accountSettingsItems.map((item, index) => {
+            const Icon = iconMap[item.icon];
+            return (
+              <SettingsItem
+                key={item.id}
+                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                title={item.title}
+                description={item.description}
+                rightElement={
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                }
+                onPress={() => console.log(item.action)}
+                showDivider={index < accountSettingsItems.length - 1}
+              />
+            );
+          })}
         </SettingsCard>
 
         <SectionHeader title="AI Settings" />
         <SettingsCard>
-          <SettingsItem
-            icon={<Sparkles size={20} color={colors.textSecondary} />}
-            title="AI Model Preference"
-            description="Choose your preferred AI model"
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("AI model")}
-            showDivider
-          />
-          <SettingsItem
-            icon={<Languages size={20} color={colors.textSecondary} />}
-            title="Content Language"
-            description="Set default language for content"
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Content language")}
-          />
+          {aiSettingsItems.map((item, index) => {
+            const Icon = iconMap[item.icon];
+            return (
+              <SettingsItem
+                key={item.id}
+                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                title={item.title}
+                description={item.description}
+                rightElement={
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                }
+                onPress={() => console.log(item.action)}
+                showDivider={index < aiSettingsItems.length - 1}
+              />
+            );
+          })}
         </SettingsCard>
 
         <SectionHeader title="App Settings" />
@@ -130,25 +138,22 @@ export default function SettingsScreen() {
 
         <SectionHeader title="Support" />
         <SettingsCard>
-          <SettingsItem
-            icon={<HelpCircle size={20} color={colors.textSecondary} />}
-            title="Help Center"
-            description="FAQs and tutorials"
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Help center")}
-            showDivider
-          />
-          <SettingsItem
-            icon={<MessageCircle size={20} color={colors.textSecondary} />}
-            title="Contact Support"
-            description="Get help from our team"
-            rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
-            }
-            onPress={() => console.log("Contact support")}
-          />
+          {supportItems.map((item, index) => {
+            const Icon = iconMap[item.icon];
+            return (
+              <SettingsItem
+                key={item.id}
+                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                title={item.title}
+                description={item.description}
+                rightElement={
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                }
+                onPress={() => console.log(item.action)}
+                showDivider={index < supportItems.length - 1}
+              />
+            );
+          })}
         </SettingsCard>
 
         <SettingsFooter />

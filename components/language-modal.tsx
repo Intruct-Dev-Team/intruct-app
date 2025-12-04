@@ -1,20 +1,9 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { languageOptions } from "@/mockdata/settings";
 import { Check, X } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet } from "react-native";
 import { ScrollView, Text, XStack, YStack } from "tamagui";
-
-type LanguageOption = {
-  code: string;
-  label: string;
-  flag: string;
-};
-
-const languageOptions: LanguageOption[] = [
-  { code: "en", label: "English (US)", flag: "🇺🇸" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
-  { code: "es", label: "Español", flag: "🇪🇸" },
-];
 
 interface LanguageModalProps {
   open: boolean;

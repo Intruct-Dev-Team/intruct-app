@@ -4,13 +4,48 @@ import { PageHeader } from "@/components/page-header";
 import { ScreenContainer } from "@/components/screen-container";
 import { StatsCard } from "@/components/stats-card";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { coursesApi, userApi } from "@/services/api";
+import type { Course, UserStats } from "@/types";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { H2, XStack, YStack } from "tamagui";
+import { useEffect, useState } from "react";
+import { H2, Text, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const colors = useThemeColors();
   const router = useRouter();
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [statsData, coursesData] = await Promise.all([
+        userApi.getUserStats(),
+        coursesApi.getMyCourses(),
+      ]);
+      setStats(statsData);
+      setCourses(coursesData);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !stats) {
+    return (
+      <ScreenContainer>
+        <YStack flex={1} alignItems="center" justifyContent="center">
+          <Text color={colors.textSecondary}>Loading...</Text>
+        </YStack>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
@@ -23,16 +58,21 @@ export default function HomeScreen() {
         <StatsCard
           icon={TrendingUp}
           type="completed"
-          value={0}
+          value={stats.completed}
           label="Completed"
         />
         <StatsCard
           icon={Clock}
           type="inProgress"
-          value={2}
+          value={stats.inProgress}
           label="Courses in Progress"
         />
-        <StatsCard icon={Flame} type="streak" value={7} label="Day Streak" />
+        <StatsCard
+          icon={Flame}
+          type="streak"
+          value={stats.dayStreak}
+          label="Day Streak"
+        />
       </XStack>
 
       <CreateCourseCard onPress={() => router.push("/create-course")} />
@@ -42,19 +82,16 @@ export default function HomeScreen() {
           My Courses
         </H2>
 
-        <CourseCard
-          title="Introduction to React"
-          description="Learn the basics of React and component-based development"
-          lessons={8}
-          progress={65}
-          onPress={() => console.log("Open course")}
-        />
-
-        <CourseCard
-          title="Advanced TypeScript"
-          description="Master TypeScript type system and advanced patterns"
-          onPress={() => console.log("Open course")}
-        />
+        {courses.map((course) => (
+          <CourseCard
+            key={course.id}
+            title={course.title}
+            description={course.description}
+            lessons={course.lessons}
+            progress={course.progress}
+            onPress={() => console.log("Open course:", course.id)}
+          />
+        ))}
       </YStack>
     </ScreenContainer>
   );
