@@ -1,6 +1,10 @@
-import { mockCourses, mockFeaturedCourses } from "@/mockdata/courses";
+import {
+  mockCatalogCourses,
+  mockCourses,
+  mockFeaturedCourses,
+} from "@/mockdata/courses";
 import { mockUser, mockUserStats } from "@/mockdata/user";
-import { Course, User, UserStats } from "@/types";
+import type { Course, SortOption, User, UserStats } from "@/types";
 
 // Simulate API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -74,5 +78,58 @@ export const settingsApi = {
   async updateSettings(settings: any) {
     await delay(300);
     return settings;
+  },
+};
+
+// Catalog API
+export const catalogApi = {
+  async searchCourses(params: {
+    query?: string;
+    category?: string;
+    sortBy?: SortOption;
+  }): Promise<Course[]> {
+    await delay(400);
+
+    let results = [...mockCatalogCourses];
+
+    // Filter by search query
+    if (params.query) {
+      const query = params.query.toLowerCase();
+      results = results.filter(
+        (course) =>
+          course.title.toLowerCase().includes(query) ||
+          course.description.toLowerCase().includes(query) ||
+          course.author?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by category
+    if (params.category && params.category !== "all") {
+      results = results.filter((course) => course.category === params.category);
+    }
+
+    // Sort results
+    switch (params.sortBy) {
+      case "popular":
+        results.sort((a, b) => (b.students || 0) - (a.students || 0));
+        break;
+      case "newest":
+        results.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "rating":
+        results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case "students":
+        results.sort((a, b) => (b.students || 0) - (a.students || 0));
+        break;
+      default:
+        // Default to popular
+        results.sort((a, b) => (b.students || 0) - (a.students || 0));
+    }
+
+    return results;
   },
 };

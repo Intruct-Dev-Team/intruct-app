@@ -15,7 +15,19 @@ export interface Course {
   progress?: number;
   createdAt: string;
   updatedAt: string;
+  category?: string;
+  author?: string;
+  rating?: number;
+  students?: number;
 }
+
+export interface CourseCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export type SortOption = "popular" | "newest" | "rating" | "students";
 
 // Statistics types
 export interface UserStats {
