@@ -89,7 +89,7 @@ export default function HomeScreen() {
             description={course.description}
             lessons={course.lessons}
             progress={course.progress}
-            onPress={() => console.log("Open course:", course.id)}
+            onPress={() => router.push(`/course/${course.id}` as any)}
           />
         ))}
       </YStack>

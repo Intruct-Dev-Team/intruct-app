@@ -12,13 +12,45 @@ export interface Course {
   title: string;
   description: string;
   lessons: number;
+  modules?: Module[];
   progress?: number;
   createdAt: string;
   updatedAt: string;
   category?: string;
   author?: string;
-  rating?: number;
-  students?: number;
+  // rating/students are nullable to represent private/unavailable values
+  rating?: number | null;
+  students?: number | null;
+  // Public or private course flag
+  isPublic?: boolean;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  materials?: LessonMaterial[];
+  questions?: TestQuestion[];
+}
+
+export interface LessonMaterial {
+  id: string;
+  title: string;
+  content: string; // markdown formatted text
+}
+
+export interface TestQuestion {
+  id: string;
+  question: string;
+  type: "multiple-choice" | "true-false" | "short-answer";
+  options?: string[]; // for multiple-choice and true-false
+  correctAnswer: string | number; // index for multiple-choice, boolean string for true-false, text for short-answer
+  explanation?: string;
 }
 
 export interface CourseCategory {

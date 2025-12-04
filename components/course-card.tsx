@@ -18,6 +18,13 @@ export function CourseCard({
 }: CourseCardProps) {
   const colors = useThemeColors();
 
+  // `progress` represents number of completed lessons. Compute percent
+  // for UI elements that expect percentage (0-100).
+  const percentComplete =
+    progress !== undefined && lessons !== undefined && lessons > 0
+      ? Math.round((progress / lessons) * 100)
+      : progress;
+
   return (
     <Card
       padding="$4"
@@ -68,14 +75,16 @@ export function CourseCard({
                   fontSize="$2"
                   fontWeight="500"
                 >
-                  {progress}% complete
+                  {percentComplete}% complete
                 </Text>
               )}
             </XStack>
 
             {progress !== undefined && (
               <Progress
-                value={progress}
+                value={
+                  typeof percentComplete === "number" ? percentComplete : 0
+                }
                 backgroundColor="$gray5"
                 height={6}
                 borderRadius="$2"

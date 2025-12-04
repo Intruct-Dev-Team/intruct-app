@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
 
 export const unstable_settings = {
@@ -63,7 +64,9 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutContent />
+      <SafeAreaProvider>
+        <RootLayoutContent />
+      </SafeAreaProvider>
     </ThemeProvider>
   );
 }
