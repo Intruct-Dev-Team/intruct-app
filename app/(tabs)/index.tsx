@@ -1,15 +1,18 @@
-import { CourseCard } from "@/components/course-card";
-import { CreateCourseCard } from "@/components/create-course-card";
-import { PageHeader } from "@/components/page-header";
-import { ScreenContainer } from "@/components/screen-container";
-import { StatsCard } from "@/components/stats-card";
+import {
+  CourseCard,
+  CourseCardSkeleton,
+  CreateCourseCard,
+  StatsCard,
+  StatsCardSkeleton,
+} from "@/components/cards";
+import { PageHeader, ScreenContainer } from "@/components/layout";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi, userApi } from "@/services/api";
 import type { Course, UserStats } from "@/types";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { H2, Text, XStack, YStack } from "tamagui";
+import { H2, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const colors = useThemeColors();
@@ -40,8 +43,25 @@ export default function HomeScreen() {
   if (loading || !stats) {
     return (
       <ScreenContainer>
-        <YStack flex={1} alignItems="center" justifyContent="center">
-          <Text color={colors.textSecondary}>Loading...</Text>
+        <PageHeader
+          title="Welcome back!"
+          subtitle="Continue your learning journey"
+        />
+
+        <XStack gap="$3" justifyContent="space-between">
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+        </XStack>
+
+        <CreateCourseCard onPress={() => router.push("/create-course")} />
+
+        <YStack gap="$3.5" marginTop="$3">
+          <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
+            My Courses
+          </H2>
+          <CourseCardSkeleton />
+          <CourseCardSkeleton />
         </YStack>
       </ScreenContainer>
     );

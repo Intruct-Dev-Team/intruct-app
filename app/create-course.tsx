@@ -1,8 +1,8 @@
+import { StepIndicator } from "@/components/common";
 import { AttachMaterialsStep } from "@/components/create-course/attach-materials-step";
 import { CourseDetailsStep } from "@/components/create-course/course-details-step";
 import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
 import { ReviewStep } from "@/components/create-course/review-step";
-import { StepIndicator } from "@/components/step-indicator";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";

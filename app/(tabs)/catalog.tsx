@@ -1,4 +1,7 @@
-import { CatalogCourseCard } from "@/components/catalog-course-card";
+import {
+  CatalogCourseCard,
+  CatalogCourseCardSkeleton,
+} from "@/components/cards";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { courseCategories } from "@/mockdata/courses";
 import { catalogApi } from "@/services/api";
@@ -52,8 +55,8 @@ export default function CatalogScreen() {
   return (
     <YStack flex={1} backgroundColor={colors.background}>
       {/* Header with white background */}
-      <YStack backgroundColor={colors.cardBackground} paddingBottom="$4">
-        <YStack padding="$4" paddingTop="$6" gap="$4">
+      <YStack backgroundColor={colors.cardBackground}>
+        <YStack padding="$4" paddingTop="$6" gap="$0">
           {/* Title */}
           <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
             Catalog
@@ -150,7 +153,15 @@ export default function CatalogScreen() {
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   Sort by
                 </Text>
-                <Pressable>
+                <Pressable
+                  onPress={() => {
+                    const currentIndex = sortOptions.findIndex(
+                      (opt) => opt.value === sortBy
+                    );
+                    const nextIndex = (currentIndex + 1) % sortOptions.length;
+                    setSortBy(sortOptions[nextIndex].value);
+                  }}
+                >
                   <XStack
                     padding="$4"
                     backgroundColor={colors.background}
@@ -181,9 +192,11 @@ export default function CatalogScreen() {
           {/* Course List */}
           <YStack gap="$3">
             {loading ? (
-              <YStack padding="$8" alignItems="center">
-                <Text color={colors.textSecondary}>Loading...</Text>
-              </YStack>
+              <>
+                <CatalogCourseCardSkeleton />
+                <CatalogCourseCardSkeleton />
+                <CatalogCourseCardSkeleton />
+              </>
             ) : courses.length === 0 ? (
               <YStack padding="$8" alignItems="center">
                 <Text color={colors.textSecondary}>No courses found</Text>

@@ -1,12 +1,16 @@
-import { LanguageModal } from "@/components/language-modal";
-import { PageHeader } from "@/components/page-header";
-import { ScreenContainer } from "@/components/screen-container";
-import { SectionHeader } from "@/components/section-header";
-import { SettingsCard } from "@/components/settings-card";
-import { SettingsFooter } from "@/components/settings-footer";
-import { SettingsItem } from "@/components/settings-item";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { UserProfileCard } from "@/components/user-profile-card";
+import { ThemeToggle } from "@/components/common";
+import {
+  PageHeader,
+  ScreenContainer,
+  SectionHeader,
+} from "@/components/layout";
+import { LanguageModal } from "@/components/modals";
+import {
+  SettingsCard,
+  SettingsFooter,
+  SettingsItem,
+} from "@/components/settings";
+import { UserProfileCard, UserProfileSkeleton } from "@/components/user";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
   accountSettingsItems,
@@ -46,17 +50,21 @@ export default function SettingsScreen() {
   const colors = useThemeColors();
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadUser();
   }, []);
 
   const loadUser = async () => {
+    setLoading(true);
     try {
       const userData = await userApi.getCurrentUser();
       setUser(userData);
     } catch (error) {
       console.error("Failed to load user:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,10 +76,12 @@ export default function SettingsScreen() {
       />
 
       <YStack gap="$4">
-        {user && (
+        {loading ? (
+          <UserProfileSkeleton />
+        ) : (
           <UserProfileCard
-            name={user.name}
-            email={user.email}
+            name={user?.name || "User"}
+            email={user?.email || ""}
             onPress={() => console.log("Open profile")}
           />
         )}
