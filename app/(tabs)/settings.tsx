@@ -32,6 +32,7 @@ import {
   Sparkles,
   User as UserIcon,
 } from "@tamagui/lucide-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { YStack } from "tamagui";
 
@@ -47,6 +48,7 @@ const iconMap: Record<string, any> = {
 };
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const colors = useThemeColors();
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -82,7 +84,7 @@ export default function SettingsScreen() {
           <UserProfileCard
             name={user?.name || "User"}
             email={user?.email || ""}
-            onPress={() => console.log("Open profile")}
+            onPress={() => router.push("/settings/profile")}
           />
         )}
 

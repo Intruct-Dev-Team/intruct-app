@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import config from "@/tamagui.config";
 import {
@@ -52,6 +53,7 @@ function RootLayoutContent() {
                 name="create-course"
                 options={{ headerShown: false }}
               />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style={activeTheme === "dark" ? "light" : "dark"} />
           </NavigationThemeProvider>
@@ -65,7 +67,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <SafeAreaProvider>
-        <RootLayoutContent />
+        <AuthProvider>
+          <RootLayoutContent />
+        </AuthProvider>
       </SafeAreaProvider>
     </ThemeProvider>
   );
