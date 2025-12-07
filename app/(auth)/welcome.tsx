@@ -70,7 +70,7 @@ export default function WelcomeScreen() {
                         borderWidth={1}
                         borderColor="$gray8"
                         pressStyle={{ opacity: 0.8 }}
-                        onPress={() => router.push("/(auth)/signup")}
+                        onPress={() => router.push("/(auth)/register")}
                         color={colors.textPrimary}
                     >
                         <Text color={colors.textPrimary} fontWeight="600" fontSize="$4">No, create account</Text>

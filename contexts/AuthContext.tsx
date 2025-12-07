@@ -6,12 +6,15 @@ import {
 import { Session, User } from "@supabase/supabase-js";
 import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { Alert } from "react-native"; // Add Alert
 import { supabase } from "../utils/supabase";
 
 type AuthContextType = {
     user: User | null;
     session: Session | null;
     signInWithGoogle: () => void;
+    signIn: (email: string, password: string) => Promise<void>; // Add signIn
+    signUp: (email: string, password: string, name: string) => Promise<void>; // Add signUp
     signOut: () => void;
     isLoading: boolean;
 };
@@ -20,6 +23,8 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     session: null,
     signInWithGoogle: () => { },
+    signIn: async () => { },
+    signUp: async () => { },
     signOut: () => { },
     isLoading: false,
 });
@@ -58,6 +63,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
+    const signIn = async (email: string, password: string) => {
+        setIsLoading(true);
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        setIsLoading(false);
+        if (error) {
+            Alert.alert("Login Error", error.message);
+            throw error;
+        }
+    };
+
+    const signUp = async (email: string, password: string, name: string) => {
+        setIsLoading(true);
+        const { data: { session }, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: name,
+                },
+            },
+        });
+
+        setIsLoading(false);
+
+        if (error) {
+            Alert.alert("Registration Error", error.message);
+            throw error;
+        }
+
+        // If no session (email confirmation required), inform user
+        if (!session) {
+            Alert.alert("Success", "Please check your email for the confirmation link.");
+        }
+    };
+
     const signInWithGoogle = async () => {
         try {
             await GoogleSignin.hasPlayServices();
@@ -70,9 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
 
                 if (error) {
-                    console.error("Supabase Auth Error:", error.message);
-                } else {
-                    console.log("Supabase Auth Success");
+                    Alert.alert("Google Auth Error", error.message);
                 }
             } else {
                 throw new Error('No ID token present!');
@@ -126,6 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             value={{
                 user,
                 session,
+                signIn,
+                signUp,
                 signInWithGoogle,
                 signOut,
                 isLoading,

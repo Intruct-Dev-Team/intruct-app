@@ -1,48 +1,50 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { Card, Text, XStack, YStack } from "tamagui";
+import { Avatar, Card, Text, XStack, YStack } from "tamagui"; // Added Avatar to import
 
 interface UserProfileCardProps {
   name: string;
   email: string;
-  onPress?: () => void;
+  avatarUrl?: string; // Added avatarUrl
+  onPress: () => void; // Changed to required
 }
 
 export function UserProfileCard({
   name,
   email,
+  avatarUrl, // Added avatarUrl
   onPress,
 }: UserProfileCardProps) {
   const colors = useThemeColors();
 
   return (
     <Card
+      padded
+      pressStyle={{ scale: 0.98 }}
+      animation="quick"
+      onPress={onPress}
       backgroundColor={colors.cardBackground}
       borderRadius="$5"
-      borderWidth={0}
-      padding="$4"
-      pressStyle={{
-        opacity: 0.7,
-      }}
-      onPress={onPress}
+      borderWidth={1}
+      borderColor="$borderColor"
     >
       <XStack gap="$3" alignItems="center" justifyContent="space-between">
         <XStack gap="$3" alignItems="center" flex={1}>
-          <YStack
-            width={64}
-            height={64}
-            alignItems="center"
-            justifyContent="center"
-            backgroundColor="$blue9"
-            borderRadius="$10"
-          >
-            <Text fontSize="$8" fontWeight="700" color="white">
-              {name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </Text>
-          </YStack>
+          <Avatar circular size="$5">
+            <Avatar.Image src={avatarUrl} />
+            <Avatar.Fallback
+              backgroundColor="$blue9"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text fontSize="$5" fontWeight="700" color="white">
+                {name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </Text>
+            </Avatar.Fallback>
+          </Avatar>
           <YStack flex={1} gap="$1">
             <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
               {name}

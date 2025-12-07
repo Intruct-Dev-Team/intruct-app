@@ -11,14 +11,13 @@ import {
   SettingsItem,
 } from "@/components/settings";
 import { UserProfileCard, UserProfileSkeleton } from "@/components/user";
+import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
   accountSettingsItems,
   aiSettingsItems,
   supportItems,
 } from "@/mockdata/settings";
-import { userApi } from "@/services/api";
-import type { User } from "@/types";
 import {
   Bell,
   ChevronRight,
@@ -33,7 +32,7 @@ import {
   User as UserIcon,
 } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { YStack } from "tamagui";
 
 const iconMap: Record<string, any> = {
@@ -51,24 +50,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    setLoading(true);
-    try {
-      const userData = await userApi.getCurrentUser();
-      setUser(userData);
-    } catch (error) {
-      console.error("Failed to load user:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { user, isLoading: loading } = useAuth();
 
   return (
     <ScreenContainer>
@@ -82,8 +64,9 @@ export default function SettingsScreen() {
           <UserProfileSkeleton />
         ) : (
           <UserProfileCard
-            name={user?.name || "User"}
+            name={user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"}
             email={user?.email || ""}
+            avatarUrl={user?.user_metadata?.avatar_url}
             onPress={() => router.push("/settings/profile")}
           />
         )}

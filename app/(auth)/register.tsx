@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Link, Stack, useRouter } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
     ScrollView,
@@ -14,21 +14,26 @@ import {
     XStack,
     YStack
 } from "tamagui";
-import { LinearGradient } from "tamagui/linear-gradient"; // Check complexity
+import { LinearGradient } from "tamagui/linear-gradient";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
     const colors = useThemeColors();
     const router = useRouter();
-    const { signIn, signInWithGoogle, isLoading: loading } = useAuth();
+    const { signUp, signInWithGoogle, isLoading: loading } = useAuth();
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const handleRegister = async () => {
+        if (!email || !password || !name) {
+            Alert.alert("Error", "Please fill in all fields");
+            return;
+        }
 
-    const handleLogin = async () => {
         try {
-            await signIn(email, password);
-        } catch (e) {
-            // Error handling is done in AuthContext via Alert
+            await signUp(email, password, name);
+        } catch (error: any) {
+            Alert.alert("Registration Error", error.message);
         }
     };
 
@@ -47,7 +52,7 @@ export default function LoginScreen() {
                                 width={100}
                                 height={100}
                                 borderRadius="$4"
-                                colors={["#4c669f", "#3b5998", "#192f6a"]} // Replace with actual purple gradient from design if possible, standard purple: ["#8b5cf6", "#d946ef"]
+                                colors={["#4c669f", "#3b5998", "#192f6a"]}
                                 start={[0, 0]}
                                 end={[1, 1]}
                                 alignItems="center"
@@ -65,20 +70,27 @@ export default function LoginScreen() {
                                     color={colors.textPrimary}
                                     textAlign="center"
                                 >
-                                    Welcome Back
+                                    Create Account
                                 </Text>
                                 <Text
                                     fontSize="$5"
                                     color={colors.textSecondary}
                                     textAlign="center"
                                 >
-                                    Sign in to continue learning
+                                    Sign up to start learning
                                 </Text>
                             </YStack>
                         </YStack>
 
                         {/* Form Section */}
                         <YStack gap="$4">
+                            <AuthInput
+                                label="Full Name"
+                                placeholder="Enter your full name"
+                                value={name}
+                                onChangeText={setName}
+                                autoCapitalize="words"
+                            />
                             <AuthInput
                                 label="Email"
                                 placeholder="Enter your email"
@@ -94,21 +106,13 @@ export default function LoginScreen() {
                                 onChangeText={setPassword}
                                 isPassword
                             />
-
-                            <XStack justifyContent="flex-end">
-                                <Link href="/(auth)/forgot-password" asChild>
-                                    <Text color="$blue9" fontSize="$3" fontWeight="600">
-                                        Forgot Password?
-                                    </Text>
-                                </Link>
-                            </XStack>
                         </YStack>
 
                         {/* Actions Section */}
                         <YStack gap="$5">
                             <AuthButton
-                                title="Sign In"
-                                onPress={handleLogin}
+                                title="Sign Up"
+                                onPress={handleRegister}
                                 loading={loading}
                             />
 
@@ -127,11 +131,11 @@ export default function LoginScreen() {
 
                             <XStack justifyContent="center" gap="$2" marginTop="$2">
                                 <Text color={colors.textSecondary} fontSize="$4">
-                                    Don't have an account?
+                                    Already have an account?
                                 </Text>
-                                <Link href="/(auth)/register" asChild>
+                                <Link href="/(auth)/login" asChild>
                                     <Text color="$blue9" fontSize="$4" fontWeight="600">
-                                        Sign Up
+                                        Sign In
                                     </Text>
                                 </Link>
                             </XStack>
