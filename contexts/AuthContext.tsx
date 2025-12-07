@@ -1,33 +1,25 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     GoogleSignin,
     isErrorWithCode,
     statusCodes,
 } from "@react-native-google-signin/google-signin";
+import { Session, User } from "@supabase/supabase-js";
 import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
-
-type User = {
-    id: string;
-    email: string;
-    name: string;
-    picture?: string;
-} | null;
+import { supabase } from "../utils/supabase";
 
 type AuthContextType = {
-    user: User;
-    signIn: () => void;
+    user: User | null;
+    session: Session | null;
     signInWithGoogle: () => void;
-    signUp: () => void;
     signOut: () => void;
     isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    signIn: () => { },
+    session: null,
     signInWithGoogle: () => { },
-    signUp: () => { },
     signOut: () => { },
     isLoading: false,
 });
@@ -35,54 +27,35 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [session, setSession] = useState<Session | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const rootSegment = useSegments()[0];
     const router = useRouter();
 
     useEffect(() => {
+        // Configure Google Sign-In
         GoogleSignin.configure({
             webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
             iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
             offlineAccess: true,
         });
 
-        // Check for persisted user on mount
-        const loadUser = async () => {
-            try {
-                const jsonUser = await AsyncStorage.getItem("user");
-                if (jsonUser) {
-                    setUser(JSON.parse(jsonUser));
-                } else {
-                    // Optional: Try silent sign-in if no local user but maybe Google session exists
-                    /*
-                    const isSignedIn = await GoogleSignin.hasPlayServices();
-                    if (isSignedIn) {
-                        try {
-                            const userInfo = await GoogleSignin.signInSilently();
-                            if (userInfo.data?.user) {
-                                const newUser: User = {
-                                    id: userInfo.data.user.id,
-                                    email: userInfo.data.user.email,
-                                    name: userInfo.data.user.name ?? "User",
-                                    picture: userInfo.data.user.photo ?? undefined,
-                                };
-                                setUser(newUser);
-                                await AsyncStorage.setItem("user", JSON.stringify(newUser));
-                            }
-                        } catch (error) {
-                            // Valid to fail silently if no session
-                        }
-                    }
-                    */
-                }
-            } catch (error) {
-                console.error("Failed to load user", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadUser();
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session ? session.user : null);
+            setIsLoading(false);
+        });
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session ? session.user : null);
+            setIsLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const signInWithGoogle = async () => {
@@ -90,15 +63,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await GoogleSignin.hasPlayServices();
             const userInfo = await GoogleSignin.signIn();
 
-            if (userInfo.data?.user) {
-                const newUser: User = {
-                    id: userInfo.data.user.id,
-                    email: userInfo.data.user.email,
-                    name: userInfo.data.user.name ?? "User",
-                    picture: userInfo.data.user.photo ?? undefined,
-                };
-                setUser(newUser);
-                await AsyncStorage.setItem("user", JSON.stringify(newUser));
+            if (userInfo.data?.idToken) {
+                const { data, error } = await supabase.auth.signInWithIdToken({
+                    provider: 'google',
+                    token: userInfo.data.idToken,
+                });
+
+                if (error) {
+                    console.error("Supabase Auth Error:", error.message);
+                } else {
+                    console.log("Supabase Auth Success");
+                }
+            } else {
+                throw new Error('No ID token present!');
             }
         } catch (error) {
             if (isErrorWithCode(error)) {
@@ -121,49 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const signIn = () => {
-        setIsLoading(true);
-        setTimeout(async () => {
-            const newUser = {
-                id: "1",
-                email: "demo@example.com",
-                name: "Demo User",
-            };
-            setUser(newUser);
-            try {
-                await AsyncStorage.setItem("user", JSON.stringify(newUser));
-            } catch (e) {
-                console.error("Failed to save user", e);
-            }
-            setIsLoading(false);
-        }, 1000);
-    };
-
-    const signUp = () => {
-        setIsLoading(true);
-        setTimeout(async () => {
-            const newUser = {
-                id: "1",
-                email: "demo@example.com",
-                name: "Demo User",
-            };
-            setUser(newUser);
-            try {
-                await AsyncStorage.setItem("user", JSON.stringify(newUser));
-            } catch (e) {
-                console.error("Failed to save user", e);
-            }
-            setIsLoading(false);
-        }, 1000);
-    };
-
     const signOut = async () => {
-        setUser(null);
         try {
-            await AsyncStorage.removeItem("user");
+            await supabase.auth.signOut();
             await GoogleSignin.signOut();
-        } catch (e) {
-            console.error("Failed to remove user", e);
+        } catch (error) {
+            console.error("Error signing out:", error);
         }
     };
 
@@ -172,11 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const inAuthGroup = rootSegment === "(auth)";
 
-        if (
-            // If the user is not signed in and the initial segment is not anything in the auth group.
-            !user &&
-            !inAuthGroup
-        ) {
+        if (!user && !inAuthGroup) {
             // Redirect to the sign-in page.
             router.replace("/(auth)/welcome");
         } else if (user && inAuthGroup) {
@@ -189,9 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         <AuthContext.Provider
             value={{
                 user,
-                signIn,
+                session,
                 signInWithGoogle,
-                signUp,
                 signOut,
                 isLoading,
             }}
