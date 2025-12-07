@@ -19,7 +19,7 @@ import { LinearGradient } from "tamagui/linear-gradient"; // Check complexity
 export default function LoginScreen() {
     const colors = useThemeColors();
     const router = useRouter();
-    const { signIn, isLoading: loading } = useAuth();
+    const { signIn, signInWithGoogle, isLoading: loading } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -116,7 +116,10 @@ export default function LoginScreen() {
                                 <View height={1} flex={1} backgroundColor="$gray5" />
                             </XStack>
 
-                            <SocialButton title="Continue with Google" />
+                            <SocialButton
+                                title="Continue with Google"
+                                onPress={() => signInWithGoogle()}
+                            />
 
                             <XStack justifyContent="center" gap="$2" marginTop="$2">
                                 <Text color={colors.textSecondary} fontSize="$4">

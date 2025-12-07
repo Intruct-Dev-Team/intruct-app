@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765316923130",
+    "project_id": "intruct-b45b5",
+    "storage_bucket": "intruct-b45b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765316923130:android:a9de3a6c5e77646048d343",
+        "android_client_info": {
+          "package_name": "com.intruct.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfwX3c3n7LhsfSlB-A8V2uIz06fIPD82Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
