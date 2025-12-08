@@ -82,7 +82,6 @@ export default function ProfileScreen() {
                                 placeholder="Enter your name"
                                 value={name}
                                 onChangeText={setName}
-                                backgroundColor="white"
                             />
                             <AuthInput
                                 label="Email"
@@ -91,7 +90,6 @@ export default function ProfileScreen() {
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
-                                backgroundColor="white"
                             />
                         </YStack>
 

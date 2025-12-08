@@ -28,7 +28,8 @@ export function AuthInput({ label, isPassword, ...props }: AuthInputProps) {
                 <Input
                     width="100%"
                     size="$4"
-                    backgroundColor="white"
+                    backgroundColor="$background"
+                    color="$color"
                     borderWidth={0}
                     borderRadius="$4"
                     paddingRight={isPassword ? "$8" : "$3"}

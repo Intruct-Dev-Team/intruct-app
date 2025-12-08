@@ -1,5 +1,6 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "react-native";
 import { Button, ButtonProps, Text, XStack } from "tamagui";
 
 interface SocialButtonProps extends ButtonProps {
@@ -30,8 +31,10 @@ export function SocialButton({
             {...props}
         >
             <XStack alignItems="center" gap="$2">
-                {/* Using a colored G icon would be better, but Ionicons is available */}
-                <Ionicons name={iconName || "logo-google"} size={20} color="black" />
+                <Image
+                    source={require("@/assets/images/google-logo.png")}
+                    style={{ width: 24, height: 24, resizeMode: "contain" }}
+                />
                 <Text color="black" fontSize="$4" fontWeight="600">
                     {title}
                 </Text>
