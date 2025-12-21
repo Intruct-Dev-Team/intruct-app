@@ -36,6 +36,13 @@ export interface Lesson {
   title: string;
   materials?: LessonMaterial[];
   questions?: TestQuestion[];
+  flashcards?: Flashcard[];
+}
+
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
 }
 
 export interface LessonMaterial {

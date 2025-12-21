@@ -120,117 +120,131 @@ export default function CourseDetailPage() {
 
           {isSingleModule
             ? modules[0]?.lessons.map((lesson, idx) => {
-                const isLessonCompleted = idx < (course.progress || 0);
-                return (
-                  <Card
-                    key={lesson.id}
-                    padding="$4"
-                    borderRadius="$6"
-                    backgroundColor={colors.cardBackground}
-                  >
-                    <XStack alignItems="center" gap="$3">
-                      <YStack
-                        width={44}
-                        height={44}
-                        borderRadius={999}
-                        alignItems="center"
-                        justifyContent="center"
-                        backgroundColor={
-                          isLessonCompleted
-                            ? colors.stats.completed.background
-                            : "$blue2"
-                        }
-                      >
-                        {isLessonCompleted ? (
-                          <Text
-                            color={colors.stats.completed.icon as any}
-                            fontWeight="700"
-                            fontSize="$5"
-                          >
-                            ✓
-                          </Text>
-                        ) : (
-                          <YStack
-                            width={8}
-                            height={8}
-                            borderRadius={999}
-                            backgroundColor="$blue5"
-                          />
-                        )}
-                      </YStack>
-
-                      <YStack flex={1}>
-                        <XStack
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Text color={colors.textTertiary} fontSize="$2">
-                            Lesson {idx + 1}
-                          </Text>
-
-                          {isLessonCompleted && (
-                            <YStack
-                              paddingHorizontal="$3"
-                              paddingVertical="$1"
-                              borderRadius="$4"
-                              backgroundColor={
-                                colors.stats.completed.background
-                              }
-                            >
-                              <Text
-                                color={colors.stats.completed.icon}
-                                fontSize="$2"
-                              >
-                                Completed
-                              </Text>
-                            </YStack>
-                          )}
-                        </XStack>
-
+              const isLessonCompleted = idx < (course.progress || 0);
+              return (
+                <Card
+                  key={lesson.id}
+                  padding="$4"
+                  borderRadius="$6"
+                  backgroundColor={colors.cardBackground}
+                >
+                  <XStack alignItems="center" gap="$3">
+                    <YStack
+                      width={44}
+                      height={44}
+                      borderRadius={999}
+                      alignItems="center"
+                      justifyContent="center"
+                      backgroundColor={
+                        isLessonCompleted
+                          ? colors.stats.completed.background
+                          : "$blue2"
+                      }
+                    >
+                      {isLessonCompleted ? (
                         <Text
-                          fontWeight="600"
-                          color={colors.textPrimary}
-                          fontSize="$4"
-                          marginTop="$2"
+                          color={colors.stats.completed.icon as any}
+                          fontWeight="700"
+                          fontSize="$5"
                         >
-                          {lesson.title}
+                          ✓
+                        </Text>
+                      ) : (
+                        <YStack
+                          width={8}
+                          height={8}
+                          borderRadius={999}
+                          backgroundColor="$blue5"
+                        />
+                      )}
+                    </YStack>
+
+                    <YStack flex={1}>
+                      <XStack
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Text color={colors.textTertiary} fontSize="$2">
+                          Lesson {idx + 1}
                         </Text>
 
-                        {idx === course.progress && (
-                          <Button
-                            width="100%"
-                            backgroundColor={colors.primary}
-                            color="$white1"
-                            borderRadius="$6"
-                            fontWeight="600"
-                            fontSize="$3"
-                            icon={<Play size={16} color="$white1" />}
-                            onPress={() => {
-                              // TODO: Navigate to lesson
-                            }}
-                            marginTop="$3"
+                        {isLessonCompleted && (
+                          <YStack
+                            paddingHorizontal="$3"
+                            paddingVertical="$1"
+                            borderRadius="$4"
+                            backgroundColor={
+                              colors.stats.completed.background
+                            }
                           >
-                            Start Lesson
-                          </Button>
+                            <Text
+                              color={colors.stats.completed.icon}
+                              fontSize="$2"
+                            >
+                              Completed
+                            </Text>
+                          </YStack>
                         )}
-                      </YStack>
-                    </XStack>
-                  </Card>
-                );
-              })
-            : modules.map((mod: CourseModule, idx) => (
+                      </XStack>
+
+                      <Text
+                        fontWeight="600"
+                        color={colors.textPrimary}
+                        fontSize="$4"
+                        marginTop="$2"
+                      >
+                        {lesson.title}
+                      </Text>
+
+                      {idx === course.progress && (
+                        <Button
+                          width="100%"
+                          backgroundColor={colors.primary}
+                          color="$white1"
+                          borderRadius="$6"
+                          fontWeight="600"
+                          fontSize="$3"
+                          icon={<Play size={16} color="$white1" />}
+                          onPress={() => {
+                            router.push(`/course/lesson/${lesson.id}`);
+                          }}
+                          marginTop="$3"
+                        >
+                          Start Lesson
+                        </Button>
+                      )}
+                    </YStack>
+                  </XStack>
+                </Card>
+              );
+            })
+            : modules.map((mod: CourseModule, idx) => {
+              // Calculate how many lessons were in previous modules to get the global index offset
+              const moduleStartIndex = modules
+                .slice(0, idx)
+                .reduce((acc, m) => acc + m.lessons.length, 0);
+
+              return (
                 <YStack key={mod.id} gap="$2">
                   <Text fontWeight="700" color={colors.textPrimary}>
                     Module {idx + 1}
                   </Text>
                   {mod.lessons.map((lesson, lidx) => {
-                    const isLessonCompleted = lidx < (course.progress || 0);
+                    const globalIndex = moduleStartIndex + lidx;
+                    const isLessonCompleted =
+                      globalIndex < (course.progress || 0);
+                    const isCurrentLesson =
+                      globalIndex === (course.progress || 0);
+
                     return (
                       <Card
                         key={lesson.id}
                         padding="$4"
                         borderRadius="$6"
                         backgroundColor={colors.cardBackground}
+                        opacity={
+                          !isLessonCompleted && !isCurrentLesson ? 0.6 : 1
+                        }
                       >
                         <XStack alignItems="center" gap="$3">
                           <YStack
@@ -299,7 +313,7 @@ export default function CourseDetailPage() {
                               {lesson.title}
                             </Text>
 
-                            {lidx === (course.progress || 0) && (
+                            {isCurrentLesson && (
                               <Button
                                 width="100%"
                                 backgroundColor={colors.primary}
@@ -309,7 +323,7 @@ export default function CourseDetailPage() {
                                 fontSize="$3"
                                 icon={<Play size={16} color="$white1" />}
                                 onPress={() => {
-                                  // TODO: Navigate to lesson
+                                  router.push(`/course/lesson/${lesson.id}`);
                                 }}
                                 marginTop="$3"
                               >
@@ -322,7 +336,8 @@ export default function CourseDetailPage() {
                     );
                   })}
                 </YStack>
-              ))}
+              );
+            })}
         </YStack>
       </ScrollView>
     </>

@@ -1,468 +1,535 @@
-import { Course } from "@/types";
+import { Course, CourseCategory } from "@/types";
 
 export const mockCourses: Course[] = [
   {
     id: "1",
-    title: "Introduction to React Native",
-    description: "Learn the basics of React and component-based development",
-    lessons: 8,
+    title: "React Native Mastery",
+    description: "Go from zero to hero with React Native. Build real-world apps.",
+    lessons: 4,
     modules: [
       {
-        id: "m-1",
-        title: "Course Content",
-        lessons: Array.from({ length: 8 }).map((_, i) => ({
-          id: `1-l-${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    // progress is number of completed lessons (not percent)
-    progress: 2,
-    isPublic: false,
-    rating: null,
-    students: null,
-    createdAt: "2025-11-15T10:00:00Z",
-    updatedAt: "2025-12-03T14:30:00Z",
-  },
-  {
-    id: "2",
-    title: "Advanced TypeScript",
-    description: "Master TypeScript type system and advanced patterns",
-    lessons: 12,
-    modules: [
-      {
-        id: "m-2-1",
-        title: "Course Content",
+        id: "m-1-1",
+        title: "Module 1: Foundations",
         lessons: [
           {
-            id: "2-l-1",
-            title: "Getting Started with TypeScript",
+            id: "1-l-1",
+            title: "1.1 Introduction to React Native",
             materials: [
               {
-                id: "2-l-1-m-1",
-                title: "TypeScript Basics",
-                content: `# TypeScript Basics
+                id: "1-l-1-m-1",
+                title: "What is React Native?",
+                content: `# What is React Native?
 
-## Introduction
-TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing to JavaScript.
+React Native is an open-source framework created by Meta Platforms, Inc. It is used to develop applications for Android, Android TV, iOS, macOS, tvOS, Web, Windows and UWP by enabling developers to use the React framework along with native platform capabilities.
 
-## Key Features
-- **Static Type Checking**: Catch errors at compile time
-- **Enhanced IDE Support**: Better autocompletion and refactoring
-- **Modern JavaScript Features**: Use ES6+ syntax today
-- **Interfaces and Types**: Define contracts for your code
+## How it works
 
-## Setting Up TypeScript
-\`\`\`bash
-npm install -D typescript
-npx tsc --init
-\`\`\`
+At its core, React Native invokes Native views with JavaScript. It uses a "bridge" (or the new architecture, JSI) to communicate between the JavaScript thread and the Native Main thread.
 
-## Your First TypeScript Program
-\`\`\`typescript
-interface Greeting {
-  message: string;
-  name: string;
+### Key Concepts
+
+1.  **Components**: React Native provides a set of Core Components (View, Text, Image) that map to native UI building blocks.
+2.  **JSX**: Write your UI markup right inside your JavaScript code.
+3.  **Flexbox**: Layout your UI using the same Flexbox algorithm you know from the web.
+
+## Hello World
+
+\`\`\`tsx
+import React from 'react';
+import { Text, View } from 'react-native';
+
+const HelloWorld = () => {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Hello, world!</Text>
+    </View>
+  );
 }
-
-function greet(greeting: Greeting): void {
-  console.log(\`\${greeting.message}, \${greeting.name}!\`);
-}
-
-greet({ message: "Hello", name: "World" });
+export default HelloWorld;
 \`\`\`
-
-## Basic Types
-- \`string\`: Text data
-- \`number\`: Numeric values
-- \`boolean\`: True or false
-- \`any\`: Bypass type checking
-- \`unknown\`: Safe alternative to any
-- \`never\`: Represents impossible values
-
-## Next Steps
-Learn about interfaces and how to structure your TypeScript projects effectively.`,
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "1-l-1-fc-1",
+                front: "Which thread runs the application logic in React Native?",
+                back: "The JavaScript Thread.",
+              },
+              {
+                id: "1-l-1-fc-2",
+                front: "What is the equivalent of a <div> in React Native?",
+                back: "<View>",
+              },
+              {
+                id: "1-l-1-fc-3",
+                front: "Do we use CSS in React Native?",
+                back: "No, we use JavaScript objects for styling, typically with StyleSheet.create.",
               },
             ],
             questions: [
               {
-                id: "2-l-1-q-1",
-                question: "What is TypeScript primarily used for?",
+                id: "1-l-1-q-1",
+                question: "React Native maps JSX components to...",
                 type: "multiple-choice",
                 options: [
-                  "Adding static typing to JavaScript",
-                  "Replacing JavaScript entirely",
-                  "Running on servers only",
-                  "Mobile app development",
+                  "Web Views",
+                  "Native UI Widgets",
+                  "HTML Elements",
+                  "Flash Objects",
                 ],
-                correctAnswer: 0,
+                correctAnswer: 1,
                 explanation:
-                  "TypeScript is a typed superset of JavaScript that adds optional static type checking while remaining compatible with existing JavaScript code.",
+                  "React Native renders real native UI widgets, not webviews.",
               },
               {
-                id: "2-l-1-q-2",
+                id: "1-l-1-q-2",
                 question:
-                  "True or False: TypeScript code can run directly in the browser.",
+                  "True or False: React Native apps are hybrid apps running in a WebView.",
                 type: "true-false",
                 options: ["True", "False"],
                 correctAnswer: 1,
                 explanation:
-                  "TypeScript must be compiled to JavaScript first before it can run in browsers or Node.js environments.",
+                  "False. React Native apps render native views, unlike hybrid apps like Ionic/Cordova.",
               },
             ],
           },
           {
-            id: "2-l-2",
-            title: "Advanced TypeScript Concepts",
+            id: "1-l-2",
+            title: "1.2 Core Components",
             materials: [
               {
-                id: "2-l-2-m-1",
-                title: "Advanced Types and Generics",
-                content: `# Advanced TypeScript Concepts
+                id: "1-l-2-m-1",
+                title: "View, Text, and Image",
+                content: `# Core Components
 
-## Generics
-Generics allow you to create reusable components that work with multiple types while maintaining type safety.
+## View
+The most fundamental component for building a UI, \`View\` is a container that supports layout with flexbox, style, some touch handling, and accessibility controls.
 
-### Generic Functions
-\`\`\`typescript
-function identity<T>(arg: T): T {
-  return arg;
-}
+## Text
+A React component for displaying text. It supports nesting, styling, and touch handling.
 
-const str = identity<string>("hello");
-const num = identity<number>(42);
+## Image
+A React component for displaying different types of images, including network images, static resources, temporary local images, and images from local disk, such as the camera roll.
+
+\`\`\`tsx
+<View>
+  <Image source={require('./logo.png')} />
+  <Text>React Native</Text>
+</View>
 \`\`\`
-
-### Generic Interfaces
-\`\`\`typescript
-interface Container<T> {
-  value: T;
-  getValue(): T;
-}
-
-const stringContainer: Container<string> = {
-  value: "hello",
-  getValue() {
-    return this.value;
-  },
-};
-\`\`\`
-
-## Union and Intersection Types
-### Union Types
-Represent a value that can be one of several types:
-\`\`\`typescript
-type ID = string | number;
-function printID(id: ID) {
-  console.log(\`ID: \${id}\`);
-}
-\`\`\`
-
-### Intersection Types
-Combine multiple types into one:
-\`\`\`typescript
-interface Named {
-  name: string;
-}
-
-interface Aged {
-  age: number;
-}
-
-type Person = Named & Aged;
-\`\`\`
-
-## Utility Types
-- \`Partial<T>\`: Make all properties optional
-- \`Required<T>\`: Make all properties required
-- \`Pick<T, K>\`: Select specific properties
-- \`Omit<T, K>\`: Exclude specific properties
-- \`Record<K, T>\`: Create a type with specific keys
-
-## Conditional Types
-\`\`\`typescript
-type IsString<T> = T extends string ? true : false;
-
-type A = IsString<"hello">; // true
-type B = IsString<42>; // false
-\`\`\``,
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "1-l-2-fc-1",
+                front: "What component is used to display images?",
+                back: "<Image>",
+              },
+              {
+                id: "1-l-2-fc-2",
+                front: "Can <Text> components be nested?",
+                back: "Yes, nested Text components inherit styles from their parents.",
+              },
+              {
+                id: "1-l-2-fc-3",
+                front: "Does <View> scroll by default?",
+                back: "No, you need to use <ScrollView> or <FlatList> for scrolling.",
               },
             ],
             questions: [
               {
-                id: "2-l-2-q-1",
+                id: "1-l-2-q-1",
+                question: "Which component handles scrolling?",
+                type: "multiple-choice",
+                options: ["View", "ScrollView", "Div", "Container"],
+                correctAnswer: 1,
+                explanation:
+                  "The View component is static. ScrollView (or lists) are required for scrolling content.",
+              },
+              {
+                id: "1-l-2-q-2",
+                question: "Can <View> contain text directly?",
+                type: "true-false",
+                options: ["True", "False"],
+                correctAnswer: 1,
+                explanation:
+                  "In React Native, all strings must be wrapped in a <Text> component.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "m-1-2",
+        title: "Module 2: Navigation",
+        lessons: [
+          {
+            id: "1-l-3",
+            title: "2.1 React Navigation Basics",
+            materials: [
+              {
+                id: "1-l-3-m-1",
+                title: "Stack Navigator",
+                content: `# React Navigation
+
+Routing and navigation for your Expo and React Native apps.
+
+## Stack Navigator
+The most common form of navigation. It provides a way for your app to transition between screens where each new screen is placed on top of a stack.
+
+\`\`\`tsx
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Stack = createNativeStackNavigator();
+
+function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Details" component={DetailsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+\`\`\`
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "1-l-3-fc-1",
+                front: "What library is standard for navigation in RN?",
+                back: "React Navigation",
+              },
+              {
+                id: "1-l-3-fc-2",
+                front: "What does 'Stack' navigation mimic?",
+                back: "The default browser history or native push/pop transitions.",
+              },
+            ],
+            questions: [
+              {
+                id: "1-l-3-q-1",
                 question:
-                  "What is the primary purpose of generics in TypeScript?",
+                  "What component wraps the entire navigation structure?",
+                type: "short-answer",
+                correctAnswer: "NavigationContainer",
+                explanation:
+                  "NavigationContainer manages our navigation tree and contains the navigation state.",
+              },
+            ],
+          },
+          {
+            id: "1-l-4",
+            title: "2.2 Passing Parameters",
+            materials: [
+              {
+                id: "1-l-4-m-1",
+                title: "Route Params",
+                content: `# Passing Parameters
+
+You pass params to a route by putting them in an object as a second parameter to the \`navigation.navigate\` function:
+
+\`\`\`tsx
+navigation.navigate('Details', {
+  itemId: 86,
+  otherParam: 'anything you want here',
+});
+\`\`\`
+
+Read them in your screen component:
+
+\`\`\`tsx
+function DetailsScreen({ route, navigation }) {
+  const { itemId, otherParam } = route.params;
+  // ...
+}
+\`\`\`
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "1-l-4-fc-1",
+                front: "How do you access params in a screen?",
+                back: "Using the `route.params` object.",
+              },
+            ],
+            questions: [
+              {
+                id: "1-l-4-q-1",
+                question:
+                  "Can you pass functions as params (technically)?",
                 type: "multiple-choice",
                 options: [
-                  "To create reusable components that work with multiple types",
-                  "To improve runtime performance",
-                  "To reduce file size",
-                  "To simplify syntax",
+                  "Yes, but it generates a warning",
+                  "No, it crashes",
+                  "Yes, it is best practice",
                 ],
                 correctAnswer: 0,
                 explanation:
-                  "Generics enable you to write code that works with different types while maintaining type safety and reusability.",
-              },
-              {
-                id: "2-l-2-q-2",
-                question: "What does the Partial<T> utility type do?",
-                type: "short-answer",
-                correctAnswer: "makes all properties optional",
-                explanation:
-                  "Partial<T> constructs a type with all properties of T set to optional, allowing you to omit any properties when creating instances.",
+                  "Params should be serializable. Passing functions works but triggers a warning because it breaks hydration usually.",
               },
             ],
           },
         ],
       },
     ],
-    // a small number of completed lessons
-    progress: 1,
+    progress: 1, // Let's say user finished lesson 1
     isPublic: true,
-    rating: 4.6,
-    students: 1024,
-    createdAt: "2025-11-20T09:00:00Z",
-    updatedAt: "2025-11-20T09:00:00Z",
-  },
-  {
-    id: "3",
-    title: "React Native Fundamentals",
-    description: "Build mobile apps with React Native",
-    lessons: 15,
-    modules: [
-      {
-        id: "m-3",
-        title: "Course Content",
-        lessons: Array.from({ length: 15 }).map((_, i) => ({
-          id: `3-l-${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    // around half completed
-    progress: 7,
-    isPublic: false,
-    rating: null,
-    students: null,
-    createdAt: "2025-10-10T08:00:00Z",
-    updatedAt: "2025-12-01T16:00:00Z",
-  },
-];
-
-export const mockFeaturedCourses: Course[] = [
-  {
-    id: "4",
-    title: "Machine Learning Basics",
-    description: "Introduction to ML algorithms and concepts",
-    lessons: 20,
-    modules: [
-      {
-        id: "m-4-1",
-        title: "Course Content",
-        lessons: Array.from({ length: 20 }).map((_, i) => ({
-          id: `4-l-${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    isPublic: true,
-    rating: 4.7,
-    students: 5400,
-    createdAt: "2025-11-01T10:00:00Z",
-    updatedAt: "2025-11-01T10:00:00Z",
-  },
-  {
-    id: "5",
-    title: "Web Development Bootcamp",
-    description: "Full-stack web development from scratch",
-    lessons: 50,
-    modules: [
-      {
-        id: "m-5-1",
-        title: "Course Content",
-        lessons: Array.from({ length: 50 }).map((_, i) => ({
-          id: `5-l-${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    isPublic: true,
-    rating: 4.9,
-    students: 23400,
-    createdAt: "2025-10-15T10:00:00Z",
-    updatedAt: "2025-10-15T10:00:00Z",
+    rating: 4.8,
+    students: 1205,
+    createdAt: "2025-01-01T10:00:00Z",
+    updatedAt: "2025-01-20T10:00:00Z",
   },
 ];
 
 export const mockCatalogCourses: Course[] = [
   {
-    id: "cat-1",
-    title: "Complete Python Bootcamp",
-    description:
-      "Learn Python from scratch with hands-on projects and exercises",
-    lessons: 24,
+    id: "2",
+    title: "Advanced TypeScript Patterns",
+    description: "Deep dive into TypeScript's most powerful features.",
+    lessons: 4,
     modules: [
       {
-        id: "cat-1-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 12 }).map((_, i) => ({
-          id: `cat1-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
+        id: "m-2-1",
+        title: "Module 1: Type System Power",
+        lessons: [
+          {
+            id: "2-l-1",
+            title: "1.1 Generics Deep Dive",
+            materials: [
+              {
+                id: "2-l-1-m-1",
+                title: "Constraints and Defaults",
+                content: `# Generics
+
+## Constraints
+You can limit the types that a type variable can accept.
+
+\`\`\`ts
+interface Lengthwise {
+  length: number;
+}
+
+function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
+  console.log(arg.length); 
+  return arg;
+}
+\`\`\`
+
+## Default Types
+\`\`\`ts
+function create<Type = string>(arg: Type): Type {
+  return arg;
+}
+\`\`\`
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "2-l-1-fc-1",
+                front: "What keyword is used to constrain a generic?",
+                back: "extends",
+              },
+              {
+                id: "2-l-1-fc-2",
+                front: "Can a generic have a default type?",
+                back: "Yes, using `= Type` syntax.",
+              },
+            ],
+            questions: [
+              {
+                id: "2-l-1-q-1",
+                question: "Why use generic constraints?",
+                type: "multiple-choice",
+                options: [
+                  "To allow any type",
+                  "To ensure the type has certain properties",
+                  "To make the code faster",
+                ],
+                correctAnswer: 1,
+                explanation:
+                  "Constraints ensure that the generic type passed in adheres to a specific contract (interface).",
+              },
+            ],
+          },
+          {
+            id: "2-l-2",
+            title: "1.2 Mapped Types",
+            materials: [
+              {
+                id: "2-l-2-m-1",
+                title: "Creating Types from Types",
+                content: `# Mapped Types
+
+Mapped types allow you to create new types based on old ones by iterating over property keys.
+
+\`\`\`ts
+type OptionsFlags<Type> = {
+  [Property in keyof Type]: boolean;
+};
+
+type FeatureFlags = {
+  darkMode: () => void;
+  newUserProfile: () => void;
+};
+
+type FeatureOptions = OptionsFlags<FeatureFlags>;
+/**
+ * type FeatureOptions = {
+ *    darkMode: boolean;
+ *    newUserProfile: boolean;
+ * }
+ */
+\`\`\`
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "2-l-2-fc-1",
+                front: "What operator is used to get keys of a type?",
+                back: "keyof",
+              },
+            ],
+            questions: [
+              {
+                id: "2-l-2-q-1",
+                question: "Mapped types iterate over...",
+                type: "multiple-choice",
+                options: ["Values", "Keys", "Constructors"],
+                correctAnswer: 1,
+                explanation: "They iterate over keys using `[P in keyof T]`.",
+              },
+            ],
+          },
+        ],
       },
       {
-        id: "cat-1-m2",
-        title: "Module 2",
-        lessons: Array.from({ length: 12 }).map((_, i) => ({
-          id: `cat1-m2-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
+        id: "m-2-2",
+        title: "Module 2: Utility Types",
+        lessons: [
+          {
+            id: "2-l-3",
+            title: "2.1 Pick and Omit",
+            materials: [
+              {
+                id: "2-l-3-m-1",
+                title: "Pick & Omit",
+                content: `# Pick and Omit
+
+## Pick
+Constructs a type by picking the set of properties Keys from Type.
+
+\`\`\`ts
+interface Todo {
+  title: string;
+  description: string;
+  completed: boolean;
+}
+
+type TodoPreview = Pick<Todo, "title" | "completed">;
+\`\`\`
+
+## Omit
+Constructs a type by picking all properties from Type and then removing Keys.
+
+\`\`\`ts
+type TodoInfo = Omit<Todo, "completed">;
+\`\`\`
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "2-l-3-fc-1",
+                front: "What does Pick<T, K> do?",
+                back: "Selects a subset of properties (K) from T.",
+              },
+              {
+                id: "2-l-3-fc-2",
+                front: "What does Omit<T, K> do?",
+                back: "Removes a subset of properties (K) from T.",
+              },
+            ],
+            questions: [
+              {
+                id: "2-l-3-q-1",
+                question: "Which one allows you to exclude fields?",
+                type: "short-answer",
+                correctAnswer: "Omit",
+                explanation: "Omit is used to exclude specific fields from a type.",
+              },
+            ],
+          },
+          {
+            id: "2-l-4",
+            title: "2.2 Partial and Required",
+            materials: [
+              {
+                id: "2-l-4-m-1",
+                title: "Modifying Optionality",
+                content: `# Partial and Required
+
+## Partial<Type>
+Constructs a type with all properties of Type set to optional.
+
+\`\`\`ts
+function updateTodo(todo: Todo, fieldsToUpdate: Partial<Todo>) {
+  return { ...todo, ...fieldsToUpdate };
+}
+\`\`\`
+
+## Required<Type>
+Constructs a type consisting of all properties of Type set to required.
+`,
+              },
+            ],
+            flashcards: [
+              {
+                id: "2-l-4-fc-1",
+                front: "What makes all properties optional?",
+                back: "Partial<T>",
+              },
+              {
+                id: "2-l-4-fc-2",
+                front: "What makes all properties required?",
+                back: "Required<T>",
+              },
+            ],
+            questions: [
+              {
+                id: "2-l-4-q-1",
+                question:
+                  "True or False: Required<T> removes '?' from properties.",
+                type: "true-false",
+                options: ["True", "False"],
+                correctAnswer: 0,
+                explanation:
+                  "True. It forces all properties to be present (non-optional).",
+              },
+            ],
+          },
+        ],
       },
     ],
     category: "development",
-    author: "Dr. Sarah Johnson",
-    rating: 4.8,
-    students: 12453,
+    author: "Matt Pocock",
+    rating: 5.0,
+    students: 5430,
     isPublic: true,
-    createdAt: "2025-09-01T10:00:00Z",
-    updatedAt: "2025-09-01T10:00:00Z",
-  },
-  {
-    id: "cat-2",
-    title: "Web Development Masterclass",
-    description: "Master HTML, CSS, JavaScript, and modern frameworks",
-    lessons: 32,
-    modules: [
-      {
-        id: "cat-2-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 16 }).map((_, i) => ({
-          id: `cat2-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-      {
-        id: "cat-2-m2",
-        title: "Module 2",
-        lessons: Array.from({ length: 16 }).map((_, i) => ({
-          id: `cat2-m2-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    category: "development",
-    author: "Mike Chen",
-    rating: 4.9,
-    students: 8932,
-    isPublic: true,
-    createdAt: "2025-10-15T10:00:00Z",
-    updatedAt: "2025-10-15T10:00:00Z",
-  },
-  {
-    id: "cat-3",
-    title: "Data Science Fundamentals",
-    description:
-      "Introduction to data analysis, statistics, and machine learning",
-    lessons: 28,
-    modules: [
-      {
-        id: "cat-3-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 14 }).map((_, i) => ({
-          id: `cat3-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-      {
-        id: "cat-3-m2",
-        title: "Module 2",
-        lessons: Array.from({ length: 14 }).map((_, i) => ({
-          id: `cat3-m2-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    category: "development",
-    author: "Prof. Emily Davis",
-    rating: 4.7,
-    students: 15234,
-    isPublic: true,
-    createdAt: "2025-08-20T10:00:00Z",
-    updatedAt: "2025-08-20T10:00:00Z",
-  },
-  {
-    id: "cat-4",
-    title: "UI/UX Design Principles",
-    description: "Learn to create beautiful and functional user interfaces",
-    lessons: 18,
-    modules: [
-      {
-        id: "cat-4-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 18 }).map((_, i) => ({
-          id: `cat4-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    category: "design",
-    author: "Alex Rivera",
-    rating: 4.6,
-    students: 6789,
-    isPublic: true,
-    createdAt: "2025-09-10T10:00:00Z",
-    updatedAt: "2025-09-10T10:00:00Z",
-  },
-  {
-    id: "cat-5",
-    title: "Digital Marketing Strategy",
-    description: "Master SEO, social media, and content marketing",
-    lessons: 22,
-    modules: [
-      {
-        id: "cat-5-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 22 }).map((_, i) => ({
-          id: `cat5-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    category: "business",
-    author: "Jennifer Lee",
-    rating: 4.5,
-    students: 9876,
-    isPublic: true,
-    createdAt: "2025-07-15T10:00:00Z",
-    updatedAt: "2025-07-15T10:00:00Z",
-  },
-  {
-    id: "cat-6",
-    title: "Mobile App Development",
-    description: "Build iOS and Android apps with React Native",
-    lessons: 35,
-    modules: [
-      {
-        id: "cat-6-m1",
-        title: "Module 1",
-        lessons: Array.from({ length: 35 }).map((_, i) => ({
-          id: `cat6-m1-l${i + 1}`,
-          title: `Lesson ${i + 1}`,
-        })),
-      },
-    ],
-    category: "development",
-    author: "David Park",
-    rating: 4.8,
-    students: 11234,
-    isPublic: true,
-    createdAt: "2025-11-01T10:00:00Z",
-    updatedAt: "2025-11-01T10:00:00Z",
+    createdAt: "2025-02-01T10:00:00Z",
+    updatedAt: "2025-02-15T10:00:00Z",
   },
 ];
 
-export const courseCategories = [
+export const mockFeaturedCourses: Course[] = []; // Empty as requested to only have the two specific courses
+export const courseCategories: CourseCategory[] = [
   { id: "all", name: "All", slug: "all" },
   { id: "development", name: "Development", slug: "development" },
   { id: "design", name: "Design", slug: "design" },
