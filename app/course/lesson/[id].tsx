@@ -6,6 +6,7 @@ import { mockCourses } from "@/mockdata/courses";
 import { Course, Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, YStack, getTokenValue } from "tamagui";
 
@@ -21,6 +22,57 @@ export default function LessonScreen() {
     const [phase, setPhase] = useState<LessonPhase>("material");
     const [completedPhases, setCompletedPhases] = useState<string[]>([]);
     const [currentPhaseProgress, setCurrentPhaseProgress] = useState(0);
+
+    // Animation state
+    const progressWidth = useSharedValue(5); // Start at 5%
+    const progress = useSharedValue(5);
+
+    const animatedProgressStyle = useAnimatedStyle(() => {
+        return {
+            width: `${progressWidth.value}%`,
+        };
+    });
+
+    const getProgress = () => {
+        if (!lesson) return 5;
+
+        // Calculate total granular steps
+        // 1 for Material
+        // N for Flashcards
+        // M for Questions
+        const totalSteps = 1 + (lesson.flashcards?.length || 0) + (lesson.questions?.length || 0);
+
+        let completedSteps = 0;
+
+        if (completedPhases.includes("material")) {
+            completedSteps += 1;
+        }
+
+        if (completedPhases.includes("flashcards")) {
+            completedSteps += (lesson.flashcards?.length || 0);
+        }
+
+        if (completedPhases.includes("test")) {
+            completedSteps += (lesson.questions?.length || 0);
+        } else {
+            if (phase === "flashcards") {
+                completedSteps += currentPhaseProgress;
+            } else if (phase === "test") {
+                completedSteps += currentPhaseProgress;
+            }
+        }
+
+        return Math.max(5, (completedSteps / totalSteps) * 100);
+    };
+
+    const currentProgressValue = getProgress();
+
+    useEffect(() => {
+        progressWidth.value = withTiming(currentProgressValue, {
+            duration: 500,
+            easing: Easing.out(Easing.quad),
+        });
+    }, [currentProgressValue]);
 
     const resolveThemeColor = (color: string) => {
         return color.startsWith("$") ? getTokenValue(color as any) : color;
@@ -122,54 +174,7 @@ export default function LessonScreen() {
         }
     };
 
-    const getProgress = () => {
-        // Calculate total granular steps
-        // 1 for Material
-        // N for Flashcards
-        // M for Questions
-        const totalSteps = 1 + (lesson.flashcards?.length || 0) + (lesson.questions?.length || 0);
 
-        let completedSteps = 0;
-
-        // Add 1 if Material is done logic needs to be robust. 
-        // Logic: if phase is "flashcards", material is done. If phase is "test", flashcards done.
-        // Actually simpler:
-
-        if (completedPhases.includes("material")) {
-            completedSteps += 1;
-        }
-
-        if (completedPhases.includes("flashcards")) {
-            completedSteps += (lesson.flashcards?.length || 0);
-        }
-
-        if (completedPhases.includes("test")) {
-            // If test is fully complete
-            completedSteps += (lesson.questions?.length || 0);
-        } else {
-            // If we are IN a phase, add the granular progress
-            // Note: currentPhaseProgress is 0-indexed index of CURRENT item.
-            // So if index is 0, we have completed 0 items of this phase? 
-            // Usually UI shows "Question 1 of N", which means we are working on 1.
-            // Let's say progress means "Completed".
-            // If I am on Card 1 (index 0), I have completed 0 cards.
-            // If I am on Card 2 (index 1), I have completed 1 card.
-            // So adding `currentPhaseProgress` is correct for "completed items count".
-            if (phase === "flashcards") {
-                completedSteps += currentPhaseProgress;
-            } else if (phase === "test") {
-                completedSteps += currentPhaseProgress;
-            }
-        }
-
-        // Special case: If we are in Material phase (not yet complete), we want to show SOME progress (e.g. 5%)
-        // The previous logic `Math.max(5, ...)` handles the visual "not empty" state.
-        // Let's refine:
-        // If material is active, we treat "completedSteps" as effectively 0 (or small baseline).
-
-        // Ensure at least a little bit of progress is visible (e.g. 5%) so it doesn't look broken
-        return Math.max(5, (completedSteps / totalSteps) * 100);
-    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: resolveThemeColor(colors.background) }} edges={['bottom']}>
@@ -193,12 +198,23 @@ export default function LessonScreen() {
                 }}
             />
 
-            {/* Progress Bar */}
-            <YStack height={4} backgroundColor="$gray5" width="100%">
-                <YStack
-                    height="100%"
-                    backgroundColor={colors.primary}
-                    width={`${getProgress()}%`}
+            {/* Animated Progress Bar */}
+            <YStack height={4} backgroundColor="$gray5" width="100%" overflow="hidden">
+                <Animated.View
+                    style={[
+                        {
+                            height: "100%",
+                            width: "100%", // Full width, we reveal it via translate
+                            backgroundColor: resolveThemeColor(colors.primary) || "#2491FF",
+                            // Glow effect
+                            shadowColor: resolveThemeColor(colors.primary) || "#2491FF",
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.8,
+                            shadowRadius: 10,
+                            elevation: 5, // Android glow
+                        },
+                        animatedProgressStyle,
+                    ]}
                 />
             </YStack>
 
