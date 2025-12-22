@@ -7,9 +7,10 @@ import { Button, H3, Text, XStack, YStack } from "tamagui";
 interface TestViewProps {
     questions: TestQuestion[];
     onComplete: (score: number) => void;
+    onProgress: (index: number) => void;
 }
 
-export default function TestView({ questions, onComplete }: TestViewProps) {
+export default function TestView({ questions, onComplete, onProgress }: TestViewProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [isAnswered, setIsAnswered] = useState(false);
@@ -17,6 +18,10 @@ export default function TestView({ questions, onComplete }: TestViewProps) {
     const colors = useThemeColors();
 
     const currentQuestion = questions[currentIndex];
+
+    React.useEffect(() => {
+        onProgress(currentIndex);
+    }, [currentIndex]);
 
     const handleSelectOption = (index: number) => {
         if (isAnswered) return;
@@ -27,6 +32,7 @@ export default function TestView({ questions, onComplete }: TestViewProps) {
         if (selectedOption === null) return;
 
         setIsAnswered(true);
+        onProgress(currentIndex + 1); // Progress grows immediately on check
         if (selectedOption === currentQuestion.correctAnswer) {
             setScore(score + 1);
         }
@@ -35,6 +41,7 @@ export default function TestView({ questions, onComplete }: TestViewProps) {
     const handleNext = () => {
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(currentIndex + 1);
+            // onProgress is handled by useEffect when index changes
             setSelectedOption(null);
             setIsAnswered(false);
         } else {
@@ -216,7 +223,7 @@ export default function TestView({ questions, onComplete }: TestViewProps) {
                         borderRadius="$4"
                     >
                         {currentIndex === questions.length - 1
-                            ? "Finish Test"
+                            ? "Finish Lesson"
                             : "Next Question"}
                     </Button>
                 )}

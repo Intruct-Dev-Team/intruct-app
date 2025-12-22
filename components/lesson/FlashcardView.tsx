@@ -13,11 +13,13 @@ import { Button, H3, Text, XStack, YStack, getTokenValue } from "tamagui";
 interface FlashcardViewProps {
     cards: Flashcard[];
     onComplete: () => void;
+    onProgress: (index: number) => void;
 }
 
 export default function FlashcardView({
     cards,
     onComplete,
+    onProgress,
 }: FlashcardViewProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -29,6 +31,10 @@ export default function FlashcardView({
     };
 
     const currentCard = cards[currentIndex];
+
+    React.useEffect(() => {
+        onProgress(currentIndex);
+    }, [currentIndex]);
 
     const handleFlip = () => {
         if (isFlipped) {
@@ -46,6 +52,7 @@ export default function FlashcardView({
 
         if (currentIndex < cards.length - 1) {
             setCurrentIndex(currentIndex + 1);
+            onProgress(currentIndex + 1);
         } else {
             onComplete();
         }
@@ -57,6 +64,7 @@ export default function FlashcardView({
             rotateY.value = withTiming(0, { duration: 0 }); // Instant reset
             setIsFlipped(false);
             setCurrentIndex(currentIndex - 1);
+            onProgress(currentIndex - 1);
         }
     };
 
@@ -179,6 +187,14 @@ const styles = StyleSheet.create({
     cardWrapper: {
         width: "100%",
         height: 300,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
     },
     card: {
         position: "absolute",
@@ -189,13 +205,5 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backfaceVisibility: "hidden",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 5,
     },
 });

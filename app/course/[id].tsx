@@ -110,7 +110,7 @@ export default function CourseDetailPage() {
       />
 
       <ScrollView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
       >
         <YStack gap="$3" marginTop="$2">
