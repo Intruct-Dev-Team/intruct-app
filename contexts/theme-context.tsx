@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useColorScheme as useSystemColorScheme } from "react-native";
@@ -26,21 +27,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    loadTheme();
-  }, []);
-
-  const loadTheme = async () => {
-    try {
-      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
-        setThemeModeState(savedTheme as ThemeMode);
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
+          setThemeModeState(savedTheme as ThemeMode);
+        }
+      } catch (error) {
+        console.error("Failed to load theme:", error);
+      } finally {
+        setIsLoaded(true);
       }
-    } catch (error) {
-      console.error("Failed to load theme:", error);
-    } finally {
-      setIsLoaded(true);
-    }
-  };
+    };
+
+    void loadTheme();
+  }, []);
 
   const setThemeMode = async (mode: ThemeMode) => {
     try {
@@ -51,8 +52,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const activeTheme =
-    themeMode === "system" ? systemColorScheme ?? "light" : themeMode;
+  const activeTheme = useMemo<"light" | "dark">(() => {
+    if (themeMode === "system") {
+      return systemColorScheme === "dark" ? "dark" : "light";
+    }
+    return themeMode;
+  }, [themeMode, systemColorScheme]);
 
   if (!isLoaded) {
     return null;
