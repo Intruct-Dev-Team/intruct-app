@@ -9,9 +9,11 @@ import {
 import { PortalProvider } from "@tamagui/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
 
@@ -25,14 +27,24 @@ function RootLayoutContent() {
   useEffect(() => {
     // Set system UI colors based on theme
     // Note: This works in production builds but has limitations in Expo Go
-    // In Expo Go, system UI is controlled by the Expo Go app itself
-    if (activeTheme === "dark") {
-      SystemUI.setBackgroundColorAsync("#000000").catch(() => {
-        // Silently fail in Expo Go
+    // In Expo Go system UI is controlled by the Expo Go app itself
+
+    const backgroundColor = activeTheme === "dark" ? "#000000" : "#FFFFFF";
+    const navButtonStyle = activeTheme === "dark" ? "light" : "dark";
+
+    SystemUI.setBackgroundColorAsync(backgroundColor).catch(() => {
+      // Silently fail in Expo Go
+    });
+
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync(backgroundColor).catch(() => {
+        // Ignore on unsupported devices / edge-to-edge configs
       });
-    } else {
-      SystemUI.setBackgroundColorAsync("#FFFFFF").catch(() => {
-        // Silently fail in Expo Go
+      NavigationBar.setBorderColorAsync(backgroundColor).catch(() => {
+        // Ignore on unsupported devices / edge-to-edge configs
+      });
+      NavigationBar.setButtonStyleAsync(navButtonStyle).catch(() => {
+        // Ignore on unsupported devices / edge-to-edge configs
       });
     }
   }, [activeTheme]);
