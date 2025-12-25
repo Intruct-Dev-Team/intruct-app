@@ -179,11 +179,19 @@ export default function LessonScreen() {
           title: "",
           headerTitle: () => (
             <YStack>
-              <Text fontWeight="700" color={colors.textPrimary} numberOfLines={1}>
+              <Text
+                fontWeight="700"
+                color={colors.textPrimary}
+                numberOfLines={1}
+              >
                 {lesson.title}
               </Text>
               {courseTitle ? (
-                <Text color={colors.textSecondary} fontSize="$2" numberOfLines={1}>
+                <Text
+                  color={colors.textSecondary}
+                  fontSize="$2"
+                  numberOfLines={1}
+                >
                   {courseTitle}
                 </Text>
               ) : null}

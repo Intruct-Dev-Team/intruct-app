@@ -90,7 +90,10 @@ export default function TestView({
         </Text>
       </YStack>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
         <YStack
           backgroundColor={colors.cardBackground}
           padding="$4"
