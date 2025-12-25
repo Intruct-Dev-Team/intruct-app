@@ -12,7 +12,8 @@ import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PortalProvider, TamaguiProvider, Theme } from "tamagui";
+import { PortalProvider } from "@tamagui/portal";
+import { TamaguiProvider, Theme } from "tamagui";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -38,7 +39,7 @@ function RootLayoutContent() {
 
   return (
     <TamaguiProvider config={config}>
-      <PortalProvider>
+      <PortalProvider shouldAddRootHost>
         <Theme name={activeTheme}>
           <NavigationThemeProvider
             value={activeTheme === "dark" ? DarkTheme : DefaultTheme}

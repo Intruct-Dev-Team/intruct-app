@@ -21,15 +21,14 @@ export function AttachMaterialsStep({
   const [linkInput, setLinkInput] = useState("");
 
   const handleAddLink = () => {
-    if (linkInput.trim()) {
-      // Простая валидация URL
-      try {
-        new URL(linkInput.trim());
-        onLinksChange([...links, linkInput.trim()]);
-        setLinkInput("");
-      } catch {
-        Alert.alert("Invalid URL", "Please enter a valid URL");
-      }
+    if (!linkInput.trim()) return;
+
+    try {
+      new URL(linkInput.trim());
+      onLinksChange([...links, linkInput.trim()]);
+      setLinkInput("");
+    } catch {
+      Alert.alert("Invalid URL", "Please enter a valid URL");
     }
   };
 
@@ -38,10 +37,9 @@ export function AttachMaterialsStep({
   };
 
   const handleAttachFiles = () => {
-    // Заглушка для выбора файлов
     Alert.alert(
       "File Picker",
-      "File picker will be implemented here. For now, adding a demo file.",
+      "File picker will be implemented here. For now adding a demo file.",
       [
         {
           text: "Cancel",

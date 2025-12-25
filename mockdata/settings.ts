@@ -10,7 +10,7 @@ export const accountSettingsItems: SettingsMenuItem[] = [
   {
     id: "personal-info",
     title: "Personal Information",
-    description: "Update your name, email, and pr...",
+    description: "Update your name email and pr...",
     icon: "user",
     action: "navigate:personal-info",
   },
@@ -24,7 +24,7 @@ export const accountSettingsItems: SettingsMenuItem[] = [
   {
     id: "privacy",
     title: "Privacy & Security",
-    description: "Password, two-factor authenticat...",
+    description: "Password two-factor authenticat...",
     icon: "lock",
     action: "navigate:privacy",
   },

@@ -16,6 +16,7 @@ import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
   accountSettingsItems,
   aiSettingsItems,
+  languageOptions,
   supportItems,
 } from "@/mockdata/settings";
 import {
@@ -32,7 +33,7 @@ import {
   User as UserIcon,
 } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { YStack } from "tamagui";
 
 const iconMap: Record<string, any> = {
@@ -49,8 +50,17 @@ const iconMap: Record<string, any> = {
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const { user, isLoading: loading } = useAuth();
+
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+
+  const selectedLanguageLabel = useMemo(() => {
+    return (
+      languageOptions.find((l) => l.code === selectedLanguage)?.label ||
+      "English (US)"
+    );
+  }, [selectedLanguage]);
 
   return (
     <ScreenContainer>
@@ -64,7 +74,11 @@ export default function SettingsScreen() {
           <UserProfileSkeleton />
         ) : (
           <UserProfileCard
-            name={user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"}
+            name={
+              user?.user_metadata?.full_name ||
+              user?.email?.split("@")[0] ||
+              "User"
+            }
             email={user?.email || ""}
             avatarUrl={user?.user_metadata?.avatar_url}
             onPress={() => router.push("/settings/profile")}
@@ -78,7 +92,9 @@ export default function SettingsScreen() {
             return (
               <SettingsItem
                 key={item.id}
-                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                icon={
+                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                }
                 title={item.title}
                 description={item.description}
                 rightElement={
@@ -98,7 +114,9 @@ export default function SettingsScreen() {
             return (
               <SettingsItem
                 key={item.id}
-                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                icon={
+                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                }
                 title={item.title}
                 description={item.description}
                 rightElement={
@@ -123,7 +141,7 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={<Globe size={20} color={colors.textSecondary} />}
             title="Language"
-            description="English (US)"
+            description={selectedLanguageLabel}
             rightElement={
               <ChevronRight size={20} color={colors.textTertiary} />
             }
@@ -138,7 +156,9 @@ export default function SettingsScreen() {
             return (
               <SettingsItem
                 key={item.id}
-                icon={Icon && <Icon size={20} color={colors.textSecondary} />}
+                icon={
+                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                }
                 title={item.title}
                 description={item.description}
                 rightElement={
@@ -157,6 +177,8 @@ export default function SettingsScreen() {
       <LanguageModal
         open={languageModalOpen}
         onOpenChange={setLanguageModalOpen}
+        value={selectedLanguage}
+        onValueChange={setSelectedLanguage}
       />
     </ScreenContainer>
   );

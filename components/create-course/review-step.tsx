@@ -1,5 +1,11 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { Lightbulb, Link as LinkIcon, Paperclip } from "@tamagui/lucide-icons";
+import { languageOptions } from "@/mockdata/settings";
+import {
+  Globe,
+  Lightbulb,
+  Link as LinkIcon,
+  Paperclip,
+} from "@tamagui/lucide-icons";
 import { Card, Text, XStack, YStack } from "tamagui";
 
 interface ReviewStepProps {
@@ -7,6 +13,7 @@ interface ReviewStepProps {
   description: string;
   filesCount: number;
   linksCount: number;
+  contentLanguage: string;
 }
 
 export function ReviewStep({
@@ -14,8 +21,12 @@ export function ReviewStep({
   description,
   filesCount,
   linksCount,
+  contentLanguage,
 }: ReviewStepProps) {
   const colors = useThemeColors();
+  const selectedLanguage =
+    languageOptions.find((l) => l.code === contentLanguage) ||
+    languageOptions[0];
 
   return (
     <YStack gap="$4">
@@ -54,6 +65,12 @@ export function ReviewStep({
                 {linksCount} links added
               </Text>
             </XStack>
+            <XStack gap="$2" alignItems="center">
+              <Globe size={16} color={colors.textTertiary} />
+              <Text fontSize="$3" color={colors.textTertiary}>
+                {selectedLanguage.label}
+              </Text>
+            </XStack>
           </XStack>
         </YStack>
       </Card>
@@ -67,8 +84,8 @@ export function ReviewStep({
         <XStack gap="$3" alignItems="flex-start">
           <Lightbulb size={20} color="$blue10" />
           <Text fontSize="$3" color="$blue11" lineHeight="$2">
-            💡 Our AI will analyze your materials and create a structured course
-            with lessons, tests, and flashcards. This usually takes about 15
+            Our AI will analyze your materials and create a structured course
+            with lessons, tests and flashcards. This usually takes about 15
             seconds.
           </Text>
         </XStack>

@@ -3,6 +3,7 @@ import { AttachMaterialsStep } from "@/components/create-course/attach-materials
 import { CourseDetailsStep } from "@/components/create-course/course-details-step";
 import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
 import { ReviewStep } from "@/components/create-course/review-step";
+import { LanguageModal } from "@/components/modals";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
@@ -15,14 +16,17 @@ export default function CreateCourseScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     files: [] as string[],
     links: [] as string[],
     title: "",
     description: "",
+    contentLanguage: "en",
   });
 
   const handleNext = () => {
@@ -92,6 +96,8 @@ export default function CreateCourseScreen() {
                 <CourseDetailsStep
                   title={formData.title}
                   description={formData.description}
+                  contentLanguage={formData.contentLanguage}
+                  onLanguagePress={() => setLanguageModalOpen(true)}
                   onTitleChange={(title) => setFormData({ ...formData, title })}
                   onDescriptionChange={(description) =>
                     setFormData({ ...formData, description })
@@ -105,6 +111,7 @@ export default function CreateCourseScreen() {
                   description={formData.description}
                   filesCount={formData.files.length}
                   linksCount={formData.links.length}
+                  contentLanguage={formData.contentLanguage}
                 />
               )}
             </YStack>
@@ -143,6 +150,16 @@ export default function CreateCourseScreen() {
       </YStack>
 
       <CreatingCourseModal open={isCreating} onClose={handleCreatingClose} />
+
+      <LanguageModal
+        open={languageModalOpen}
+        onOpenChange={setLanguageModalOpen}
+        value={formData.contentLanguage}
+        onValueChange={(contentLanguage) =>
+          setFormData({ ...formData, contentLanguage })
+        }
+        title="Content Language"
+      />
     </>
   );
 }

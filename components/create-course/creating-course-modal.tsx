@@ -32,8 +32,8 @@ export function CreatingCourseModal({
       return;
     }
 
-    const stepDuration = 2000; // 2 seconds per step
-    const progressInterval = 50; // Update every 50ms
+    const stepDuration = 2000;
+    const progressInterval = 50;
 
     const progressTimer = setInterval(() => {
       setProgress((prev) => {
