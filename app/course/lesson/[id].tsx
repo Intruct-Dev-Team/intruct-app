@@ -6,19 +6,13 @@ import { mockCourses } from "@/mockdata/courses";
 import type { Course, Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, YStack, getTokenValue } from "tamagui";
 
 type LessonPhase = "material" | "flashcards" | "test";
 
 export default function LessonScreen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const colors = useThemeColors();
 
@@ -60,10 +54,9 @@ export default function LessonScreen() {
     setCurrentPhaseProgress(0);
   }, [phase]);
 
-  const progressWidth = useSharedValue(5);
-
   const progressPercent = useMemo(() => {
     if (!lesson) return 5;
+
     const flashcardsCount = lesson.flashcards?.length ?? 0;
     const questionsCount = lesson.questions?.length ?? 0;
     const totalSteps = 1 + flashcardsCount + questionsCount;
@@ -87,19 +80,6 @@ export default function LessonScreen() {
     return Math.max(5, (completedSteps / totalSteps) * 100);
   }, [lesson, completedPhases, phase, currentPhaseProgress]);
 
-  useEffect(() => {
-    progressWidth.value = withTiming(progressPercent, {
-      duration: 500,
-      easing: Easing.out(Easing.quad),
-    });
-  }, [progressPercent, progressWidth]);
-
-  const animatedProgressStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progressWidth.value}%`,
-    };
-  });
-
   if (!lesson) {
     return (
       <SafeAreaView
@@ -121,24 +101,31 @@ export default function LessonScreen() {
     setCompletedPhases((prev) =>
       prev.includes("material") ? prev : [...prev, "material"]
     );
+
     if ((lesson.flashcards?.length ?? 0) > 0) {
       setPhase("flashcards");
-    } else if ((lesson.questions?.length ?? 0) > 0) {
-      setPhase("test");
-    } else {
-      router.back();
+      return;
     }
+
+    if ((lesson.questions?.length ?? 0) > 0) {
+      setPhase("test");
+      return;
+    }
+
+    router.back();
   };
 
   const handleFlashcardsComplete = () => {
     setCompletedPhases((prev) =>
       prev.includes("flashcards") ? prev : [...prev, "flashcards"]
     );
+
     if ((lesson.questions?.length ?? 0) > 0) {
       setPhase("test");
-    } else {
-      router.back();
+      return;
     }
+
+    router.back();
   };
 
   const handleTestComplete = (_score: number) => {
@@ -157,6 +144,7 @@ export default function LessonScreen() {
             courseTitle={courseTitle}
             materials={lesson.materials || []}
             onComplete={handleMaterialComplete}
+            showHeader={false}
             nextLabel={
               (lesson.flashcards?.length ?? 0) > 0 ? "Start Flashcards" : "Next"
             }
@@ -188,12 +176,19 @@ export default function LessonScreen() {
     >
       <Stack.Screen
         options={{
-          title:
-            phase === "material"
-              ? "Lesson"
-              : phase === "flashcards"
-              ? "Flashcards"
-              : "Test",
+          title: "",
+          headerTitle: () => (
+            <YStack>
+              <Text fontWeight="700" color={colors.textPrimary} numberOfLines={1}>
+                {lesson.title}
+              </Text>
+              {courseTitle ? (
+                <Text color={colors.textSecondary} fontSize="$2" numberOfLines={1}>
+                  {courseTitle}
+                </Text>
+              ) : null}
+            </YStack>
+          ),
           headerBackTitle: "Back",
           headerStyle: {
             backgroundColor: resolveThemeColor(colors.background),
@@ -212,19 +207,10 @@ export default function LessonScreen() {
         width="100%"
         overflow="hidden"
       >
-        <Animated.View
-          style={[
-            {
-              height: "100%",
-              backgroundColor: resolveThemeColor(colors.primary),
-              shadowColor: resolveThemeColor(colors.primary),
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.8,
-              shadowRadius: 10,
-              elevation: 5,
-            },
-            animatedProgressStyle,
-          ]}
+        <YStack
+          height={4}
+          width={`${progressPercent}%`}
+          backgroundColor={colors.primary}
         />
       </YStack>
 

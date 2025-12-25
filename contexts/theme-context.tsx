@@ -1,4 +1,6 @@
+import { darkColors, lightColors } from "@/constants/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NativeModulesProxy } from "expo-modules-core";
 import {
   ReactNode,
   createContext,
@@ -7,7 +9,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useColorScheme as useSystemColorScheme } from "react-native";
+import { Platform, useColorScheme as useSystemColorScheme } from "react-native";
+import { getTokenValue } from "tamagui";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -58,6 +61,47 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     return themeMode;
   }, [themeMode, systemColorScheme]);
+
+  const resolveThemeColor = (color: string): string => {
+    if (color.startsWith("$")) {
+      return String(getTokenValue(color as never));
+    }
+    return color;
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const hasExpoNavigationBarNativeModule = Boolean(
+      (NativeModulesProxy as any).ExpoNavigationBar
+    );
+    if (!hasExpoNavigationBarNativeModule) return;
+
+    let NavigationBar: typeof import("expo-navigation-bar") | undefined;
+    try {
+      NavigationBar = require("expo-navigation-bar");
+    } catch {
+      return;
+    }
+    if (
+      !NavigationBar ||
+      typeof (NavigationBar as any).setBackgroundColorAsync !== "function" ||
+      typeof (NavigationBar as any).setButtonStyleAsync !== "function"
+    ) {
+      return;
+    }
+
+    const themeColors = activeTheme === "dark" ? darkColors : lightColors;
+    const backgroundColor = resolveThemeColor(themeColors.cardBackground);
+    const buttonStyle = activeTheme === "dark" ? "light" : "dark";
+
+    try {
+      void NavigationBar.setBackgroundColorAsync(backgroundColor);
+      void NavigationBar.setButtonStyleAsync(buttonStyle);
+    } catch {
+      // no-op
+    }
+  }, [activeTheme]);
 
   if (!isLoaded) {
     return null;

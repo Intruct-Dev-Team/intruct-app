@@ -30,7 +30,7 @@ export default function TestView({
   }, [activeTheme]);
 
   useEffect(() => {
-    onProgress(currentIndex);
+    onProgress(currentIndex + 1);
   }, [currentIndex, onProgress]);
 
   const handleSelectOption = (index: number) => {
@@ -53,9 +53,7 @@ export default function TestView({
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
-      const finalScore =
-        score + (selectedOption === currentQuestion.correctAnswer ? 1 : 0);
-      onComplete(finalScore);
+      onComplete(score);
     }
   };
 
@@ -84,10 +82,7 @@ export default function TestView({
   if (!currentQuestion) return null;
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
-    >
+    <YStack flex={1} padding="$4">
       <YStack marginBottom="$4">
         <H3 color={colors.textPrimary}>Test Your Knowledge</H3>
         <Text color={colors.textSecondary}>
@@ -95,114 +90,116 @@ export default function TestView({
         </Text>
       </YStack>
 
-      <YStack
-        backgroundColor={colors.cardBackground}
-        padding="$4"
-        borderRadius="$6"
-        marginBottom="$4"
-        borderWidth={1}
-        borderColor="$gray4"
-        shadowColor="$black"
-        shadowOpacity={0.05}
-        shadowRadius={4}
-      >
-        <Text
-          fontSize="$5"
-          fontWeight="600"
-          color={colors.textPrimary}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
+        <YStack
+          backgroundColor={colors.cardBackground}
+          padding="$4"
+          borderRadius="$6"
           marginBottom="$4"
-          lineHeight="$6"
+          borderWidth={1}
+          borderColor="$gray4"
+          shadowColor="$black"
+          shadowOpacity={0.05}
+          shadowRadius={4}
         >
-          {currentQuestion.question}
-        </Text>
+          <Text
+            fontSize="$5"
+            fontWeight="600"
+            color={colors.textPrimary}
+            marginBottom="$4"
+            lineHeight="$6"
+          >
+            {currentQuestion.question}
+          </Text>
 
-        <YStack gap="$3">
-          {currentQuestion.options?.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleSelectOption(index)}
-              disabled={isAnswered}
-            >
-              <XStack
-                padding="$3"
-                borderRadius="$4"
-                borderWidth={1}
-                backgroundColor={getOptionBackgroundColor(index)}
-                borderColor={getOptionBorderColor(index)}
-                alignItems="center"
-                justifyContent="space-between"
+          <YStack gap="$3">
+            {currentQuestion.options?.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleSelectOption(index)}
+                disabled={isAnswered}
               >
-                <Text
-                  flex={1}
-                  color={
-                    isAnswered && index === currentQuestion.correctAnswer
-                      ? "$green11"
-                      : isAnswered && selectedOption === index
-                      ? "$red11"
-                      : colors.textPrimary
-                  }
-                  fontSize="$4"
+                <XStack
+                  padding="$3"
+                  borderRadius="$4"
+                  borderWidth={1}
+                  backgroundColor={getOptionBackgroundColor(index)}
+                  borderColor={getOptionBorderColor(index)}
+                  alignItems="center"
+                  justifyContent="space-between"
                 >
-                  {option}
-                </Text>
-
-                {isAnswered && index === currentQuestion.correctAnswer && (
-                  <Text color="$green11" fontWeight="700">
-                    ✓
+                  <Text
+                    flex={1}
+                    color={
+                      isAnswered && index === currentQuestion.correctAnswer
+                        ? "$green11"
+                        : isAnswered && selectedOption === index
+                        ? "$red11"
+                        : colors.textPrimary
+                    }
+                    fontSize="$4"
+                  >
+                    {option}
                   </Text>
-                )}
-                {isAnswered &&
-                  selectedOption === index &&
-                  index !== currentQuestion.correctAnswer && (
-                    <Text color="$red11" fontWeight="700">
-                      ✕
+
+                  {isAnswered && index === currentQuestion.correctAnswer && (
+                    <Text color="$green11" fontWeight="700">
+                      ✓
                     </Text>
                   )}
-              </XStack>
-            </TouchableOpacity>
-          ))}
-        </YStack>
-
-        {isAnswered && (
-          <YStack
-            marginTop="$4"
-            padding="$3"
-            borderRadius="$4"
-            backgroundColor={
-              selectedOption === currentQuestion.correctAnswer
-                ? "$green2"
-                : "$red2"
-            }
-            borderWidth={1}
-            borderColor={
-              selectedOption === currentQuestion.correctAnswer
-                ? "$green6"
-                : "$red6"
-            }
-          >
-            <Text
-              fontWeight="700"
-              color={
-                selectedOption === currentQuestion.correctAnswer
-                  ? "$green11"
-                  : "$red11"
-              }
-              marginBottom="$1"
-            >
-              {selectedOption === currentQuestion.correctAnswer
-                ? "Correct!"
-                : "Incorrect"}
-            </Text>
-            <Text color={colors.textPrimary}>
-              {selectedOption !== currentQuestion.correctAnswer
-                ? "The correct answer is highlighted above."
-                : "Great job!"}
-            </Text>
+                  {isAnswered &&
+                    selectedOption === index &&
+                    index !== currentQuestion.correctAnswer && (
+                      <Text color="$red11" fontWeight="700">
+                        ✕
+                      </Text>
+                    )}
+                </XStack>
+              </TouchableOpacity>
+            ))}
           </YStack>
-        )}
-      </YStack>
 
-      <YStack marginTop="$2">
+          {isAnswered && (
+            <YStack
+              marginTop="$4"
+              padding="$3"
+              borderRadius="$4"
+              backgroundColor={
+                selectedOption === currentQuestion.correctAnswer
+                  ? "$green2"
+                  : "$red2"
+              }
+              borderWidth={1}
+              borderColor={
+                selectedOption === currentQuestion.correctAnswer
+                  ? "$green6"
+                  : "$red6"
+              }
+            >
+              <Text
+                fontWeight="700"
+                color={
+                  selectedOption === currentQuestion.correctAnswer
+                    ? "$green11"
+                    : "$red11"
+                }
+                marginBottom="$1"
+              >
+                {selectedOption === currentQuestion.correctAnswer
+                  ? "Correct!"
+                  : "Incorrect"}
+              </Text>
+              <Text color={colors.textPrimary}>
+                {selectedOption !== currentQuestion.correctAnswer
+                  ? "The correct answer is highlighted above."
+                  : "Great job!"}
+              </Text>
+            </YStack>
+          )}
+        </YStack>
+      </ScrollView>
+
+      <YStack marginTop="auto">
         {!isAnswered ? (
           <Button
             backgroundColor={colors.primary}
@@ -229,6 +226,6 @@ export default function TestView({
           </Button>
         )}
       </YStack>
-    </ScrollView>
+    </YStack>
   );
 }

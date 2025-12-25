@@ -1,3 +1,4 @@
+// FlashcardView
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import type { Flashcard } from "@/types";
@@ -35,7 +36,7 @@ export default function FlashcardView({
       backgroundColor:
         activeTheme === "dark" ? "$gray4" : colors.cardBackground,
     },
-    { resolveValues: "auto" }
+    { resolveValues: "value" }
   );
   const cardBackgroundColor =
     typeof resolvedCard.backgroundColor === "string"
@@ -43,8 +44,10 @@ export default function FlashcardView({
       : "";
 
   const resolvedShadow = useStyle(
-    { shadowColor: "$black" },
-    { resolveValues: "auto" }
+    {
+      shadowColor: "$black",
+    },
+    { resolveValues: "value" }
   );
   const shadowColor =
     typeof resolvedShadow.shadowColor === "string"
@@ -52,7 +55,7 @@ export default function FlashcardView({
       : undefined;
 
   useEffect(() => {
-    onProgress(currentIndex);
+    onProgress(currentIndex + 1);
   }, [currentIndex, onProgress]);
 
   const handleFlip = () => {
@@ -116,7 +119,7 @@ export default function FlashcardView({
         <TouchableOpacity
           activeOpacity={1}
           onPress={handleFlip}
-          style={[styles.cardWrapper, { shadowColor }]}
+          style={[styles.cardWrapper, shadowColor ? { shadowColor } : null]}
         >
           <Animated.View
             style={[

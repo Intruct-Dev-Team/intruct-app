@@ -1,4 +1,5 @@
-import { darkColors, lightColors, type ThemeColors } from "@/constants/colors";
+import type { ThemeColors } from "@/constants/colors";
+import { darkColors, lightColors } from "@/constants/colors";
 import { useTheme } from "@/contexts/theme-context";
 
 export function useThemeColors(): ThemeColors {
