@@ -6,13 +6,13 @@ import {
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
+import { PortalProvider } from "@tamagui/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PortalProvider } from "@tamagui/portal";
 import { TamaguiProvider, Theme } from "tamagui";
 
 export const unstable_settings = {
