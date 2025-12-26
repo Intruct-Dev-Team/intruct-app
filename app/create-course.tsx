@@ -1,9 +1,9 @@
 import { StepIndicator } from "@/components/common";
 import { AttachMaterialsStep } from "@/components/create-course/attach-materials-step";
 import { CourseDetailsStep } from "@/components/create-course/course-details-step";
-import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
 import { ReviewStep } from "@/components/create-course/review-step";
 import { LanguageModal } from "@/components/modals";
+import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
@@ -16,9 +16,9 @@ export default function CreateCourseScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const { startCourseGeneration } = useCourseGeneration();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [isCreating, setIsCreating] = useState(false);
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -33,7 +33,14 @@ export default function CreateCourseScreen() {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      setIsCreating(true);
+      startCourseGeneration({
+        title: formData.title,
+        description: formData.description,
+        files: formData.files,
+        links: formData.links,
+        contentLanguage: formData.contentLanguage,
+      });
+      router.replace("/(tabs)/courses" as any);
     }
   };
 
@@ -43,11 +50,6 @@ export default function CreateCourseScreen() {
     } else {
       router.back();
     }
-  };
-
-  const handleCreatingClose = () => {
-    setIsCreating(false);
-    router.back();
   };
 
   return (
@@ -79,8 +81,11 @@ export default function CreateCourseScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <ScrollView flex={1}>
-            <YStack padding="$4" gap="$4" paddingBottom="$6">
+          <ScrollView
+            flex={1}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 + 120 }}
+          >
+            <YStack padding="$4" gap="$4">
               <StepIndicator currentStep={currentStep} totalSteps={3} />
 
               {currentStep === 1 && (
@@ -148,8 +153,6 @@ export default function CreateCourseScreen() {
           </Button>
         </XStack>
       </YStack>
-
-      <CreatingCourseModal open={isCreating} onClose={handleCreatingClose} />
 
       <LanguageModal
         open={languageModalOpen}

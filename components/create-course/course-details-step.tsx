@@ -26,7 +26,7 @@ export function CourseDetailsStep({
     languageOptions[0];
 
   return (
-    <YStack gap="$4" flex={1}>
+    <YStack gap="$4">
       <YStack gap="$2">
         <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
           Course Details
@@ -49,7 +49,7 @@ export function CourseDetailsStep({
         />
       </YStack>
 
-      <YStack gap="$3" flex={1}>
+      <YStack gap="$3">
         <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
           Description
         </Text>
@@ -59,7 +59,6 @@ export function CourseDetailsStep({
           value={description}
           onChangeText={onDescriptionChange}
           backgroundColor={colors.cardBackground}
-          flex={1}
           minHeight={150}
           verticalAlign="top"
           textAlignVertical="top"

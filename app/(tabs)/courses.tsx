@@ -1,5 +1,6 @@
 import { CourseCard, CourseCardSkeleton } from "@/components/cards";
 import { PageHeader, ScreenContainer } from "@/components/layout";
+import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useRouter } from "expo-router";
@@ -8,6 +9,8 @@ import { H2, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
   const router = useRouter();
+  const { createdCourses, generatingCourses, openCreatingModal } =
+    useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +48,12 @@ export default function CoursesScreen() {
     );
   }
 
-  if (!courses || courses.length === 0) {
+  const allCourses = [...createdCourses, ...courses];
+
+  if (
+    (!allCourses || allCourses.length === 0) &&
+    (!generatingCourses || generatingCourses.length === 0)
+  ) {
     return (
       <ScreenContainer>
         <PageHeader
@@ -71,7 +79,17 @@ export default function CoursesScreen() {
           My Courses
         </H2>
 
-        {courses.map((course) => (
+        {generatingCourses.map((course) => (
+          <CourseCard
+            key={course.id}
+            title={course.title}
+            description="Generating course..."
+            progress={Math.round(course.progress)}
+            onPress={() => openCreatingModal(course.id)}
+          />
+        ))}
+
+        {allCourses.map((course) => (
           <CourseCard
             key={course.id}
             title={course.title}

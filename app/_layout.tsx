@@ -1,4 +1,6 @@
+import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CourseGenerationProvider } from "@/contexts/course-generation-context";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import config from "@/tamagui.config";
 import {
@@ -7,13 +9,13 @@ import {
   ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { PortalProvider } from "@tamagui/portal";
+import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import * as NavigationBar from "expo-navigation-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import "react-native-reanimated";
 import { Platform } from "react-native";
+import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
 
@@ -68,6 +70,8 @@ function RootLayoutContent() {
               />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             </Stack>
+
+            <CreatingCourseModal />
             <StatusBar style={activeTheme === "dark" ? "light" : "dark"} />
           </NavigationThemeProvider>
         </Theme>
@@ -81,7 +85,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <SafeAreaProvider>
         <AuthProvider>
-          <RootLayoutContent />
+          <CourseGenerationProvider>
+            <RootLayoutContent />
+          </CourseGenerationProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </ThemeProvider>

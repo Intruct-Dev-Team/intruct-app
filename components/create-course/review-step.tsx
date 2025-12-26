@@ -85,8 +85,8 @@ export function ReviewStep({
           <Lightbulb size={20} color="$blue10" />
           <Text fontSize="$3" color="$blue11" lineHeight="$2">
             Our AI will analyze your materials and create a structured course
-            with lessons, tests and flashcards. This usually takes about 15
-            seconds.
+            with lessons, tests, and flashcards. This usually takes a couple of
+            minutes.
           </Text>
         </XStack>
       </Card>

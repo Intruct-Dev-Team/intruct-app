@@ -1,78 +1,32 @@
+import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Check } from "@tamagui/lucide-icons";
-import { useEffect, useState } from "react";
 import { Modal, Pressable, StyleSheet } from "react-native";
-import { Progress, Spinner, Text, XStack, YStack } from "tamagui";
+import { Button, Progress, Spinner, Text, XStack, YStack } from "tamagui";
 
-interface CreatingCourseModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-const CREATION_STEPS = [
-  "Processing materials",
-  "Creating course plan",
-  "Writing lessons",
-];
-
-export function CreatingCourseModal({
-  open,
-  onClose,
-}: CreatingCourseModalProps) {
+export function CreatingCourseModal() {
   const colors = useThemeColors();
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const {
+    creatingModalOpen,
+    activeGeneratingCourseId,
+    creationSteps,
+    closeCreatingModal,
+    getGeneratingCourseById,
+  } = useCourseGeneration();
 
-  useEffect(() => {
-    if (!open) {
-      setCurrentStepIndex(0);
-      setProgress(0);
-      setIsComplete(false);
-      return;
-    }
+  const generatingCourse = activeGeneratingCourseId
+    ? getGeneratingCourseById(activeGeneratingCourseId)
+    : undefined;
 
-    const stepDuration = 2000;
-    const progressInterval = 50;
+  if (!creatingModalOpen) return null;
 
-    const progressTimer = setInterval(() => {
-      setProgress((prev) => {
-        const increment =
-          (progressInterval / (stepDuration * CREATION_STEPS.length)) * 100;
-        const newProgress = prev + increment;
-        if (newProgress >= 100) {
-          clearInterval(progressTimer);
-          setIsComplete(true);
-          setTimeout(() => {
-            onClose();
-          }, 1500);
-          return 100;
-        }
-        return newProgress;
-      });
-    }, progressInterval);
-
-    const stepTimer = setInterval(() => {
-      setCurrentStepIndex((prev) => {
-        if (prev < CREATION_STEPS.length - 1) {
-          return prev + 1;
-        }
-        clearInterval(stepTimer);
-        return prev;
-      });
-    }, stepDuration);
-
-    return () => {
-      clearInterval(progressTimer);
-      clearInterval(stepTimer);
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
+  const isComplete = generatingCourse?.isComplete ?? false;
+  const progress = generatingCourse?.progress ?? 0;
+  const currentStepIndex = generatingCourse?.currentStepIndex ?? 0;
 
   return (
-    <Modal visible={open} transparent animationType="fade">
-      <Pressable style={styles.backdrop}>
+    <Modal visible={creatingModalOpen} transparent animationType="fade">
+      <Pressable style={styles.backdrop} onPress={closeCreatingModal}>
         <Pressable onPress={(e) => e.stopPropagation()}>
           <YStack
             backgroundColor={colors.cardBackground}
@@ -83,6 +37,12 @@ export function CreatingCourseModal({
             alignItems="center"
             maxWidth={400}
           >
+            <XStack width="100%" justifyContent="flex-end">
+              <Button size="$3" chromeless onPress={closeCreatingModal}>
+                Close
+              </Button>
+            </XStack>
+
             <YStack
               width={80}
               height={80}
@@ -127,7 +87,7 @@ export function CreatingCourseModal({
               </Progress>
 
               <YStack gap="$2">
-                {CREATION_STEPS.map((step, index) => (
+                {creationSteps.map((step, index) => (
                   <XStack key={index} gap="$2" alignItems="center">
                     <YStack
                       width={20}
