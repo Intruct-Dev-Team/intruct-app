@@ -59,7 +59,9 @@ export function CourseDetailsStep({
           value={description}
           onChangeText={onDescriptionChange}
           backgroundColor={colors.cardBackground}
-          minHeight={150}
+          height={150}
+          flexGrow={0}
+          flexShrink={0}
           verticalAlign="top"
           textAlignVertical="top"
         />
