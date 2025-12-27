@@ -4,11 +4,15 @@ import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useRouter } from "expo-router";
+import { Plus } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
+import { Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H2, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { createdCourses, generatingCourses, openCreatingModal } =
     useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -17,6 +21,24 @@ export default function CoursesScreen() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const createCourseFab = (
+    <Pressable onPress={() => router.push("/create-course" as any)}>
+      <YStack
+        position="absolute"
+        right={16}
+        bottom={insets.bottom + 16}
+        width={56}
+        height={56}
+        borderRadius={16}
+        backgroundColor="$blue9"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Plus size={24} color="white" />
+      </YStack>
+    </Pressable>
+  );
 
   const loadData = async () => {
     setLoading(true);
@@ -32,19 +54,22 @@ export default function CoursesScreen() {
 
   if (loading) {
     return (
-      <ScreenContainer>
-        <PageHeader
-          title="Courses"
-          subtitle="All courses you are currently taking"
-        />
-        <YStack gap="$3">
-          <H2 fontSize="$7" fontWeight="700">
-            My Courses
-          </H2>
-          <CourseCardSkeleton />
-          <CourseCardSkeleton />
-        </YStack>
-      </ScreenContainer>
+      <YStack flex={1}>
+        <ScreenContainer>
+          <PageHeader
+            title="Courses"
+            subtitle="All courses you are currently taking"
+          />
+          <YStack gap="$3">
+            <H2 fontSize="$7" fontWeight="700">
+              My Courses
+            </H2>
+            <CourseCardSkeleton />
+            <CourseCardSkeleton />
+          </YStack>
+        </ScreenContainer>
+        {createCourseFab}
+      </YStack>
     );
   }
 
@@ -55,51 +80,57 @@ export default function CoursesScreen() {
     (!generatingCourses || generatingCourses.length === 0)
   ) {
     return (
-      <ScreenContainer>
-        <PageHeader
-          title="Courses"
-          subtitle="Your enrolled courses will appear here"
-        />
-        <YStack gap="$3">
-          <Text color="$color">You have no courses yet.</Text>
-        </YStack>
-      </ScreenContainer>
+      <YStack flex={1}>
+        <ScreenContainer>
+          <PageHeader
+            title="Courses"
+            subtitle="Your enrolled courses will appear here"
+          />
+          <YStack gap="$3">
+            <Text color="$color">You have no courses yet.</Text>
+          </YStack>
+        </ScreenContainer>
+        {createCourseFab}
+      </YStack>
     );
   }
 
   return (
-    <ScreenContainer>
-      <PageHeader
-        title="My Courses"
-        subtitle="All courses you are currently taking"
-      />
+    <YStack flex={1}>
+      <ScreenContainer>
+        <PageHeader
+          title="My Courses"
+          subtitle="All courses you are currently taking"
+        />
 
-      <YStack gap="$3">
-        <H2 fontSize="$7" fontWeight="700">
-          My Courses
-        </H2>
+        <YStack gap="$3">
+          <H2 fontSize="$7" fontWeight="700">
+            My Courses
+          </H2>
 
-        {generatingCourses.map((course) => (
-          <CourseCard
-            key={course.id}
-            title={course.title}
-            description="Generating course..."
-            progress={Math.round(course.progress)}
-            onPress={() => openCreatingModal(course.id)}
-          />
-        ))}
+          {generatingCourses.map((course) => (
+            <CourseCard
+              key={course.id}
+              title={course.title}
+              description="Generating course..."
+              progress={Math.round(course.progress)}
+              onPress={() => openCreatingModal(course.id)}
+            />
+          ))}
 
-        {allCourses.map((course) => (
-          <CourseCard
-            key={course.id}
-            title={course.title}
-            description={course.description}
-            lessons={course.lessons}
-            progress={course.progress}
-            onPress={() => router.push(`/course/${course.id}` as any)}
-          />
-        ))}
-      </YStack>
-    </ScreenContainer>
+          {allCourses.map((course) => (
+            <CourseCard
+              key={course.id}
+              title={course.title}
+              description={course.description}
+              lessons={course.lessons}
+              progress={course.progress}
+              onPress={() => router.push(`/course/${course.id}` as any)}
+            />
+          ))}
+        </YStack>
+      </ScreenContainer>
+      {createCourseFab}
+    </YStack>
   );
 }
