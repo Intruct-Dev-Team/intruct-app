@@ -3,7 +3,7 @@ import { AuthInput } from "@/components/auth/AuthInput";
 import { SocialButton } from "@/components/auth/SocialButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { Link, Stack, useRouter } from "expo-router";
+import { Link, Stack } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,7 +12,6 @@ import { LinearGradient } from "tamagui/linear-gradient"; // Check complexity
 
 export default function LoginScreen() {
   const colors = useThemeColors();
-  const router = useRouter();
   const { signIn, signInWithGoogle, isLoading: loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +19,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await signIn(email, password);
-    } catch (e) {
+    } catch {
       // Error handling is done in AuthContext via Alert
     }
   };

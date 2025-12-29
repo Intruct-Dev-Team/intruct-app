@@ -2,7 +2,7 @@ import { useTheme } from "@/contexts/theme-context";
 import { Switch } from "tamagui";
 
 export function ThemeToggle() {
-  const { themeMode, setThemeMode, activeTheme } = useTheme();
+  const { setThemeMode, activeTheme } = useTheme();
 
   const isDark = activeTheme === "dark";
 
