@@ -13,8 +13,7 @@ import { H2, Text, YStack } from "tamagui";
 export default function CoursesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { createdCourses, generatingCourses, openCreatingModal } =
-    useCourseGeneration();
+  const { localCourses, openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,12 +72,9 @@ export default function CoursesScreen() {
     );
   }
 
-  const allCourses = [...createdCourses, ...courses];
+  const allCourses = [...localCourses, ...courses];
 
-  if (
-    (!allCourses || allCourses.length === 0) &&
-    (!generatingCourses || generatingCourses.length === 0)
-  ) {
+  if (!allCourses || allCourses.length === 0) {
     return (
       <YStack flex={1}>
         <ScreenContainer>
@@ -108,26 +104,23 @@ export default function CoursesScreen() {
             My Courses
           </H2>
 
-          {generatingCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              title={course.title}
-              description="Generating course..."
-              progress={Math.round(course.progress)}
-              onPress={() => openCreatingModal(course.id)}
-            />
-          ))}
-
-          {allCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              title={course.title}
-              description={course.description}
-              lessons={course.lessons}
-              progress={course.progress}
-              onPress={() => router.push(`/course/${course.id}` as any)}
-            />
-          ))}
+          {allCourses.map((course) => {
+            return (
+              <CourseCard
+                key={course.id}
+                title={course.title}
+                description={course.description || ""}
+                status={course.status}
+                lessons={course.lessons}
+                progress={course.progress}
+                onPress={() =>
+                  course.status === "generating"
+                    ? openCreatingModal(course.id)
+                    : router.push(`/course/${course.id}` as any)
+                }
+              />
+            );
+          })}
         </YStack>
       </ScreenContainer>
       {createCourseFab}

@@ -23,7 +23,6 @@ export default function CreateCourseScreen() {
 
   const [formData, setFormData] = useState({
     files: [] as string[],
-    links: [] as string[],
     title: "",
     description: "",
     contentLanguage: "en",
@@ -37,10 +36,10 @@ export default function CreateCourseScreen() {
         title: formData.title,
         description: formData.description,
         files: formData.files,
-        links: formData.links,
+        links: [],
         contentLanguage: formData.contentLanguage,
       });
-      router.replace("/(tabs)/courses" as any);
+      router.replace("/(tabs)/courses" as never);
     }
   };
 
@@ -91,9 +90,7 @@ export default function CreateCourseScreen() {
               {currentStep === 1 && (
                 <AttachMaterialsStep
                   files={formData.files}
-                  links={formData.links}
                   onFilesChange={(files) => setFormData({ ...formData, files })}
-                  onLinksChange={(links) => setFormData({ ...formData, links })}
                 />
               )}
 
@@ -115,7 +112,6 @@ export default function CreateCourseScreen() {
                   title={formData.title}
                   description={formData.description}
                   filesCount={formData.files.length}
-                  linksCount={formData.links.length}
                   contentLanguage={formData.contentLanguage}
                 />
               )}

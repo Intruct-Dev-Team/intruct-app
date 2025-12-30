@@ -1,18 +1,12 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { languageOptions } from "@/mockdata/settings";
-import {
-  Globe,
-  Lightbulb,
-  Link as LinkIcon,
-  Paperclip,
-} from "@tamagui/lucide-icons";
+import { Globe, Lightbulb, Paperclip } from "@tamagui/lucide-icons";
 import { Card, Text, XStack, YStack } from "tamagui";
 
 interface ReviewStepProps {
   title: string;
   description: string;
   filesCount: number;
-  linksCount: number;
   contentLanguage: string;
 }
 
@@ -20,7 +14,6 @@ export function ReviewStep({
   title,
   description,
   filesCount,
-  linksCount,
   contentLanguage,
 }: ReviewStepProps) {
   const colors = useThemeColors();
@@ -57,12 +50,6 @@ export function ReviewStep({
               <Paperclip size={16} color={colors.textTertiary} />
               <Text fontSize="$3" color={colors.textTertiary}>
                 {filesCount} files attached
-              </Text>
-            </XStack>
-            <XStack gap="$2" alignItems="center">
-              <LinkIcon size={16} color={colors.textTertiary} />
-              <Text fontSize="$3" color={colors.textTertiary}>
-                {linksCount} links added
               </Text>
             </XStack>
             <XStack gap="$2" alignItems="center">

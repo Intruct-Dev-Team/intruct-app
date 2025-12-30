@@ -7,7 +7,8 @@ import { mockUser, mockUserStats } from "@/mockdata/user";
 import type { Course, SortOption, User, UserStats } from "@/types";
 
 // Simulate API delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 // User API
 export const userApi = {

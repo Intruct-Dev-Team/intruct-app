@@ -23,6 +23,8 @@ export interface Course {
   students?: number | null;
   // Public or private course flag
   isPublic?: boolean;
+  // Course generation status (backend-driven).
+  status?: "generating" | "ready";
 }
 
 export interface Module {

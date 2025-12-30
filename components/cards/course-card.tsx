@@ -6,6 +6,7 @@ interface CourseCardProps {
   description: string;
   lessons?: number;
   progress?: number;
+  status?: "generating" | "ready";
   onPress?: () => void;
 }
 
@@ -14,9 +15,12 @@ export function CourseCard({
   description,
   lessons,
   progress,
+  status,
   onPress,
 }: CourseCardProps) {
   const colors = useThemeColors();
+
+  const isGenerating = status === "generating";
 
   // `progress` represents number of completed lessons. Compute percent
   // for UI elements that expect percentage (0-100).
@@ -47,10 +51,10 @@ export function CourseCard({
           {title}
         </Text>
         <Text color={colors.textSecondary} fontSize="$3" lineHeight="$2">
-          {description}
+          {isGenerating ? "Создается курс…" : description}
         </Text>
 
-        {(lessons !== undefined || progress !== undefined) && (
+        {!isGenerating && (lessons !== undefined || progress !== undefined) && (
           <>
             <XStack gap="$2" alignItems="center" marginTop="$1">
               {lessons !== undefined && (

@@ -10,7 +10,7 @@ import {
   SettingsFooter,
   SettingsItem,
 } from "@/components/settings";
-import { UserProfileCard, UserProfileSkeleton } from "@/components/user";
+import { UserProfileCard } from "@/components/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
@@ -50,7 +50,7 @@ const iconMap: Record<string, any> = {
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const { user, isLoading: loading } = useAuth();
+  const { user } = useAuth();
 
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
@@ -70,20 +70,16 @@ export default function SettingsScreen() {
       />
 
       <YStack gap="$4">
-        {loading ? (
-          <UserProfileSkeleton />
-        ) : (
-          <UserProfileCard
-            name={
-              user?.user_metadata?.full_name ||
-              user?.email?.split("@")[0] ||
-              "User"
-            }
-            email={user?.email || ""}
-            avatarUrl={user?.user_metadata?.avatar_url}
-            onPress={() => router.push("/settings/profile")}
-          />
-        )}
+        <UserProfileCard
+          name={
+            user?.user_metadata?.full_name ||
+            user?.email?.split("@")[0] ||
+            "User"
+          }
+          email={user?.email || ""}
+          avatarUrl={user?.user_metadata?.avatar_url}
+          onPress={() => router.push("/settings/profile")}
+        />
 
         <SectionHeader title="Account Settings" />
         <SettingsCard>
