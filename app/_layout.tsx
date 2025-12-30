@@ -3,6 +3,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CourseGenerationProvider } from "@/contexts/course-generation-context";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import config from "@/tamagui.config";
+import NetInfo from "@react-native-community/netinfo";
 import {
   DarkTheme,
   DefaultTheme,
@@ -10,10 +11,10 @@ import {
 } from "@react-navigation/native";
 import { PortalProvider } from "@tamagui/portal";
 import * as NavigationBar from "expo-navigation-bar";
-import { Stack } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -25,6 +26,38 @@ export const unstable_settings = {
 
 function RootLayoutContent() {
   const { activeTheme } = useTheme();
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const isOffline = state.isConnected === false;
+      const currentPath = pathnameRef.current;
+
+      if (isOffline) {
+        if (currentPath !== "/no-internet") {
+          router.replace("/no-internet");
+        }
+        return;
+      }
+
+      if (currentPath === "/no-internet") {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/");
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [router]);
 
   useEffect(() => {
     // Set system UI colors based on theme
@@ -66,6 +99,10 @@ function RootLayoutContent() {
               />
               <Stack.Screen
                 name="create-course"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="no-internet"
                 options={{ headerShown: false }}
               />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
