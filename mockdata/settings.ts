@@ -1,4 +1,4 @@
-import { LanguageOption, SettingsMenuItem } from "@/types";
+import type { LanguageOption, SettingsMenuItem } from "@/types";
 
 export const languageOptions: LanguageOption[] = [
   { code: "en", label: "English (US)", flag: "🇺🇸" },
@@ -10,41 +10,20 @@ export const accountSettingsItems: SettingsMenuItem[] = [
   {
     id: "personal-info",
     title: "Personal Information",
-    description: "Update your name email and pr...",
+    description: "View your personal information",
     icon: "user",
     action: "navigate:personal-info",
   },
   {
-    id: "notifications",
-    title: "Notifications",
-    description: "Manage notification preferences",
-    icon: "bell",
-    action: "navigate:notifications",
-  },
-  {
-    id: "privacy",
-    title: "Privacy & Security",
-    description: "Password two-factor authenticat...",
-    icon: "lock",
-    action: "navigate:privacy",
-  },
-  {
     id: "billing",
     title: "Billing",
-    description: "Manage subscription and payme...",
+    description: "View plans and billing details",
     icon: "credit-card",
     action: "navigate:billing",
   },
 ];
 
 export const aiSettingsItems: SettingsMenuItem[] = [
-  {
-    id: "ai-model",
-    title: "AI Model Preference",
-    description: "Choose your preferred AI model",
-    icon: "sparkles",
-    action: "navigate:ai-model",
-  },
   {
     id: "content-language",
     title: "Content Language",

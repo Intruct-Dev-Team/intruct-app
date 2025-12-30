@@ -20,16 +20,13 @@ import {
   supportItems,
 } from "@/mockdata/settings";
 import {
-  Bell,
   ChevronRight,
   CreditCard,
   Globe,
   HelpCircle,
   Languages,
-  Lock,
   MessageCircle,
   Moon,
-  Sparkles,
   User as UserIcon,
 } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
@@ -38,10 +35,7 @@ import { YStack } from "tamagui";
 
 const iconMap: Record<string, any> = {
   user: UserIcon,
-  bell: Bell,
-  lock: Lock,
   "credit-card": CreditCard,
-  sparkles: Sparkles,
   languages: Languages,
   "help-circle": HelpCircle,
   "message-circle": MessageCircle,
@@ -61,6 +55,22 @@ export default function SettingsScreen() {
       "English (US)"
     );
   }, [selectedLanguage]);
+
+  const handleSettingsItemPress = (itemId: string) => {
+    switch (itemId) {
+      case "personal-info":
+        router.push("/settings/profile");
+        return;
+      case "billing":
+        router.push("/settings/billing");
+        return;
+      case "content-language":
+        setLanguageModalOpen(true);
+        return;
+      default:
+        return;
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -96,7 +106,7 @@ export default function SettingsScreen() {
                 rightElement={
                   <ChevronRight size={20} color={colors.textTertiary} />
                 }
-                onPress={() => console.log(item.action)}
+                onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < accountSettingsItems.length - 1}
               />
             );
@@ -114,11 +124,15 @@ export default function SettingsScreen() {
                   Icon ? <Icon size={20} color={colors.textSecondary} /> : null
                 }
                 title={item.title}
-                description={item.description}
+                description={
+                  item.id === "content-language"
+                    ? selectedLanguageLabel
+                    : item.description
+                }
                 rightElement={
                   <ChevronRight size={20} color={colors.textTertiary} />
                 }
-                onPress={() => console.log(item.action)}
+                onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < aiSettingsItems.length - 1}
               />
             );
