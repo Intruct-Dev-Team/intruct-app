@@ -117,7 +117,8 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
 
   const contentContainerStyle: any = {};
   contentContainerStyle.padding = 20;
-  contentContainerStyle.paddingBottom = 40;
+  contentContainerStyle.paddingBottom = 20;
+  contentContainerStyle.flexGrow = 1;
 
   const materialNodes: any[] = [];
   for (let index = 0; index < visibleMaterials.length; index += 1) {
@@ -143,27 +144,31 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
       style={scrollStyle}
       contentContainerStyle={contentContainerStyle}
     >
-      {showHeader ? (
-        <YStack marginBottom="$4">
-          <H2 fontWeight="700" color={colors.textPrimary}>
-            {title}
-          </H2>
-          <Text color={colors.textSecondary}>{courseTitle}</Text>
+      <YStack flex={1} justifyContent="space-between">
+        <YStack>
+          {showHeader ? (
+            <YStack marginBottom="$4">
+              <H2 fontWeight="700" color={colors.textPrimary}>
+                {title}
+              </H2>
+              <Text color={colors.textSecondary}>{courseTitle}</Text>
+            </YStack>
+          ) : null}
+
+          {materialNodes}
         </YStack>
-      ) : null}
 
-      {materialNodes}
-
-      <Button
-        backgroundColor={colors.primary}
-        color={colors.primaryText}
-        onPress={onComplete}
-        marginTop="$2"
-        size="$4"
-        borderRadius="$4"
-      >
-        {nextLabel}
-      </Button>
+        <Button
+          backgroundColor={colors.primary}
+          color={colors.primaryText}
+          onPress={onComplete}
+          marginTop="$2"
+          size="$4"
+          borderRadius="$4"
+        >
+          {nextLabel}
+        </Button>
+      </YStack>
     </ScrollView>
   );
 }

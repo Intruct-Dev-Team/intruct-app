@@ -1,7 +1,7 @@
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import type { TestQuestion } from "@/types";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
 import { Button, H3, Text, XStack, YStack } from "tamagui";
 
@@ -29,10 +29,6 @@ export default function TestView({
     return activeTheme === "dark" ? "$gray2" : "$gray2";
   }, [activeTheme]);
 
-  useEffect(() => {
-    onProgress(currentIndex + 1);
-  }, [currentIndex, onProgress]);
-
   const handleSelectOption = (index: number) => {
     if (isAnswered) return;
     setSelectedOption(index);
@@ -41,6 +37,10 @@ export default function TestView({
   const checkAnswer = () => {
     if (!currentQuestion || selectedOption === null) return;
     setIsAnswered(true);
+
+    // Progress should only advance after the user explicitly checks the answer.
+    onProgress(currentIndex + 1);
+
     if (selectedOption === currentQuestion.correctAnswer) {
       setScore((v) => v + 1);
     }
