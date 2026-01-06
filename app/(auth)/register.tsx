@@ -2,16 +2,18 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SocialButton } from "@/components/auth/SocialButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Link, Stack } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { LinearGradient } from "tamagui/linear-gradient";
 
 export default function RegisterScreen() {
   const colors = useThemeColors();
+  const { notify } = useNotifications();
   const { signUp, signInWithGoogle, isLoading: loading } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,14 +21,30 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!email || !password || !name) {
-      Alert.alert("Error", "Please fill in all fields");
+      notify({
+        type: "error",
+        title: "Missing information",
+        message: "Please fill in all fields.",
+      });
       return;
     }
 
     try {
       await signUp(email, password, name);
-    } catch (error: any) {
-      Alert.alert("Registration Error", error.message);
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message?: unknown }).message
+          : undefined;
+
+      notify({
+        type: "error",
+        title: "Registration failed",
+        message:
+          typeof message === "string" && message.trim().length > 0
+            ? message
+            : "Something went wrong. Please try again.",
+      });
     }
   };
 

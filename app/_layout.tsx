@@ -1,5 +1,7 @@
 import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
+import { NotificationsHost } from "@/components/notifications/NotificationsHost";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { CourseGenerationProvider } from "@/contexts/course-generation-context";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import config from "@/tamagui.config";
@@ -16,6 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
@@ -108,6 +111,7 @@ function RootLayoutContent() {
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             </Stack>
 
+            <NotificationsHost />
             <CreatingCourseModal />
             <StatusBar style={activeTheme === "dark" ? "light" : "dark"} />
           </NavigationThemeProvider>
@@ -119,14 +123,18 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <SafeAreaProvider>
-        <AuthProvider>
-          <CourseGenerationProvider>
-            <RootLayoutContent />
-          </CourseGenerationProvider>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <NotificationsProvider>
+            <AuthProvider>
+              <CourseGenerationProvider>
+                <RootLayoutContent />
+              </CourseGenerationProvider>
+            </AuthProvider>
+          </NotificationsProvider>
+        </SafeAreaProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

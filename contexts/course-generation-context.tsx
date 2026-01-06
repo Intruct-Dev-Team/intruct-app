@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 
+import { useNotifications } from "@/contexts/NotificationsContext";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 
@@ -37,6 +38,8 @@ export function CourseGenerationProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { notify } = useNotifications();
+
   const [localCourses, setLocalCourses] = useState<Course[]>([]);
   const [creatingModalOpen, setCreatingModalOpen] = useState(false);
   const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
@@ -65,6 +68,12 @@ export function CourseGenerationProvider({
 
   const startCourseGeneration = useCallback(
     (input: StartCourseGenerationInput) => {
+      notify({
+        type: "info",
+        title: "Creating course",
+        message: "Course generation started.",
+      });
+
       const now = new Date().toISOString();
       const id = `course_${Date.now()}`;
 
@@ -108,12 +117,19 @@ export function CourseGenerationProvider({
           );
         } catch (err) {
           console.error(err);
+          if (!isMountedRef.current) return;
+
+          notify({
+            type: "error",
+            title: "Course creation failed",
+            message: "Something went wrong. Please try again.",
+          });
         }
       })();
 
       return id;
     },
-    [openCreatingModal]
+    [notify, openCreatingModal]
   );
 
   const value = useMemo<CourseGenerationContextValue>(

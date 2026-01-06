@@ -1,180 +1,235 @@
 import {
-    GoogleSignin,
-    isErrorWithCode,
-    statusCodes,
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
 } from "@react-native-google-signin/google-signin";
-import { Session, User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Alert } from "react-native"; // Add Alert
+
+import { useNotifications } from "@/contexts/NotificationsContext";
+
 import { supabase } from "../utils/supabase";
 
 type AuthContextType = {
-    user: User | null;
-    session: Session | null;
-    signInWithGoogle: () => void;
-    signIn: (email: string, password: string) => Promise<void>; // Add signIn
-    signUp: (email: string, password: string, name: string) => Promise<void>; // Add signUp
-    signOut: () => void;
-    isLoading: boolean;
+  user: User | null;
+  session: Session | null;
+  signInWithGoogle: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
-    user: null,
-    session: null,
-    signInWithGoogle: () => { },
-    signIn: async () => { },
-    signUp: async () => { },
-    signOut: () => { },
-    isLoading: false,
+  user: null,
+  session: null,
+  signInWithGoogle: async () => {},
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+  isLoading: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
+function getSafeAuthErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim().length > 0)
+      return message;
+  }
+
+  return "Something went wrong. Please try again.";
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const rootSegment = useSegments()[0];
-    const router = useRouter();
+  const { notify } = useNotifications();
 
-    useEffect(() => {
-        // Configure Google Sign-In
-        GoogleSignin.configure({
-            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-            iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-            offlineAccess: true,
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const rootSegment = useSegments()[0];
+  const router = useRouter();
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      offlineAccess: true,
+    });
+
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession ? initialSession.user : null);
+      setIsLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession ? nextSession.user : null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setIsLoading(false);
+
+    if (error) {
+      notify({
+        type: "error",
+        title: "Login failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      throw error;
+    }
+
+    notify({ type: "success", title: "Welcome", message: "You’re signed in." });
+  };
+
+  const signUp = async (email: string, password: string, name: string) => {
+    setIsLoading(true);
+    const {
+      data: { session: newSession },
+      error,
+    } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      notify({
+        type: "error",
+        title: "Registration failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      throw error;
+    }
+
+    if (!newSession) {
+      notify({
+        type: "info",
+        title: "Check your email",
+        message: "Please confirm your email to finish registration.",
+      });
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      if (!userInfo.data?.idToken) {
+        throw new Error("No ID token present!");
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: userInfo.data.idToken,
+      });
+
+      if (error) {
+        notify({
+          type: "error",
+          title: "Google sign-in failed",
+          message: getSafeAuthErrorMessage(error),
         });
-
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session ? session.user : null);
-            setIsLoading(false);
+      } else {
+        notify({
+          type: "success",
+          title: "Welcome",
+          message: "You’re signed in.",
         });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session ? session.user : null);
-            setIsLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
-    const signIn = async (email: string, password: string) => {
-        setIsLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-        setIsLoading(false);
-        if (error) {
-            Alert.alert("Login Error", error.message);
-            throw error;
+      }
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            return;
+          case statusCodes.IN_PROGRESS:
+            return;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            notify({
+              type: "error",
+              title: "Google sign-in unavailable",
+              message: "Play services are not available on this device.",
+            });
+            return;
+          default:
+            break;
         }
-    };
+      }
 
-    const signUp = async (email: string, password: string, name: string) => {
-        setIsLoading(true);
-        const { data: { session }, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: name,
-                },
-            },
-        });
+      notify({
+        type: "error",
+        title: "Google sign-in failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      console.error("Google sign-in error", error);
+    }
+  };
 
-        setIsLoading(false);
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      await GoogleSignin.signOut();
+      notify({
+        type: "success",
+        title: "Signed out",
+        message: "You’re signed out.",
+      });
+    } catch (error) {
+      notify({
+        type: "error",
+        title: "Sign out failed",
+        message: "Couldn’t sign out. Please try again.",
+      });
+      console.error("Error signing out", error);
+    }
+  };
 
-        if (error) {
-            Alert.alert("Registration Error", error.message);
-            throw error;
-        }
+  useEffect(() => {
+    if (isLoading) return;
 
-        // If no session (email confirmation required), inform user
-        if (!session) {
-            Alert.alert("Success", "Please check your email for the confirmation link.");
-        }
-    };
+    const inAuthGroup = rootSegment === "(auth)";
 
-    const signInWithGoogle = async () => {
-        try {
-            await GoogleSignin.hasPlayServices();
-            const userInfo = await GoogleSignin.signIn();
+    if (!user && !inAuthGroup) {
+      router.replace("/(auth)/welcome");
+    } else if (user && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+  }, [user, rootSegment, isLoading, router]);
 
-            if (userInfo.data?.idToken) {
-                const { data, error } = await supabase.auth.signInWithIdToken({
-                    provider: 'google',
-                    token: userInfo.data.idToken,
-                });
-
-                if (error) {
-                    Alert.alert("Google Auth Error", error.message);
-                }
-            } else {
-                throw new Error('No ID token present!');
-            }
-        } catch (error) {
-            if (isErrorWithCode(error)) {
-                switch (error.code) {
-                    case statusCodes.SIGN_IN_CANCELLED:
-                        console.log("Sign in cancelled");
-                        break;
-                    case statusCodes.IN_PROGRESS:
-                        console.log("Sign in is in progress");
-                        break;
-                    case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-                        console.log("Play services not available");
-                        break;
-                    default:
-                        console.error("Something went wrong", error);
-                }
-            } else {
-                console.error("Non-Google error", error);
-            }
-        }
-    };
-
-    const signOut = async () => {
-        try {
-            await supabase.auth.signOut();
-            await GoogleSignin.signOut();
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
-    };
-
-    useEffect(() => {
-        if (isLoading) return;
-
-        const inAuthGroup = rootSegment === "(auth)";
-
-        if (!user && !inAuthGroup) {
-            // Redirect to the sign-in page.
-            router.replace("/(auth)/welcome");
-        } else if (user && inAuthGroup) {
-            // Redirect away from the sign-in page.
-            router.replace("/(tabs)");
-        }
-    }, [user, rootSegment, isLoading]);
-
-    return (
-        <AuthContext.Provider
-            value={{
-                user,
-                session,
-                signIn,
-                signUp,
-                signInWithGoogle,
-                signOut,
-                isLoading,
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        signOut,
+        isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }

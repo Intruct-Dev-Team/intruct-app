@@ -1,7 +1,8 @@
+import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Paperclip, X } from "@tamagui/lucide-icons";
 import * as DocumentPicker from "expo-document-picker";
-import { Alert, Pressable } from "react-native";
+import { Pressable } from "react-native";
 import { Card, Text, XStack, YStack } from "tamagui";
 
 interface AttachMaterialsStepProps {
@@ -14,6 +15,7 @@ export function AttachMaterialsStep({
   onFilesChange,
 }: AttachMaterialsStepProps) {
   const colors = useThemeColors();
+  const { notify } = useNotifications();
 
   const handleAttachFiles = async () => {
     try {
@@ -31,7 +33,10 @@ export function AttachMaterialsStep({
       if (picked.length === 0) return;
       onFilesChange([...files, ...picked]);
     } catch {
-      Alert.alert("File Picker", "Failed to pick files.");
+      notify({
+        type: "error",
+        message: "Couldn’t open file picker.",
+      });
     }
   };
 
