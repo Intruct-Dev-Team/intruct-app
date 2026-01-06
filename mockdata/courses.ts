@@ -97,7 +97,7 @@ export const mockCourses: Course[] = [
     author: "Intruct",
     rating: 4.5,
     students: 860,
-    isPublic: true,
+    isPublic: false,
     status: "ready",
     modules: [
       {

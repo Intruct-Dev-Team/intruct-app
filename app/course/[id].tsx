@@ -1,7 +1,8 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
-import { ArrowLeft, Play } from "@tamagui/lucide-icons";
+import { useNotifications } from "@/contexts/NotificationsContext";
+import { ArrowLeft, Globe, Play } from "@tamagui/lucide-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
@@ -10,10 +11,12 @@ import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 export default function CourseDetailPage() {
   const colors = useThemeColors();
   const router = useRouter();
+  const { notify } = useNotifications();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -29,6 +32,25 @@ export default function CourseDetailPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!course || publishing) return;
+
+    setPublishing(true);
+    try {
+      const updated = await coursesApi.setCoursePublication(course.id, true);
+      if (!updated) {
+        notify({ type: "error", message: "Couldn’t publish course." });
+        return;
+      }
+      setCourse(updated);
+      notify({ type: "success", message: "Course published." });
+    } catch {
+      notify({ type: "error", message: "Couldn’t publish course." });
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -70,6 +92,23 @@ export default function CourseDetailPage() {
                   icon={<ArrowLeft size={20} color={colors.textPrimary} />}
                   onPress={() => router.back()}
                 />
+
+                {!course.isPublic ? (
+                  <Button
+                    marginLeft="auto"
+                    size="$3"
+                    backgroundColor={colors.primary}
+                    color={colors.primaryText}
+                    borderRadius="$6"
+                    fontWeight="700"
+                    disabled={publishing}
+                    opacity={publishing ? 0.7 : 1}
+                    icon={<Globe size={16} color={colors.primaryText} />}
+                    onPress={handlePublish}
+                  >
+                    Publish
+                  </Button>
+                ) : null}
               </XStack>
 
               <YStack marginTop="$2">

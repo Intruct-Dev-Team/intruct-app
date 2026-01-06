@@ -47,6 +47,25 @@ export const coursesApi = {
     return allCourses.find((course) => course.id === id) || null;
   },
 
+  async setCoursePublication(
+    courseId: string,
+    isPublic: boolean
+  ): Promise<Course | null> {
+    await delay(400);
+
+    const updatedAt = new Date().toISOString();
+
+    const updateInList = (list: Course[]): Course | null => {
+      const idx = list.findIndex((c) => c.id === courseId);
+      if (idx === -1) return null;
+      const updated: Course = { ...list[idx], isPublic, updatedAt };
+      list[idx] = updated;
+      return updated;
+    };
+
+    return updateInList(mockCourses) ?? updateInList(mockFeaturedCourses);
+  },
+
   async createCourse(data: {
     title: string;
     description: string;
