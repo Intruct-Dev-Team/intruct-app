@@ -1,4 +1,409 @@
-import { Course, CourseCategory } from "@/types";
+import type { Course, CourseCategory } from "@/types";
+
+const now = new Date().toISOString();
+
+export const mockCourses: Course[] = [
+  {
+    id: "course-1",
+    title: "React Native Mastery",
+    description: "Build real-world mobile apps with React Native and Expo.",
+    lessons: 2,
+    progress: 0,
+    createdAt: now,
+    updatedAt: now,
+    category: "mobile",
+    author: "Intruct",
+    rating: 4.7,
+    students: 1240,
+    isPublic: true,
+    status: "ready",
+    modules: [
+      {
+        id: "module-1",
+        title: "Foundations",
+        lessons: [
+          {
+            id: "lesson-1",
+            title: "Introduction to React Native",
+            materials: [
+              {
+                id: "lesson-1-mat-1",
+                title: "What is React Native?",
+                content:
+                  "# What is React Native?\n\nReact Native lets you build native apps using JavaScript and React.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-1-q-1",
+                question: "React Native maps your UI to…",
+                type: "multiple-choice",
+                options: [
+                  "HTML elements",
+                  "Native UI components",
+                  "Flash objects",
+                ],
+                correctAnswer: 1,
+                explanation:
+                  "React Native renders to native platform UI components.",
+              },
+              {
+                id: "lesson-1-q-2",
+                question: "Expo is…",
+                type: "multiple-choice",
+                options: [
+                  "A database",
+                  "A toolchain for building React Native apps",
+                  "A CSS framework",
+                ],
+                correctAnswer: 1,
+              },
+            ],
+          },
+          {
+            id: "lesson-2",
+            title: "Components and Styling",
+            materials: [
+              {
+                id: "lesson-2-mat-1",
+                title: "Core components",
+                content:
+                  "# Core components\n\nYou compose screens from components like View, Text, and Pressable.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-2-q-1",
+                question: "Which prop controls text truncation?",
+                type: "multiple-choice",
+                options: ["numberOfLines", "maxLines", "truncate"],
+                correctAnswer: 0,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "course-2",
+    title: "TypeScript Essentials",
+    description: "Learn practical TypeScript for modern React projects.",
+    lessons: 1,
+    progress: 0,
+    createdAt: now,
+    updatedAt: now,
+    category: "typescript",
+    author: "Intruct",
+    rating: 4.5,
+    students: 860,
+    isPublic: true,
+    status: "ready",
+    modules: [
+      {
+        id: "module-2",
+        title: "Basics",
+        lessons: [
+          {
+            id: "lesson-3",
+            title: "Types and Interfaces",
+            materials: [
+              {
+                id: "lesson-3-mat-1",
+                title: "Structural typing",
+                content:
+                  "# Structural typing\n\nTypeScript uses structural typing, so shape matters more than names.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-3-q-1",
+                question: "In TypeScript, type compatibility is primarily…",
+                type: "multiple-choice",
+                options: ["Nominal", "Structural", "Dynamic"],
+                correctAnswer: 1,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const mockFeaturedCourses: Course[] = [];
+
+export const mockCatalogCourses: Course[] = [
+  ...mockCourses,
+  ...mockFeaturedCourses,
+];
+
+export const courseCategories: CourseCategory[] = [
+  { id: "all", name: "All", slug: "all" },
+  { id: "mobile", name: "Mobile", slug: "mobile" },
+  { id: "typescript", name: "TypeScript", slug: "typescript" },
+];
+
+/* Legacy mock data removed/disabled
+export const mockCourses: Course[] = [
+  {
+    id: "1",
+    title: "React Native Mastery",
+    description: "Go from zero to hero with React Native. Build real-world apps.",
+    lessons: 4,
+    modules: [
+      {
+        id: "m-1-1",
+        title: "Module 1: Foundations",
+        lessons: [
+          {
+            id: "1-l-1",
+            title: "1.1 Introduction to React Native",
+            materials: [
+              {
+                id: "1-l-1-m-1",
+                title: "What is React Native?",
+                content:
+                  "# What is React Native?\n\nThis lesson introduces the basics of React Native.",
+              },
+            ],
+            questions: [
+              {
+                id: "1-l-1-q-1",
+                question: "React Native maps JSX components to...",
+                type: "multiple-choice",
+                options: [
+                  "Web Views",
+                  "Native UI Widgets",
+                  "HTML Elements",
+                  "Flash Objects",
+                ],
+                correctAnswer: 1,
+                explanation: "React Native renders real native UI widgets.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    progress: 0,
+    isPublic: true,
+    rating: 4.8,
+    students: 1205,
+    createdAt: "2025-01-01T10:00:00Z",
+    updatedAt: now,
+    category: "development",
+    author: "Intruct",
+  },
+];
+* /
+import type { Course, CourseCategory } from "@/types";
+
+const now = new Date().toISOString();
+
+export const mockCourses: Course[] = [
+  {
+    id: "course-1",
+    title: "React Native Mastery",
+    description: "Build real-world mobile apps with React Native and Expo.",
+    lessons: 2,
+    createdAt: now,
+    updatedAt: now,
+    category: "mobile",
+    author: "Intruct",
+    rating: 4.7,
+    students: 1240,
+    isPublic: true,
+    status: "ready",
+    modules: [
+      {
+        id: "module-1",
+        title: "Foundations",
+        lessons: [
+          {
+            id: "lesson-1",
+            title: "Introduction to React Native",
+            materials: [
+              {
+                id: "lesson-1-mat-1",
+                title: "What is React Native?",
+                content:
+                  "# What is React Native?\n\nReact Native lets you build native apps using JavaScript and React.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-1-q-1",
+                question: "React Native maps your UI to…",
+                type: "multiple-choice",
+                options: ["HTML elements", "Native UI components", "Flash objects"],
+                correctAnswer: 1,
+                explanation:
+                  "React Native renders to native platform UI components.",
+              },
+              {
+                id: "lesson-1-q-2",
+                question: "Expo is…",
+                type: "multiple-choice",
+                options: [
+                  "A database",
+                  "A toolchain for building React Native apps",
+                  "A CSS framework",
+                ],
+                correctAnswer: 1,
+              },
+            ],
+          },
+          {
+            id: "lesson-2",
+            title: "Components and Styling",
+            materials: [
+              {
+                id: "lesson-2-mat-1",
+                title: "Core components",
+                content:
+                  "# Core components\n\nYou compose screens from components like View, Text, and Pressable.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-2-q-1",
+                question: "Which prop controls text truncation?",
+                type: "multiple-choice",
+                options: ["numberOfLines", "maxLines", "truncate"],
+                correctAnswer: 0,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "course-2",
+    title: "TypeScript Essentials",
+    description: "Learn practical TypeScript for modern React projects.",
+    lessons: 1,
+    createdAt: now,
+    updatedAt: now,
+    category: "typescript",
+    author: "Intruct",
+    rating: 4.5,
+    students: 860,
+    isPublic: true,
+    status: "ready",
+    modules: [
+      {
+        id: "module-2",
+        title: "Basics",
+        lessons: [
+          {
+            id: "lesson-3",
+            title: "Types and Interfaces",
+            materials: [
+              {
+                id: "lesson-3-mat-1",
+                title: "Structural typing",
+                content:
+                  "# Structural typing\n\nTypeScript uses structural typing, so shape matters more than names.\n",
+              },
+            ],
+            questions: [
+              {
+                id: "lesson-3-q-1",
+                question: "In TypeScript, type compatibility is primarily…",
+                type: "multiple-choice",
+                options: ["Nominal", "Structural", "Dynamic"],
+                correctAnswer: 1,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const mockFeaturedCourses: Course[] = [];
+
+export const mockCatalogCourses: Course[] = [
+  ...mockCourses,
+  ...mockFeaturedCourses,
+];
+
+export const courseCategories: CourseCategory[] = [
+  { id: "all", name: "All", slug: "all" },
+  { id: "mobile", name: "Mobile", slug: "mobile" },
+  { id: "typescript", name: "TypeScript", slug: "typescript" },
+];
+const now = new Date().toISOString();
+
+export const mockCourses = [
+  {
+    id: "1",
+    title: "React Native Mastery",
+    description: "Go from zero to hero with React Native. Build real-world apps.",
+    lessons: 4,
+    modules: [
+      {
+        id: "m-1-1",
+        title: "Module 1: Foundations",
+        lessons: [
+          {
+            id: "1-l-1",
+            title: "1.1 Introduction to React Native",
+            materials: [
+              {
+                id: "1-l-1-m-1",
+                title: "What is React Native?",
+                content:
+                  "# What is React Native?\n\nThis lesson introduces the basics of React Native.",
+              },
+            ],
+            questions: [
+              {
+                id: "1-l-1-q-1",
+                question: "React Native maps JSX components to...",
+                type: "multiple-choice",
+                options: [
+                  "Web Views",
+                  "Native UI Widgets",
+                  "HTML Elements",
+                  "Flash Objects",
+                ],
+                correctAnswer: 1,
+                explanation: "React Native renders real native UI widgets.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    progress: 0,
+    isPublic: true,
+    rating: 4.8,
+    students: 1205,
+    createdAt: "2025-01-01T10:00:00Z",
+    updatedAt: now,
+    category: "development",
+    author: "Intruct",
+  },
+];
+
+export const mockFeaturedCourses = [];
+
+export const mockCatalogCourses = [...mockCourses];
+
+export const courseCategories = [
+  { id: "all", name: "All", slug: "all" },
+  { id: "development", name: "Development", slug: "development" },
+  { id: "design", name: "Design", slug: "design" },
+  { id: "business", name: "Business", slug: "business" },
+];
+
+/*
+Legacy mock data (kept as commented text to avoid template-literal parsing issues in expo lint).
+This block can be removed later if desired.
 
 export const mockCourses: Course[] = [
   {
@@ -44,30 +449,6 @@ const HelloWorld = () => {
       <Text>Hello, world!</Text>
     </View>
   );
-}
-export default HelloWorld;
-\`\`\`
-`,
-              },
-            ],
-            flashcards: [
-              {
-                id: "1-l-1-fc-1",
-                front: "Which thread runs the application logic in React Native?",
-                back: "The JavaScript Thread.",
-              },
-              {
-                id: "1-l-1-fc-2",
-                front: "What is the equivalent of a <div> in React Native?",
-                back: "<View>",
-              },
-              {
-                id: "1-l-1-fc-3",
-                front: "Do we use CSS in React Native?",
-                back: "No, we use JavaScript objects for styling, typically with StyleSheet.create.",
-              },
-            ],
-            questions: [
               {
                 id: "1-l-1-q-1",
                 question: "React Native maps JSX components to...",
@@ -85,9 +466,8 @@ export default HelloWorld;
               {
                 id: "1-l-1-q-2",
                 question:
-                  "True or False: React Native apps are hybrid apps running in a WebView.",
-                type: "true-false",
-                options: ["True", "False"],
+                content:
+                  "# What is React Native?\n\nThis lesson introduces the basics of React Native and how it renders native UI from JavaScript.",
                 correctAnswer: 1,
                 explanation:
                   "False. React Native apps render native views, unlike hybrid apps like Ionic/Cordova.",
@@ -105,29 +485,11 @@ export default HelloWorld;
 
 ## View
 The most fundamental component for building a UI, \`View\` is a container that supports layout with flexbox, style, some touch handling, and accessibility controls.
-
-## Text
-A React component for displaying text. It supports nesting, styling, and touch handling.
-
-## Image
-A React component for displaying different types of images, including network images, static resources, temporary local images, and images from local disk, such as the camera roll.
-
-\`\`\`tsx
-<View>
-  <Image source={require('./logo.png')} />
-  <Text>React Native</Text>
-</View>
-\`\`\`
-`,
-              },
-            ],
-            flashcards: [
               {
                 id: "1-l-2-fc-1",
                 front: "What component is used to display images?",
-                back: "<Image>",
-              },
-              {
+                content:
+                  "# Core Components\n\nCore components like View and Text form the building blocks of React Native UIs.",
                 id: "1-l-2-fc-2",
                 front: "Can <Text> components be nested?",
                 back: "Yes, nested Text components inherit styles from their parents.",
@@ -142,9 +504,8 @@ A React component for displaying different types of images, including network im
               {
                 id: "1-l-2-q-1",
                 question: "Which component handles scrolling?",
-                type: "multiple-choice",
-                options: ["View", "ScrollView", "Div", "Container"],
-                correctAnswer: 1,
+                content:
+                  "# React Navigation\n\nThis lesson covers basic stack navigation concepts.",
                 explanation:
                   "The View component is static. ScrollView (or lists) are required for scrolling content.",
               },
@@ -195,18 +556,6 @@ function App() {
   );
 }
 \`\`\`
-`,
-              },
-            ],
-            flashcards: [
-              {
-                id: "1-l-3-fc-1",
-                front: "What library is standard for navigation in RN?",
-                back: "React Navigation",
-              },
-              {
-                id: "1-l-3-fc-2",
-                front: "What does 'Stack' navigation mimic?",
                 back: "The default browser history or native push/pop transitions.",
               },
             ],
@@ -214,9 +563,8 @@ function App() {
               {
                 id: "1-l-3-q-1",
                 question:
-                  "What component wraps the entire navigation structure?",
-                type: "short-answer",
-                correctAnswer: "NavigationContainer",
+                content:
+                  "# Passing Parameters\n\nYou can pass params to a route using the second argument of navigation helpers.",
                 explanation:
                   "NavigationContainer manages our navigation tree and contains the navigation state.",
               },
@@ -229,9 +577,8 @@ function App() {
               {
                 id: "1-l-4-m-1",
                 title: "Route Params",
-                content: `# Passing Parameters
-
-You pass params to a route by putting them in an object as a second parameter to the \`navigation.navigate\` function:
+                content:
+                  "# Generics\n\nThis lesson introduces constraints and default type parameters.",
 
 \`\`\`tsx
 navigation.navigate('Details', {
@@ -249,13 +596,6 @@ function DetailsScreen({ route, navigation }) {
 }
 \`\`\`
 `,
-              },
-            ],
-            flashcards: [
-              {
-                id: "1-l-4-fc-1",
-                front: "How do you access params in a screen?",
-                back: "Using the `route.params` object.",
               },
             ],
             questions: [
@@ -287,13 +627,6 @@ function DetailsScreen({ route, navigation }) {
   },
 ];
 
-export const mockCatalogCourses: Course[] = [
-  {
-    id: "2",
-    title: "Advanced TypeScript Patterns",
-    description: "Deep dive into TypeScript's most powerful features.",
-    lessons: 4,
-    modules: [
       {
         id: "m-2-1",
         title: "Module 1: Type System Power",
@@ -320,18 +653,6 @@ function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
   return arg;
 }
 \`\`\`
-
-## Default Types
-\`\`\`ts
-function create<Type = string>(arg: Type): Type {
-  return arg;
-}
-\`\`\`
-`,
-              },
-            ],
-            flashcards: [
-              {
                 id: "2-l-1-fc-1",
                 front: "What keyword is used to constrain a generic?",
                 back: "extends",
@@ -346,9 +667,8 @@ function create<Type = string>(arg: Type): Type {
               {
                 id: "2-l-1-q-1",
                 question: "Why use generic constraints?",
-                type: "multiple-choice",
-                options: [
-                  "To allow any type",
+                content:
+                  "# Mapped Types\n\nMapped types iterate over keys to produce new types.",
                   "To ensure the type has certain properties",
                   "To make the code faster",
                 ],
@@ -385,14 +705,7 @@ type FeatureOptions = OptionsFlags<FeatureFlags>;
  *    darkMode: boolean;
  *    newUserProfile: boolean;
  * }
- */
-\`\`\`
-`,
-              },
-            ],
-            flashcards: [
-              {
-                id: "2-l-2-fc-1",
+  * /
                 front: "What operator is used to get keys of a type?",
                 back: "keyof",
               },
@@ -401,9 +714,8 @@ type FeatureOptions = OptionsFlags<FeatureFlags>;
               {
                 id: "2-l-2-q-1",
                 question: "Mapped types iterate over...",
-                type: "multiple-choice",
-                options: ["Values", "Keys", "Constructors"],
-                correctAnswer: 1,
+                content:
+                  "# Pick and Omit\n\nPick selects properties; Omit removes properties.",
                 explanation: "They iterate over keys using `[P in keyof T]`.",
               },
             ],
@@ -436,18 +748,6 @@ interface Todo {
 type TodoPreview = Pick<Todo, "title" | "completed">;
 \`\`\`
 
-## Omit
-Constructs a type by picking all properties from Type and then removing Keys.
-
-\`\`\`ts
-type TodoInfo = Omit<Todo, "completed">;
-\`\`\`
-`,
-              },
-            ],
-            flashcards: [
-              {
-                id: "2-l-3-fc-1",
                 front: "What does Pick<T, K> do?",
                 back: "Selects a subset of properties (K) from T.",
               },
@@ -461,9 +761,8 @@ type TodoInfo = Omit<Todo, "completed">;
               {
                 id: "2-l-3-q-1",
                 question: "Which one allows you to exclude fields?",
-                type: "short-answer",
-                correctAnswer: "Omit",
-                explanation: "Omit is used to exclude specific fields from a type.",
+                content:
+                  "# Partial and Required\n\nPartial makes properties optional; Required makes them required.",
               },
             ],
           },
@@ -484,18 +783,6 @@ function updateTodo(todo: Todo, fieldsToUpdate: Partial<Todo>) {
   return { ...todo, ...fieldsToUpdate };
 }
 \`\`\`
-
-## Required<Type>
-Constructs a type consisting of all properties of Type set to required.
-`,
-              },
-            ],
-            flashcards: [
-              {
-                id: "2-l-4-fc-1",
-                front: "What makes all properties optional?",
-                back: "Partial<T>",
-              },
               {
                 id: "2-l-4-fc-2",
                 front: "What makes all properties required?",
@@ -535,3 +822,5 @@ export const courseCategories: CourseCategory[] = [
   { id: "design", name: "Design", slug: "design" },
   { id: "business", name: "Business", slug: "business" },
 ];
+
+*/
