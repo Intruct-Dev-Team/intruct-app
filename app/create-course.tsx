@@ -5,9 +5,10 @@ import { ReviewStep } from "@/components/create-course/review-step";
 import { LanguageModal } from "@/components/modals";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { settingsApi } from "@/services/api";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, ScrollView, XStack, YStack } from "tamagui";
@@ -27,6 +28,26 @@ export default function CreateCourseScreen() {
     description: "",
     contentLanguage: "en",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const settings = await settingsApi.getSettings();
+      if (cancelled) return;
+
+      setFormData((prev) => {
+        if (prev.contentLanguage !== "en") return prev;
+        return { ...prev, contentLanguage: settings.defaultCourseLanguage };
+      });
+    })().catch(() => {
+      // Non-blocking: keep default
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleNext = () => {
     if (currentStep < 3) {

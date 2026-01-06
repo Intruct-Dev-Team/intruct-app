@@ -19,6 +19,7 @@ import {
   languageOptions,
   supportItems,
 } from "@/mockdata/settings";
+import { settingsApi } from "@/services/api";
 import {
   ChevronRight,
   CreditCard,
@@ -30,10 +31,13 @@ import {
   User as UserIcon,
 } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import type { ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { YStack } from "tamagui";
 
-const iconMap: Record<string, any> = {
+type IconComponent = ComponentType<{ size?: number; color?: string }>;
+
+const iconMap: Record<string, IconComponent> = {
   user: UserIcon,
   "credit-card": CreditCard,
   languages: Languages,
@@ -41,20 +45,50 @@ const iconMap: Record<string, any> = {
   "message-circle": MessageCircle,
 };
 
+type LanguageModalTarget = "ui" | "content" | null;
+
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const { user } = useAuth();
 
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [languageModalTarget, setLanguageModalTarget] =
+    useState<LanguageModalTarget>(null);
 
-  const selectedLanguageLabel = useMemo(() => {
+  const [uiLanguage, setUiLanguage] = useState("en");
+  const [defaultCourseLanguage, setDefaultCourseLanguage] = useState("en");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const settings = await settingsApi.getSettings();
+      if (cancelled) return;
+      setUiLanguage(settings.language);
+      setDefaultCourseLanguage(settings.defaultCourseLanguage);
+    })().catch(() => {
+      // Non-blocking: screen can still function with defaults
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const uiLanguageLabel = useMemo(() => {
     return (
-      languageOptions.find((l) => l.code === selectedLanguage)?.label ||
+      languageOptions.find((l) => l.code === uiLanguage)?.label ||
       "English (US)"
     );
-  }, [selectedLanguage]);
+  }, [uiLanguage]);
+
+  const defaultCourseLanguageLabel = useMemo(() => {
+    return (
+      languageOptions.find((l) => l.code === defaultCourseLanguage)?.label ||
+      "English (US)"
+    );
+  }, [defaultCourseLanguage]);
 
   const handleSettingsItemPress = (itemId: string) => {
     switch (itemId) {
@@ -64,12 +98,35 @@ export default function SettingsScreen() {
       case "billing":
         router.push("/settings/billing");
         return;
+      case "help-center":
+        router.push("/settings/help-center");
+        return;
+      case "contact-support":
+        router.push("/settings/contact-support");
+        return;
       case "content-language":
+        setLanguageModalTarget("content");
         setLanguageModalOpen(true);
         return;
       default:
         return;
     }
+  };
+
+  const modalValue =
+    languageModalTarget === "ui" ? uiLanguage : defaultCourseLanguage;
+
+  const handleModalValueChange = (languageCode: string) => {
+    if (languageModalTarget === "ui") {
+      setUiLanguage(languageCode);
+      settingsApi.updateSettings({ language: languageCode }).catch(() => {});
+      return;
+    }
+
+    setDefaultCourseLanguage(languageCode);
+    settingsApi
+      .updateSettings({ defaultCourseLanguage: languageCode })
+      .catch(() => {});
   };
 
   return (
@@ -126,7 +183,7 @@ export default function SettingsScreen() {
                 title={item.title}
                 description={
                   item.id === "content-language"
-                    ? selectedLanguageLabel
+                    ? defaultCourseLanguageLabel
                     : item.description
                 }
                 rightElement={
@@ -151,11 +208,14 @@ export default function SettingsScreen() {
           <SettingsItem
             icon={<Globe size={20} color={colors.textSecondary} />}
             title="Language"
-            description={selectedLanguageLabel}
+            description={uiLanguageLabel}
             rightElement={
               <ChevronRight size={20} color={colors.textTertiary} />
             }
-            onPress={() => setLanguageModalOpen(true)}
+            onPress={() => {
+              setLanguageModalTarget("ui");
+              setLanguageModalOpen(true);
+            }}
           />
         </SettingsCard>
 
@@ -174,7 +234,7 @@ export default function SettingsScreen() {
                 rightElement={
                   <ChevronRight size={20} color={colors.textTertiary} />
                 }
-                onPress={() => console.log(item.action)}
+                onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < supportItems.length - 1}
               />
             );
@@ -186,9 +246,15 @@ export default function SettingsScreen() {
 
       <LanguageModal
         open={languageModalOpen}
-        onOpenChange={setLanguageModalOpen}
-        value={selectedLanguage}
-        onValueChange={setSelectedLanguage}
+        onOpenChange={(open) => {
+          setLanguageModalOpen(open);
+          if (!open) setLanguageModalTarget(null);
+        }}
+        value={modalValue}
+        onValueChange={handleModalValueChange}
+        title={
+          languageModalTarget === "ui" ? "App Language" : "Content Language"
+        }
       />
     </ScreenContainer>
   );

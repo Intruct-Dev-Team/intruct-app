@@ -74,6 +74,7 @@ export interface UserStats {
 export interface AppSettings {
   theme: "light" | "dark" | "system";
   language: string;
+  defaultCourseLanguage: string;
   notifications: boolean;
 }
 

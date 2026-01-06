@@ -4,7 +4,8 @@ import {
   mockFeaturedCourses,
 } from "@/mockdata/courses";
 import { mockUser, mockUserStats } from "@/mockdata/user";
-import type { Course, SortOption, User, UserStats } from "@/types";
+import type { AppSettings, Course, SortOption, User, UserStats } from "@/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Simulate API delay
 const delay = (ms: number) =>
@@ -66,19 +67,57 @@ export const coursesApi = {
 };
 
 // Settings API
+const SETTINGS_STORAGE_KEY = "intruct.appSettings";
+
+let didLoadSettingsFromStorage = false;
+let inMemorySettings: AppSettings = {
+  theme: "system",
+  language: "en",
+  defaultCourseLanguage: "en",
+  notifications: true,
+};
+
+const loadSettingsFromStorage = async () => {
+  if (didLoadSettingsFromStorage) return;
+  didLoadSettingsFromStorage = true;
+
+  try {
+    const raw = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (!raw) return;
+
+    const parsed = JSON.parse(raw) as Partial<AppSettings> | null;
+    if (!parsed || typeof parsed !== "object") return;
+
+    inMemorySettings = { ...inMemorySettings, ...parsed };
+  } catch {
+    // Best-effort storage
+  }
+};
+
+const saveSettingsToStorage = async () => {
+  try {
+    await AsyncStorage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify(inMemorySettings)
+    );
+  } catch {
+    // Best-effort storage
+  }
+};
+
 export const settingsApi = {
-  async getSettings() {
+  async getSettings(): Promise<AppSettings> {
     await delay(200);
-    return {
-      theme: "system" as const,
-      language: "en",
-      notifications: true,
-    };
+    await loadSettingsFromStorage();
+    return inMemorySettings;
   },
 
-  async updateSettings(settings: any) {
+  async updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
     await delay(300);
-    return settings;
+    await loadSettingsFromStorage();
+    inMemorySettings = { ...inMemorySettings, ...settings };
+    await saveSettingsToStorage();
+    return inMemorySettings;
   },
 };
 
