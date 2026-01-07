@@ -11,7 +11,7 @@ export const languageOptions: LanguageOption[] = [
   { code: "pt", label: "Português", flag: "🇧🇷" },
   { code: "ru", label: "Русский", flag: "🇷🇺" },
   { code: "sr", label: "Srpski", flag: "🇷🇸" },
-  { code: "ur", label: "اردو", flag: "🇵🇰" }
+  { code: "ur", label: "اردو", flag: "🇵🇰" },
 ];
 
 export const accountSettingsItems: SettingsMenuItem[] = [

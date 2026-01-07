@@ -66,6 +66,14 @@ export const coursesApi = {
     return updateInList(mockCourses) ?? updateInList(mockFeaturedCourses);
   },
 
+  async leaveReview(courseId: string, reviewGrade: number): Promise<void> {
+    await delay(400);
+
+    // Stub: real backend will validate auth, ownership, and store the review.
+    if (!courseId) return;
+    if (reviewGrade < 1 || reviewGrade > 5) return;
+  },
+
   async createCourse(data: {
     title: string;
     description: string;
