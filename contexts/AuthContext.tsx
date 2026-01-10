@@ -8,12 +8,16 @@ import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { ApiError, profileApi } from "@/services/api";
 
 import { supabase } from "../utils/supabase";
 
 type AuthContextType = {
   user: User | null;
   session: Session | null;
+  needsCompleteRegistration: boolean;
+  profileLoading: boolean;
+  setNeedsCompleteRegistration: (value: boolean) => void;
   signInWithGoogle: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
@@ -24,6 +28,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  needsCompleteRegistration: false,
+  profileLoading: false,
+  setNeedsCompleteRegistration: () => {},
   signInWithGoogle: async () => {},
   signIn: async () => {},
   signUp: async () => {},
@@ -36,8 +43,9 @@ export const useAuth = () => useContext(AuthContext);
 function getSafeAuthErrorMessage(error: unknown) {
   if (typeof error === "object" && error !== null && "message" in error) {
     const message = (error as { message?: unknown }).message;
-    if (typeof message === "string" && message.trim().length > 0)
+    if (typeof message === "string" && message.trim().length > 0) {
       return message;
+    }
   }
 
   return "Something went wrong. Please try again.";
@@ -49,6 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [needsCompleteRegistration, setNeedsCompleteRegistrationState] =
+    useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+
   const rootSegment = useSegments()[0];
   const router = useRouter();
 
@@ -63,14 +76,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(initialSession);
       setUser(initialSession ? initialSession.user : null);
       setIsLoading(false);
+      setProfileLoading(Boolean(initialSession?.access_token));
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setUser(nextSession ? nextSession.user : null);
       setIsLoading(false);
+
+      if (__DEV__ && event === "SIGNED_IN" && nextSession?.access_token) {
+        console.log("JWT access_token:", nextSession.access_token);
+      }
+
+      if (nextSession?.access_token) {
+        setProfileLoading(true);
+      } else {
+        setProfileLoading(false);
+        setNeedsCompleteRegistrationState(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -136,13 +161,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
 
-      if (!userInfo.data?.idToken) {
+      const idToken = (userInfo as { data?: { idToken?: string } }).data
+        ?.idToken;
+      if (!idToken) {
         throw new Error("No ID token present!");
       }
 
       const { error } = await supabase.auth.signInWithIdToken({
         provider: "google",
-        token: userInfo.data.idToken,
+        token: idToken,
       });
 
       if (error) {
@@ -206,22 +233,113 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    const token = session?.access_token;
+    if (!token) return;
+
+    let cancelled = false;
+
+    setProfileLoading(true);
+
+    const loadProfile = async () => {
+      try {
+        await profileApi.getProfile(token);
+        if (cancelled) return;
+        setNeedsCompleteRegistrationState(false);
+      } catch (error: unknown) {
+        if (cancelled) return;
+
+        if (error instanceof ApiError) {
+          if (error.code === "unauthorized") {
+            notify({
+              type: "error",
+              title: "Session expired",
+              message: "Please sign in again.",
+            });
+            await signOut();
+            router.replace("/(auth)/welcome");
+            return;
+          }
+
+          if (error.code === "needs_complete_registration") {
+            setNeedsCompleteRegistrationState(true);
+            return;
+          }
+
+          if (error.code === "network") {
+            notify({
+              type: "error",
+              title: "Network error",
+              message: "Please try again.",
+            });
+            return;
+          }
+
+          notify({
+            type: "error",
+            title: "Couldn’t load profile",
+            message: error.message,
+          });
+          return;
+        }
+
+        notify({
+          type: "error",
+          title: "Couldn’t load profile",
+          message: "Please try again.",
+        });
+      } finally {
+        if (!cancelled) setProfileLoading(false);
+      }
+    };
+
+    void loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [notify, router, session?.access_token, signOut]);
+
+  useEffect(() => {
     if (isLoading) return;
 
     const inAuthGroup = rootSegment === "(auth)";
+    const inOnboardingGroup = rootSegment === "(onboarding)";
 
     if (!user && !inAuthGroup) {
       router.replace("/(auth)/welcome");
-    } else if (user && inAuthGroup) {
+      return;
+    }
+
+    if (!user) return;
+
+    if (profileLoading) return;
+
+    if (needsCompleteRegistration && !inOnboardingGroup) {
+      router.replace("/(onboarding)/complete-registration");
+      return;
+    }
+
+    if (!needsCompleteRegistration && (inAuthGroup || inOnboardingGroup)) {
       router.replace("/(tabs)");
     }
-  }, [user, rootSegment, isLoading, router]);
+  }, [
+    user,
+    rootSegment,
+    isLoading,
+    router,
+    needsCompleteRegistration,
+    profileLoading,
+  ]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         session,
+        needsCompleteRegistration,
+        profileLoading,
+        setNeedsCompleteRegistration: (value: boolean) =>
+          setNeedsCompleteRegistrationState(value),
         signIn,
         signUp,
         signInWithGoogle,

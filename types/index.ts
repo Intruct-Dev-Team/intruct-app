@@ -93,3 +93,25 @@ export interface SettingsMenuItem {
   icon: string;
   action?: string;
 }
+
+// Backend user profile (camelCase client shape; API is snake_case)
+export interface UserProfile {
+  id: string;
+  externalUuid: string;
+  email: string;
+  name: string;
+  surname: string;
+  registrationDate: string;
+  birthdate: string; // YYYY-MM-DD
+  avatar: string;
+  completedCourses: number;
+  inProgressCourses: number;
+  streak: number;
+}
+
+export interface CompleteRegistrationRequest {
+  name: string;
+  surname: string;
+  birthdate: string; // YYYY-MM-DD
+  avatar: string;
+}
