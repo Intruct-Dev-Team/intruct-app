@@ -5,7 +5,8 @@ import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
-import { Stack, useRouter } from "expo-router";
+import type { Href } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Image, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,6 +41,7 @@ const isValidBirthdate = (value: string): boolean => {
 export default function CompleteRegistrationScreen() {
   const colors = useThemeColors();
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { notify } = useNotifications();
   const { user, session, signOut, setNeedsCompleteRegistration } = useAuth();
 
@@ -157,7 +159,14 @@ export default function CompleteRegistrationScreen() {
         message: "Registration completed.",
       });
 
-      router.replace("/(tabs)");
+      const returnToPath = typeof returnTo === "string" ? returnTo : "";
+      const nextPath =
+        returnToPath.trim().length > 0 &&
+        !returnToPath.startsWith("/(onboarding)")
+          ? returnToPath
+          : "/(tabs)";
+
+      router.replace(nextPath as Href);
     } finally {
       setIsSubmitting(false);
     }
@@ -349,7 +358,11 @@ export default function CompleteRegistrationScreen() {
                       >
                         {Array.from({ length: maxDay }, (_, i) => i + 1).map(
                           (day) => (
-                            <Picker.Item key={day} label={pad2(day)} value={day} />
+                            <Picker.Item
+                              key={day}
+                              label={pad2(day)}
+                              value={day}
+                            />
                           )
                         )}
                       </Picker>

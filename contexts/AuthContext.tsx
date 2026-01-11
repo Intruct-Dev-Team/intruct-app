@@ -4,11 +4,16 @@ import {
   statusCodes,
 } from "@react-native-google-signin/google-signin";
 import type { Session, User } from "@supabase/supabase-js";
-import { useRouter, useSegments } from "expo-router";
+import type { Href } from "expo-router";
+import { usePathname, useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useNotifications } from "@/contexts/NotificationsContext";
-import { ApiError, profileApi } from "@/services/api";
+import {
+  ApiError,
+  profileApi,
+  setNeedsCompleteRegistrationHandler,
+} from "@/services/api";
 
 import { supabase } from "../utils/supabase";
 
@@ -64,6 +69,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const rootSegment = useSegments()[0];
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setNeedsCompleteRegistrationHandler(() => {
+      if (!user) return;
+
+      setNeedsCompleteRegistrationState(true);
+
+      if (rootSegment === "(onboarding)") return;
+
+      const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
+        pathname
+      )}`;
+      router.replace(href as Href);
+    });
+
+    return () => {
+      setNeedsCompleteRegistrationHandler(null);
+    };
+  }, [pathname, rootSegment, router, user]);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -315,7 +340,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (profileLoading) return;
 
     if (needsCompleteRegistration && !inOnboardingGroup) {
-      router.replace("/(onboarding)/complete-registration");
+      const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
+        pathname
+      )}`;
+      router.replace(href as Href);
       return;
     }
 

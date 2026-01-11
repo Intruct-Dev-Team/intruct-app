@@ -61,6 +61,34 @@ type UserProfileResponse = {
 
 const USER_PROFILE_STORAGE_KEY = "intruct.userProfile";
 
+const REGISTRATION_NOT_COMPLETED_ERROR = "registration was not completed";
+
+let needsCompleteRegistrationHandler: (() => void) | null = null;
+
+export const setNeedsCompleteRegistrationHandler = (
+  handler: (() => void) | null
+) => {
+  needsCompleteRegistrationHandler = handler;
+};
+
+const emitNeedsCompleteRegistration = () => {
+  try {
+    needsCompleteRegistrationHandler?.();
+  } catch {
+    // Best-effort: the caller will still get the ApiError
+  }
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
+const isRegistrationNotCompletedBody = (
+  value: unknown
+): value is { error: string } => {
+  return isRecord(value) && typeof value.error === "string";
+};
+
 const getApiBaseUrl = (): string | null => {
   const raw = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (!raw) return null;
@@ -69,7 +97,21 @@ const getApiBaseUrl = (): string | null => {
 
 const readJsonResponse = async (res: Response): Promise<unknown | null> => {
   try {
-    return await res.json();
+    const json = await res.json();
+
+    if (
+      isRegistrationNotCompletedBody(json) &&
+      json.error === REGISTRATION_NOT_COMPLETED_ERROR
+    ) {
+      emitNeedsCompleteRegistration();
+      throw new ApiError(
+        res.status || 400,
+        "needs_complete_registration",
+        REGISTRATION_NOT_COMPLETED_ERROR
+      );
+    }
+
+    return json;
   } catch {
     return null;
   }

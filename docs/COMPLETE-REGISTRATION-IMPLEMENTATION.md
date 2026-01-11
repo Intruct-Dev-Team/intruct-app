@@ -25,10 +25,10 @@ High-level flow:
 
 Key pieces:
 
-- When `session.access_token` is available, AuthProvider calls `profileApi.getProfile(token)`.
-- The result updates two flags:
-  - `profileLoading`: prevents auto-routing to tabs while the profile status is still being resolved.
-  - `needsCompleteRegistration`: whether the user must complete onboarding.
+- Auth + routing gate is handled in [contexts/AuthContext.tsx](../contexts/AuthContext.tsx).
+- Registration completeness is detected from backend responses:
+  - IF any API response contains `{ "error": "registration was not completed" }` THEN the API layer throws `ApiError` with code `needs_complete_registration` and triggers a redirect to `/(onboarding)/complete-registration`.
+  - The redirect includes a `returnTo` param so the user can be returned to the screen that triggered the request.
 
 Routing decisions:
 
@@ -67,7 +67,8 @@ Avatar selection:
 Submit:
 
 - Temporary (testing): On Confirm, the screen does not call `authApi.completeRegistration(...)`.
-- It immediately clears `needsCompleteRegistration` in context to avoid redirect loops and routes to `/(tabs)`.
+- It immediately clears `needsCompleteRegistration` in context to avoid redirect loops.
+- It routes to `returnTo` if provided, otherwise to `/(tabs)`.
 
 Error handling:
 
