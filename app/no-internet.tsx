@@ -11,14 +11,7 @@ export default function NoInternetScreen() {
     <>
       <Stack.Screen
         options={{
-          headerShown: true,
-          headerTitle: "No Internet",
-          headerStyle: {
-            backgroundColor: colors.cardBackground,
-          },
-          headerTitleStyle: {
-            color: colors.textPrimary,
-          },
+          headerShown: false,
         }}
       />
 
@@ -27,12 +20,12 @@ export default function NoInternetScreen() {
         backgroundColor={colors.background}
         padding="$4"
         gap="$4"
+        justifyContent="center"
       >
         <YStack
           alignItems="center"
           justifyContent="center"
           gap="$3"
-          paddingTop="$8"
         >
           <WifiOff size={44} color={colors.textSecondary} />
           <Text fontSize="$8" fontWeight="700" color={colors.textPrimary}>
