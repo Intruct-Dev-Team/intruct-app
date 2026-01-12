@@ -12,6 +12,7 @@ import {
 } from "@/components/settings";
 import { UserProfileCard } from "@/components/user";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/language-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
   accountSettingsItems,
@@ -51,12 +52,12 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const { user } = useAuth();
+  const { language: uiLanguage, setLanguage } = useLanguage();
 
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [languageModalTarget, setLanguageModalTarget] =
     useState<LanguageModalTarget>(null);
 
-  const [uiLanguage, setUiLanguage] = useState("en");
   const [defaultCourseLanguage, setDefaultCourseLanguage] = useState("en");
 
   useEffect(() => {
@@ -65,7 +66,6 @@ export default function SettingsScreen() {
     (async () => {
       const settings = await settingsApi.getSettings();
       if (cancelled) return;
-      setUiLanguage(settings.language);
       setDefaultCourseLanguage(settings.defaultCourseLanguage);
     })().catch(() => {
       // Non-blocking: screen can still function with defaults
@@ -118,8 +118,7 @@ export default function SettingsScreen() {
 
   const handleModalValueChange = (languageCode: string) => {
     if (languageModalTarget === "ui") {
-      setUiLanguage(languageCode);
-      settingsApi.updateSettings({ language: languageCode }).catch(() => {});
+      void setLanguage(languageCode);
       return;
     }
 

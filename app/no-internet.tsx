@@ -22,11 +22,7 @@ export default function NoInternetScreen() {
         gap="$4"
         justifyContent="center"
       >
-        <YStack
-          alignItems="center"
-          justifyContent="center"
-          gap="$3"
-        >
+        <YStack alignItems="center" justifyContent="center" gap="$3">
           <WifiOff size={44} color={colors.textSecondary} />
           <Text fontSize="$8" fontWeight="700" color={colors.textPrimary}>
             No internet connection

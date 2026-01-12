@@ -1,8 +1,9 @@
 import { CreatingCourseModal } from "@/components/create-course/creating-course-modal";
 import { NotificationsHost } from "@/components/notifications/NotificationsHost";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { CourseGenerationProvider } from "@/contexts/course-generation-context";
+import { LanguageProvider } from "@/contexts/language-context";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import config from "@/tamagui.config";
 import NetInfo from "@react-native-community/netinfo";
@@ -129,15 +130,17 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <SafeAreaProvider>
-          <NotificationsProvider>
-            <AuthProvider>
-              <CourseGenerationProvider>
-                <RootLayoutContent />
-              </CourseGenerationProvider>
-            </AuthProvider>
-          </NotificationsProvider>
-        </SafeAreaProvider>
+        <LanguageProvider>
+          <SafeAreaProvider>
+            <NotificationsProvider>
+              <AuthProvider>
+                <CourseGenerationProvider>
+                  <RootLayoutContent />
+                </CourseGenerationProvider>
+              </AuthProvider>
+            </NotificationsProvider>
+          </SafeAreaProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
