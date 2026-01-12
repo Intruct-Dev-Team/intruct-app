@@ -2,6 +2,23 @@
 
 All notable changes to the Intruct project will be documented in this file.
 
+## [Unreleased]
+
+### ✨ Added
+
+- i18n scaffolding (`expo-localization` + `i18n-js`) with `t()` and `setI18nLanguage()` helpers.
+- Global `LanguageProvider` / `useLanguage()` API with persisted UI language (structure only; strings not migrated yet).
+- Settings: “Language” now switches the UI language via `useLanguage().setLanguage()`.
+
+### 🔄 Changed
+
+- Offline screen UX: header hidden and content vertically centered.
+
+### 🐛 Fixed
+
+- Global handling for backend error `{ "error": "registration was not completed" }` redirects users to onboarding and preserves `returnTo`.
+- Lint reliability in this environment: `CI=1 npm run lint` avoids spinner-related hangs.
+
 ## [1.0.0] - 2025-12-03
 
 ### 🎉 Initial Release
@@ -187,7 +204,7 @@ All notable changes to the Intruct project will be documented in this file.
 
 ### Priority 3 (Nice to have)
 
-- [ ] i18n integration for multi-language
+- [ ] Migrate UI strings to `t()` (i18n scaffolding already in place)
 - [ ] Tests and flashcards
 - [ ] Social features
 - [ ] Push notifications

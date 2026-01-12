@@ -1,6 +1,6 @@
-# Localization (structure only)
+Localization (structure only)
 
-This project now has a minimal localization/i18n structure wired in, but nothing in the UI has been translated yet.
+This project has a minimal localization/i18n structure wired in, but no UI strings have been migrated yet.
 
 ## What was added
 
@@ -38,8 +38,8 @@ Exports:
 
 Behavior:
 
-- On app start, the provider loads saved settings via `settingsApi.getSettings()`.
-- It validates the language code against an allowlist; if invalid/missing, it falls back to `"en"`.
+- On app start the provider loads saved settings via `settingsApi.getSettings()`.
+- It validates the language code against an allowlist; if invalid/missing it falls back to `"en"`.
 - It keeps the i18n engine in sync by calling `setI18nLanguage(language)`.
 - When `setLanguage(next)` is called:
   - Validates `next`

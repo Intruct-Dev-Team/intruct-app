@@ -1,15 +1,14 @@
+import { setI18nLanguage } from "@/localization/i18n";
 import { settingsApi } from "@/services/api";
-
 import {
-  ReactNode,
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from "react";
-import { setI18nLanguage } from "../localization/i18n";
 
 export type UiLanguageCode = string;
 
@@ -39,11 +38,11 @@ const SUPPORTED_UI_LANGUAGES = new Set<UiLanguageCode>([
   "ur",
 ]);
 
-const normalizeLanguage = (value: unknown): UiLanguageCode => {
+function normalizeLanguage(value: unknown): UiLanguageCode {
   if (typeof value !== "string") return DEFAULT_LANGUAGE;
   if (SUPPORTED_UI_LANGUAGES.has(value)) return value;
   return DEFAULT_LANGUAGE;
-};
+}
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] =

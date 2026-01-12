@@ -1,4 +1,4 @@
-# Expo Go Limitations
+Expo Go Limitations
 
 ## Системный UI (Navigation Bar)
 
@@ -6,22 +6,21 @@
 
 В Expo Go системный UI (navigation bar внизу экрана на Android) контролируется самим приложением Expo Go, а не вашим приложением.
 
-### Что не работает в Expo Go:
+### Что не работает в Expo Go
 
-- `expo-system-ui` - `setBackgroundColorAsync()` игнорируется
-- Цвет navigation bar остается темным независимо от темы приложения
+- `expo-system-ui` — `setBackgroundColorAsync()` может игнорироваться
+- Цвет navigation bar может оставаться темным независимо от темы приложения
 
 ### Решение
 
-#### Для разработки (Expo Go):
+#### Для разработки (Expo Go)
 
-- Системный UI будет темным - это нормально
-- Все остальные функции работают корректно
+- Системный UI может оставаться темным — это нормально
 - StatusBar адаптируется под тему
 
-#### Для production (Development Build / Production Build):
+#### Для production (Development Build / Production Build)
 
-Системный UI будет работать правильно после создания standalone build:
+Системный UI будет работать корректнее после standalone build:
 
 ```bash
 # Development build
@@ -44,7 +43,7 @@ eas build --profile production --platform android
 }
 ```
 
-В `app/_layout.tsx`:
+В `app/_layout.tsx` (пример):
 
 ```typescript
 useEffect(() => {
@@ -56,7 +55,7 @@ useEffect(() => {
 }, [activeTheme]);
 ```
 
-### Что работает в Expo Go:
+### Что работает в Expo Go
 
 ✅ StatusBar (верхняя панель)
 ✅ Темная/светлая тема приложения
@@ -64,7 +63,7 @@ useEffect(() => {
 ✅ Навигация
 ✅ Все функции приложения
 
-### Что НЕ работает в Expo Go:
+### Что НЕ работает в Expo Go
 
 ❌ Цвет системного navigation bar (нижняя панель Android)
 
