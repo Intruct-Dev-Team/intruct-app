@@ -17,7 +17,11 @@ export * from "./modals";
 export * from "./common";
 
 // UI (base components)
-export * from "./ui";
+export * from "./ui/collapsible";
+export * from "./ui/icon-symbol";
 
 // Create Course
-export * from "./create-course";
+export * from "./create-course/attach-materials-step";
+export * from "./create-course/course-details-step";
+export * from "./create-course/creating-course-modal";
+export * from "./create-course/review-step";

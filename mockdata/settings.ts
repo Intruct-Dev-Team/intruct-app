@@ -1,50 +1,37 @@
-import { LanguageOption, SettingsMenuItem } from "@/types";
+import type { LanguageOption, SettingsMenuItem } from "@/types";
 
 export const languageOptions: LanguageOption[] = [
   { code: "en", label: "English (US)", flag: "🇺🇸" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
+  { code: "zh", label: "中文", flag: "🇨🇳" },
+  { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
   { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "bn", label: "বাংলা", flag: "🇧🇩" },
+  { code: "pt", label: "Português", flag: "🇧🇷" },
+  { code: "ru", label: "Русский", flag: "🇷🇺" },
+  { code: "sr", label: "Srpski", flag: "🇷🇸" },
+  { code: "ur", label: "اردو", flag: "🇵🇰" },
 ];
 
 export const accountSettingsItems: SettingsMenuItem[] = [
   {
     id: "personal-info",
     title: "Personal Information",
-    description: "Update your name, email, and pr...",
+    description: "View your personal information",
     icon: "user",
     action: "navigate:personal-info",
   },
   {
-    id: "notifications",
-    title: "Notifications",
-    description: "Manage notification preferences",
-    icon: "bell",
-    action: "navigate:notifications",
-  },
-  {
-    id: "privacy",
-    title: "Privacy & Security",
-    description: "Password, two-factor authenticat...",
-    icon: "lock",
-    action: "navigate:privacy",
-  },
-  {
     id: "billing",
     title: "Billing",
-    description: "Manage subscription and payme...",
+    description: "View plans and billing details",
     icon: "credit-card",
     action: "navigate:billing",
   },
 ];
 
 export const aiSettingsItems: SettingsMenuItem[] = [
-  {
-    id: "ai-model",
-    title: "AI Model Preference",
-    description: "Choose your preferred AI model",
-    icon: "sparkles",
-    action: "navigate:ai-model",
-  },
   {
     id: "content-language",
     title: "Content Language",

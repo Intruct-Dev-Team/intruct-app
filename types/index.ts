@@ -23,6 +23,8 @@ export interface Course {
   students?: number | null;
   // Public or private course flag
   isPublic?: boolean;
+  // Course generation status (backend-driven).
+  status?: "generating" | "ready";
 }
 
 export interface Module {
@@ -36,13 +38,6 @@ export interface Lesson {
   title: string;
   materials?: LessonMaterial[];
   questions?: TestQuestion[];
-  flashcards?: Flashcard[];
-}
-
-export interface Flashcard {
-  id: string;
-  front: string;
-  back: string;
 }
 
 export interface LessonMaterial {
@@ -79,6 +74,7 @@ export interface UserStats {
 export interface AppSettings {
   theme: "light" | "dark" | "system";
   language: string;
+  defaultCourseLanguage: string;
   notifications: boolean;
 }
 
@@ -96,4 +92,26 @@ export interface SettingsMenuItem {
   description: string;
   icon: string;
   action?: string;
+}
+
+// Backend user profile (camelCase client shape; API is snake_case)
+export interface UserProfile {
+  id: string;
+  externalUuid: string;
+  email: string;
+  name: string;
+  surname: string;
+  registrationDate: string;
+  birthdate: string; // YYYY-MM-DD
+  avatar: string;
+  completedCourses: number;
+  inProgressCourses: number;
+  streak: number;
+}
+
+export interface CompleteRegistrationRequest {
+  name: string;
+  surname: string;
+  birthdate: string; // YYYY-MM-DD
+  avatar: string;
 }

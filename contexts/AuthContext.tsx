@@ -1,180 +1,381 @@
 import {
-    GoogleSignin,
-    isErrorWithCode,
-    statusCodes,
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
 } from "@react-native-google-signin/google-signin";
-import { Session, User } from "@supabase/supabase-js";
-import { useRouter, useSegments } from "expo-router";
+import type { Session, User } from "@supabase/supabase-js";
+import type { Href } from "expo-router";
+import { usePathname, useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Alert } from "react-native"; // Add Alert
+
+import { useNotifications } from "@/contexts/NotificationsContext";
+import {
+  ApiError,
+  profileApi,
+  setNeedsCompleteRegistrationHandler,
+} from "@/services/api";
+
 import { supabase } from "../utils/supabase";
 
 type AuthContextType = {
-    user: User | null;
-    session: Session | null;
-    signInWithGoogle: () => void;
-    signIn: (email: string, password: string) => Promise<void>; // Add signIn
-    signUp: (email: string, password: string, name: string) => Promise<void>; // Add signUp
-    signOut: () => void;
-    isLoading: boolean;
+  user: User | null;
+  session: Session | null;
+  needsCompleteRegistration: boolean;
+  profileLoading: boolean;
+  setNeedsCompleteRegistration: (value: boolean) => void;
+  signInWithGoogle: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
-    user: null,
-    session: null,
-    signInWithGoogle: () => { },
-    signIn: async () => { },
-    signUp: async () => { },
-    signOut: () => { },
-    isLoading: false,
+  user: null,
+  session: null,
+  needsCompleteRegistration: false,
+  profileLoading: false,
+  setNeedsCompleteRegistration: () => {},
+  signInWithGoogle: async () => {},
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+  isLoading: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
+function getSafeAuthErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim().length > 0) {
+      return message;
+    }
+  }
+
+  return "Something went wrong. Please try again.";
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const rootSegment = useSegments()[0];
-    const router = useRouter();
+  const { notify } = useNotifications();
 
-    useEffect(() => {
-        // Configure Google Sign-In
-        GoogleSignin.configure({
-            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-            iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-            offlineAccess: true,
-        });
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session ? session.user : null);
-            setIsLoading(false);
-        });
+  const [needsCompleteRegistration, setNeedsCompleteRegistrationState] =
+    useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session ? session.user : null);
-            setIsLoading(false);
-        });
+  const rootSegment = useSegments()[0];
+  const router = useRouter();
+  const pathname = usePathname();
 
-        return () => subscription.unsubscribe();
-    }, []);
+  useEffect(() => {
+    setNeedsCompleteRegistrationHandler(() => {
+      if (!user) return;
 
-    const signIn = async (email: string, password: string) => {
-        setIsLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-        setIsLoading(false);
-        if (error) {
-            Alert.alert("Login Error", error.message);
-            throw error;
-        }
+      setNeedsCompleteRegistrationState(true);
+
+      if (rootSegment === "(onboarding)") return;
+
+      const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
+        pathname
+      )}`;
+      router.replace(href as Href);
+    });
+
+    return () => {
+      setNeedsCompleteRegistrationHandler(null);
     };
+  }, [pathname, rootSegment, router, user]);
 
-    const signUp = async (email: string, password: string, name: string) => {
-        setIsLoading(true);
-        const { data: { session }, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: name,
-                },
-            },
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      offlineAccess: true,
+    });
+
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession ? initialSession.user : null);
+      setIsLoading(false);
+      setProfileLoading(Boolean(initialSession?.access_token));
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession ? nextSession.user : null);
+      setIsLoading(false);
+
+      if (__DEV__ && event === "SIGNED_IN" && nextSession?.access_token) {
+        console.log("JWT access_token:", nextSession.access_token);
+      }
+
+      if (nextSession?.access_token) {
+        setProfileLoading(true);
+      } else {
+        setProfileLoading(false);
+        setNeedsCompleteRegistrationState(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setIsLoading(false);
+
+    if (error) {
+      notify({
+        type: "error",
+        title: "Login failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      throw error;
+    }
+
+    notify({ type: "success", title: "Welcome", message: "You’re signed in." });
+  };
+
+  const signUp = async (email: string, password: string, name: string) => {
+    setIsLoading(true);
+    const {
+      data: { session: newSession },
+      error,
+    } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      notify({
+        type: "error",
+        title: "Registration failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      throw error;
+    }
+
+    if (!newSession) {
+      notify({
+        type: "info",
+        title: "Check your email",
+        message: "Please confirm your email to finish registration.",
+      });
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      const idToken = (userInfo as { data?: { idToken?: string } }).data
+        ?.idToken;
+      if (!idToken) {
+        throw new Error("No ID token present!");
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: idToken,
+      });
+
+      if (error) {
+        notify({
+          type: "error",
+          title: "Google sign-in failed",
+          message: getSafeAuthErrorMessage(error),
         });
-
-        setIsLoading(false);
-
-        if (error) {
-            Alert.alert("Registration Error", error.message);
-            throw error;
+      } else {
+        notify({
+          type: "success",
+          title: "Welcome",
+          message: "You’re signed in.",
+        });
+      }
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            return;
+          case statusCodes.IN_PROGRESS:
+            return;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            notify({
+              type: "error",
+              title: "Google sign-in unavailable",
+              message: "Play services are not available on this device.",
+            });
+            return;
+          default:
+            break;
         }
+      }
 
-        // If no session (email confirmation required), inform user
-        if (!session) {
-            Alert.alert("Success", "Please check your email for the confirmation link.");
-        }
-    };
+      notify({
+        type: "error",
+        title: "Google sign-in failed",
+        message: getSafeAuthErrorMessage(error),
+      });
+      console.error("Google sign-in error", error);
+    }
+  };
 
-    const signInWithGoogle = async () => {
-        try {
-            await GoogleSignin.hasPlayServices();
-            const userInfo = await GoogleSignin.signIn();
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      await GoogleSignin.signOut();
+      notify({
+        type: "success",
+        title: "Signed out",
+        message: "You’re signed out.",
+      });
+    } catch (error) {
+      notify({
+        type: "error",
+        title: "Sign out failed",
+        message: "Couldn’t sign out. Please try again.",
+      });
+      console.error("Error signing out", error);
+    }
+  };
 
-            if (userInfo.data?.idToken) {
-                const { data, error } = await supabase.auth.signInWithIdToken({
-                    provider: 'google',
-                    token: userInfo.data.idToken,
-                });
+  useEffect(() => {
+    const token = session?.access_token;
+    if (!token) return;
 
-                if (error) {
-                    Alert.alert("Google Auth Error", error.message);
-                }
-            } else {
-                throw new Error('No ID token present!');
-            }
-        } catch (error) {
-            if (isErrorWithCode(error)) {
-                switch (error.code) {
-                    case statusCodes.SIGN_IN_CANCELLED:
-                        console.log("Sign in cancelled");
-                        break;
-                    case statusCodes.IN_PROGRESS:
-                        console.log("Sign in is in progress");
-                        break;
-                    case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-                        console.log("Play services not available");
-                        break;
-                    default:
-                        console.error("Something went wrong", error);
-                }
-            } else {
-                console.error("Non-Google error", error);
-            }
-        }
-    };
+    let cancelled = false;
 
-    const signOut = async () => {
-        try {
-            await supabase.auth.signOut();
-            await GoogleSignin.signOut();
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
-    };
+    setProfileLoading(true);
 
-    useEffect(() => {
-        if (isLoading) return;
+    const loadProfile = async () => {
+      try {
+        await profileApi.getProfile(token);
+        if (cancelled) return;
+        setNeedsCompleteRegistrationState(false);
+      } catch (error: unknown) {
+        if (cancelled) return;
 
-        const inAuthGroup = rootSegment === "(auth)";
-
-        if (!user && !inAuthGroup) {
-            // Redirect to the sign-in page.
+        if (error instanceof ApiError) {
+          if (error.code === "unauthorized") {
+            notify({
+              type: "error",
+              title: "Session expired",
+              message: "Please sign in again.",
+            });
+            await signOut();
             router.replace("/(auth)/welcome");
-        } else if (user && inAuthGroup) {
-            // Redirect away from the sign-in page.
-            router.replace("/(tabs)");
-        }
-    }, [user, rootSegment, isLoading]);
+            return;
+          }
 
-    return (
-        <AuthContext.Provider
-            value={{
-                user,
-                session,
-                signIn,
-                signUp,
-                signInWithGoogle,
-                signOut,
-                isLoading,
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
-    );
+          if (error.code === "needs_complete_registration") {
+            setNeedsCompleteRegistrationState(true);
+            return;
+          }
+
+          if (error.code === "network") {
+            notify({
+              type: "error",
+              title: "Network error",
+              message: "Please try again.",
+            });
+            return;
+          }
+
+          notify({
+            type: "error",
+            title: "Couldn’t load profile",
+            message: error.message,
+          });
+          return;
+        }
+
+        notify({
+          type: "error",
+          title: "Couldn’t load profile",
+          message: "Please try again.",
+        });
+      } finally {
+        if (!cancelled) setProfileLoading(false);
+      }
+    };
+
+    void loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [notify, router, session?.access_token, signOut]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = rootSegment === "(auth)";
+    const inOnboardingGroup = rootSegment === "(onboarding)";
+
+    if (!user && !inAuthGroup) {
+      router.replace("/(auth)/welcome");
+      return;
+    }
+
+    if (!user) return;
+
+    if (profileLoading) return;
+
+    if (needsCompleteRegistration && !inOnboardingGroup) {
+      const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
+        pathname
+      )}`;
+      router.replace(href as Href);
+      return;
+    }
+
+    if (!needsCompleteRegistration && (inAuthGroup || inOnboardingGroup)) {
+      router.replace("/(tabs)");
+    }
+  }, [
+    user,
+    rootSegment,
+    isLoading,
+    router,
+    needsCompleteRegistration,
+    profileLoading,
+  ]);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        needsCompleteRegistration,
+        profileLoading,
+        setNeedsCompleteRegistration: (value: boolean) =>
+          setNeedsCompleteRegistrationState(value),
+        signIn,
+        signUp,
+        signInWithGoogle,
+        signOut,
+        isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }

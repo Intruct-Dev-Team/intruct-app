@@ -1,4 +1,3 @@
-import FlashcardView from "@/components/lesson/FlashcardView";
 import LessonMaterialView from "@/components/lesson/LessonMaterialView";
 import TestView from "@/components/lesson/TestView";
 import { useThemeColors } from "@/hooks/use-theme-colors";
@@ -9,7 +8,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, YStack, getTokenValue } from "tamagui";
 
-type LessonPhase = "material" | "flashcards" | "test";
+type LessonPhase = "material" | "test";
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -57,19 +56,12 @@ export default function LessonScreen() {
   const progressPercent = useMemo(() => {
     if (!lesson) return 5;
 
-    const flashcardsCount = lesson.flashcards?.length ?? 0;
     const questionsCount = lesson.questions?.length ?? 0;
-    const totalSteps = 1 + flashcardsCount + questionsCount;
+    const totalSteps = 1 + questionsCount;
     if (totalSteps <= 0) return 5;
 
     let completedSteps = 0;
     if (completedPhases.includes("material")) completedSteps += 1;
-
-    if (completedPhases.includes("flashcards")) {
-      completedSteps += flashcardsCount;
-    } else if (phase === "flashcards") {
-      completedSteps += Math.min(currentPhaseProgress, flashcardsCount);
-    }
 
     if (completedPhases.includes("test")) {
       completedSteps += questionsCount;
@@ -102,24 +94,6 @@ export default function LessonScreen() {
       prev.includes("material") ? prev : [...prev, "material"]
     );
 
-    if ((lesson.flashcards?.length ?? 0) > 0) {
-      setPhase("flashcards");
-      return;
-    }
-
-    if ((lesson.questions?.length ?? 0) > 0) {
-      setPhase("test");
-      return;
-    }
-
-    router.back();
-  };
-
-  const handleFlashcardsComplete = () => {
-    setCompletedPhases((prev) =>
-      prev.includes("flashcards") ? prev : [...prev, "flashcards"]
-    );
-
     if ((lesson.questions?.length ?? 0) > 0) {
       setPhase("test");
       return;
@@ -145,17 +119,7 @@ export default function LessonScreen() {
             materials={lesson.materials || []}
             onComplete={handleMaterialComplete}
             showHeader={false}
-            nextLabel={
-              (lesson.flashcards?.length ?? 0) > 0 ? "Start Flashcards" : "Next"
-            }
-          />
-        );
-      case "flashcards":
-        return (
-          <FlashcardView
-            cards={lesson.flashcards || []}
-            onComplete={handleFlashcardsComplete}
-            onProgress={(index) => setCurrentPhaseProgress(index)}
+            nextLabel="Next"
           />
         );
       case "test":
@@ -166,6 +130,8 @@ export default function LessonScreen() {
             onProgress={(index) => setCurrentPhaseProgress(index)}
           />
         );
+      default:
+        return null;
     }
   };
 

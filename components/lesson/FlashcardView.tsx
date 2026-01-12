@@ -1,7 +1,6 @@
 // FlashcardView
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import type { Flashcard } from "@/types";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import Animated, {
@@ -12,8 +11,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { Button, H3, Text, XStack, YStack, useStyle } from "tamagui";
 
+type FlashcardItem = {
+  id: string;
+  front: string;
+  back: string;
+};
+
 interface FlashcardViewProps {
-  cards: Flashcard[];
+  cards: FlashcardItem[];
   onComplete: () => void;
   onProgress: (index: number) => void;
 }

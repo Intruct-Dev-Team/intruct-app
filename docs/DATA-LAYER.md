@@ -73,21 +73,31 @@ const courses = await coursesApi.getMyCourses();
 ## Использование в компонентах
 
 ```typescript
-import { userApi, coursesApi } from "@/services/api";
-import type { User, Course } from "@/types";
+import { userApi } from "@/services/api";
+import type { User } from "@/types";
+import { useEffect, useState } from "react";
+import { Text } from "react-native";
 
 function MyComponent() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
       const userData = await userApi.getCurrentUser();
+      if (cancelled) return;
       setUser(userData);
     };
-    loadData();
+
+    loadData().catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  return <div>{user?.name}</div>;
+  return <Text>{user?.name}</Text>;
 }
 ```
 
@@ -96,7 +106,7 @@ function MyComponent() {
 Когда backend будет готов, нужно изменить только `services/api.ts`:
 
 ```typescript
-// Бы��о (mock):
+// Было (mock):
 export const userApi = {
   async getCurrentUser(): Promise<User> {
     await delay(300);
