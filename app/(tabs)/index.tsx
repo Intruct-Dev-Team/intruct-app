@@ -84,7 +84,12 @@ export default function HomeScreen() {
           value={profile.inProgressCourses}
           label="Courses in Progress"
         />
-        <StatsCard icon={Flame} type="streak" value={null} label="Day Streak" />
+        <StatsCard
+          icon={Flame}
+          type="streak"
+          value={"null"}
+          label="Day Streak"
+        />
       </XStack>
 
       <CreateCourseCard onPress={() => router.push("/create-course")} />

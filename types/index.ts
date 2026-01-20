@@ -1,4 +1,4 @@
-// User types
+/** Supabase/Auth user representation (deprecated for profile data; use UserProfile) */
 export interface User {
   id: string;
   name: string;
@@ -18,13 +18,10 @@ export interface Course {
   updatedAt: string;
   category?: string;
   author?: string;
-  // rating/students are nullable to represent private/unavailable values
-  rating?: number | null;
-  students?: number | null;
-  // Public or private course flag
+  rating?: number | null; // nullable: private/unavailable
+  students?: number | null; // nullable: private/unavailable
   isPublic?: boolean;
-  // Course generation status (backend-driven).
-  status?: "generating" | "ready";
+  status?: "generating" | "ready"; // backend-driven
 }
 
 export interface Module {
@@ -63,7 +60,7 @@ export interface CourseCategory {
 
 export type SortOption = "popular" | "newest" | "rating" | "students";
 
-// Statistics types
+// Statistics types (deprecated; profile now includes completedCourses, inProgressCourses)
 export interface UserStats {
   completed: number;
   inProgress: number;
@@ -95,6 +92,7 @@ export interface SettingsMenuItem {
 }
 
 // Backend user profile (camelCase client shape; API is snake_case)
+// Single source of truth for user data from backend
 export interface UserProfile {
   id: string;
   externalUuid: string;
@@ -102,7 +100,7 @@ export interface UserProfile {
   name: string;
   surname: string;
   registrationDate: string;
-  birthdate: string; // YYYY-MM-DD
+  birthdate: string;
   avatar: string;
   completedCourses: number;
   inProgressCourses: number;
@@ -113,7 +111,7 @@ export interface CompleteRegistrationRequest {
   name: string;
   surname: string;
   birthdate: string; // YYYY-MM-DD
-  avatar: string;
+  avatar?: string; // Optional – can be empty or undefined
 }
 
 // API Response types for Swagger endpoints

@@ -12,7 +12,7 @@ export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
   return (
     <YStack gap="$2">
       <XStack gap="$2">
-        {Array.from({ length: totalSteps }).map((_, index) => (
+        {Array.from({ length: totalSteps }).map((_: unknown, index: number) => (
           <YStack
             key={index}
             flex={1}
