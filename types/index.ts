@@ -115,3 +115,39 @@ export interface CompleteRegistrationRequest {
   birthdate: string; // YYYY-MM-DD
   avatar: string;
 }
+
+// API Response types for Swagger endpoints
+
+// POST /course response
+export interface CreateCourseResponse {
+  course_id: number;
+}
+
+// PATCH /courses/{course_id}/upload request types
+export interface UploadQuizRequest {
+  question: string;
+  options: string[];
+  correct_index: number;
+}
+
+export interface UploadLessonRequest {
+  lesson_id: number;
+  lesson_title: string;
+  content: string;
+  quiz?: UploadQuizRequest[];
+}
+
+export interface UploadModuleRequest {
+  module_id: number;
+  module_title: string;
+  lessons: UploadLessonRequest[];
+}
+
+export interface UploadCourseContentRequest {
+  course_title: string;
+  language: string;
+  last_updated: string;
+  total_modules: number;
+  total_lessons: number;
+  modules: UploadModuleRequest[];
+}

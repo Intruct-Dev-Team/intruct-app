@@ -1,54 +1,169 @@
-import { AuthInput } from "@/components/auth/AuthInput";
-import { ScreenContainer } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { normalizeAvatarUri } from "@/utils/avatar";
 import { ChevronLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Avatar, Button, Card, Separator, Text, XStack, YStack } from "tamagui";
 
 export default function ProfileScreen() {
   const colors = useThemeColors();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const insets = useSafeAreaInsets();
+  const { profile, user, signOut } = useAuth();
 
-  const name =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
-  const email = user?.email || "";
+  const fullName =
+    (profile?.name && profile?.surname
+      ? `${profile.name} ${profile.surname}`.trim()
+      : profile?.name || profile?.surname) ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split("@")[0] ||
+    "User";
+
+  const email = profile?.email || user?.email || "";
+
+  const birthdate = profile?.birthdate || "";
+
+  const avatarSrc =
+    normalizeAvatarUri(profile?.avatar) ??
+    normalizeAvatarUri(
+      typeof user?.user_metadata?.avatar_url === "string"
+        ? user.user_metadata.avatar_url
+        : undefined,
+    );
+
+  const initials = fullName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <ScreenContainer>
+    <>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <XStack alignItems="center" gap="$2">
-        <Button
-          icon={<ChevronLeft size={24} color={colors.textPrimary} />}
-          chromeless
-          onPress={() => router.back()}
-        />
-        <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
-          Personal Information
-        </Text>
-      </XStack>
+      <YStack flex={1} backgroundColor={colors.background}>
+        <YStack flex={1} padding="$4" paddingTop="$6" gap="$4">
+          <YStack gap="$3">
+            <XStack alignItems="center" gap="$2">
+              <Button
+                icon={<ChevronLeft size={24} color={colors.textPrimary} />}
+                chromeless
+                onPress={() => router.back()}
+              />
+              <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
+                Personal Information
+              </Text>
+            </XStack>
+            <Text color={colors.textSecondary} fontSize="$4">
+              Manage your account details
+            </Text>
+          </YStack>
 
-      <YStack gap="$4" marginTop="$4">
-        <AuthInput label="Full Name" value={name} editable={false} />
-        <AuthInput
-          label="Email"
-          value={email}
-          editable={false}
-          autoCapitalize="none"
-        />
+          <Card
+            padded
+            backgroundColor={colors.cardBackground}
+            borderWidth={1}
+            borderColor="$borderColor"
+            borderRadius="$5"
+          >
+            <XStack alignItems="center" gap="$3">
+              <Avatar circular size="$6">
+                <Avatar.Image
+                  src={avatarSrc}
+                  source={avatarSrc ? { uri: avatarSrc } : undefined}
+                />
+                <Avatar.Fallback
+                  backgroundColor="$blue9"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Text fontSize="$6" fontWeight="700" color="white">
+                    {initials || "U"}
+                  </Text>
+                </Avatar.Fallback>
+              </Avatar>
+              <YStack flex={1} gap="$1">
+                <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
+                  {fullName}
+                </Text>
+                <Text fontSize="$4" color={colors.textSecondary}>
+                  {email}
+                </Text>
+              </YStack>
+            </XStack>
+          </Card>
 
-        <Button
-          size="$5"
-          backgroundColor="$red2"
-          color="$red10"
-          onPress={signOut}
-          chromeless
+          <Card
+            padded
+            backgroundColor={colors.cardBackground}
+            borderWidth={1}
+            borderColor="$borderColor"
+            borderRadius="$5"
+          >
+            <YStack gap="$3">
+              <YStack gap="$1">
+                <Text fontSize="$3" color={colors.textSecondary}>
+                  Full Name
+                </Text>
+                <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
+                  {fullName}
+                </Text>
+              </YStack>
+
+              <Separator borderColor="$borderColor" />
+
+              <YStack gap="$1">
+                <Text fontSize="$3" color={colors.textSecondary}>
+                  Email
+                </Text>
+                <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
+                  {email}
+                </Text>
+              </YStack>
+
+              {birthdate && (
+                <>
+                  <Separator borderColor="$borderColor" />
+
+                  <YStack gap="$1">
+                    <Text fontSize="$3" color={colors.textSecondary}>
+                      Date of Birth
+                    </Text>
+                    <Text
+                      fontSize="$5"
+                      fontWeight="600"
+                      color={colors.textPrimary}
+                    >
+                      {new Date(birthdate).toLocaleDateString()}
+                    </Text>
+                  </YStack>
+                </>
+              )}
+            </YStack>
+          </Card>
+        </YStack>
+
+        <XStack
+          padding="$4"
+          paddingBottom={insets.bottom + 16}
+          backgroundColor={colors.cardBackground}
+          borderTopWidth={1}
+          borderTopColor="$gray5"
         >
-          Sign Out
-        </Button>
+          <Button
+            flex={1}
+            size="$5"
+            backgroundColor="$red3"
+            color="$red11"
+            onPress={signOut}
+            pressStyle={{ opacity: 0.85 }}
+          >
+            Sign Out
+          </Button>
+        </XStack>
       </YStack>
-    </ScreenContainer>
+    </>
   );
 }

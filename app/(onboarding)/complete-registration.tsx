@@ -3,6 +3,7 @@ import { AuthInput } from "@/components/auth/AuthInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { ApiError, authApi } from "@/services/api";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 import type { Href } from "expo-router";
@@ -151,6 +152,19 @@ export default function CompleteRegistrationScreen() {
 
     setIsSubmitting(true);
     try {
+      console.log(
+        "[CompleteRegistration] Calling authApi.completeRegistration",
+      );
+
+      // Вызываем API для сохранения данных на бекенде
+      await authApi.completeRegistration(token, {
+        name: name.trim(),
+        surname: surname.trim(),
+        birthdate: birthdate.trim(),
+        avatar: avatar.trim() || undefined,
+      });
+
+      console.log("[CompleteRegistration] Registration completed successfully");
       setNeedsCompleteRegistration(false);
 
       notify({
@@ -167,6 +181,22 @@ export default function CompleteRegistrationScreen() {
           : "/(tabs)";
 
       router.replace(nextPath as Href);
+    } catch (error) {
+      console.log("[CompleteRegistration] Error:", error);
+
+      if (error instanceof ApiError) {
+        notify({
+          type: "error",
+          title: "Registration failed",
+          message: error.message,
+        });
+      } else {
+        notify({
+          type: "error",
+          title: "Registration failed",
+          message: "Please try again.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -283,7 +313,7 @@ export default function CompleteRegistrationScreen() {
                       >
                         {Array.from(
                           { length: currentYear - 1900 + 1 },
-                          (_, i) => currentYear - i
+                          (_, i) => currentYear - i,
                         ).map((year) => (
                           <Picker.Item
                             key={year}
@@ -326,7 +356,7 @@ export default function CompleteRegistrationScreen() {
                               label={pad2(month)}
                               value={month}
                             />
-                          )
+                          ),
                         )}
                       </Picker>
                     </YStack>
@@ -363,7 +393,7 @@ export default function CompleteRegistrationScreen() {
                               label={pad2(day)}
                               value={day}
                             />
-                          )
+                          ),
                         )}
                       </Picker>
                     </YStack>

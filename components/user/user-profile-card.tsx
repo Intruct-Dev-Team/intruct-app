@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { normalizeAvatarUri } from "@/utils/avatar";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { Avatar, Card, Text, XStack, YStack } from "tamagui"; // Added Avatar to import
 
@@ -17,6 +18,8 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const colors = useThemeColors();
 
+  const normalizedAvatarSrc = normalizeAvatarUri(avatarUrl);
+
   return (
     <Card
       padded
@@ -31,7 +34,12 @@ export function UserProfileCard({
       <XStack gap="$3" alignItems="center" justifyContent="space-between">
         <XStack gap="$3" alignItems="center" flex={1}>
           <Avatar circular size="$5">
-            <Avatar.Image src={avatarUrl} />
+            <Avatar.Image
+              src={normalizedAvatarSrc}
+              source={
+                normalizedAvatarSrc ? { uri: normalizedAvatarSrc } : undefined
+              }
+            />
             <Avatar.Fallback
               backgroundColor="$blue9"
               alignItems="center"

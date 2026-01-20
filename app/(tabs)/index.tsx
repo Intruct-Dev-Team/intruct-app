@@ -6,9 +6,10 @@ import {
   StatsCardSkeleton,
 } from "@/components/cards";
 import { PageHeader, ScreenContainer } from "@/components/layout";
+import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { coursesApi, userApi } from "@/services/api";
-import type { Course, UserStats } from "@/types";
+import { coursesApi } from "@/services/api";
+import type { Course } from "@/types";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ import { H2, XStack, YStack } from "tamagui";
 export default function HomeScreen() {
   const colors = useThemeColors();
   const router = useRouter();
-  const [stats, setStats] = useState<UserStats | null>(null);
+  const { profile } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,20 +28,16 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
-      const [statsData, coursesData] = await Promise.all([
-        userApi.getUserStats(),
-        coursesApi.getMyCourses(),
-      ]);
-      setStats(statsData);
+      const coursesData = await coursesApi.getMyCourses();
       setCourses(coursesData);
     } catch (error) {
-      console.error("Failed to load data:", error);
+      console.error("Failed to load courses:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !stats) {
+  if (loading || !profile) {
     return (
       <ScreenContainer>
         <PageHeader
@@ -78,21 +75,16 @@ export default function HomeScreen() {
         <StatsCard
           icon={TrendingUp}
           type="completed"
-          value={stats.completed}
+          value={profile.completedCourses}
           label="Completed"
         />
         <StatsCard
           icon={Clock}
           type="inProgress"
-          value={stats.inProgress}
+          value={profile.inProgressCourses}
           label="Courses in Progress"
         />
-        <StatsCard
-          icon={Flame}
-          type="streak"
-          value={stats.dayStreak}
-          label="Day Streak"
-        />
+        <StatsCard icon={Flame} type="streak" value={null} label="Day Streak" />
       </XStack>
 
       <CreateCourseCard onPress={() => router.push("/create-course")} />

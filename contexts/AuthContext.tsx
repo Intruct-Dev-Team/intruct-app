@@ -1,3 +1,4 @@
+import type { UserProfile } from "@/types";
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -6,7 +7,13 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import type { Href } from "expo-router";
 import { usePathname, useRouter, useSegments } from "expo-router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import { useNotifications } from "@/contexts/NotificationsContext";
 import {
@@ -20,6 +27,7 @@ import { supabase } from "../utils/supabase";
 type AuthContextType = {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   needsCompleteRegistration: boolean;
   profileLoading: boolean;
   setNeedsCompleteRegistration: (value: boolean) => void;
@@ -33,6 +41,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  profile: null,
   needsCompleteRegistration: false,
   profileLoading: false,
   setNeedsCompleteRegistration: () => {},
@@ -61,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [needsCompleteRegistration, setNeedsCompleteRegistrationState] =
@@ -80,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (rootSegment === "(onboarding)") return;
 
       const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
-        pathname
+        pathname,
       )}`;
       router.replace(href as Href);
     });
@@ -100,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       setSession(initialSession);
       setUser(initialSession ? initialSession.user : null);
+      setProfile(null);
       setIsLoading(false);
       setProfileLoading(Boolean(initialSession?.access_token));
     });
@@ -109,6 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setUser(nextSession ? nextSession.user : null);
+      if (!nextSession) {
+        setProfile(null);
+      }
       setIsLoading(false);
 
       if (__DEV__ && event === "SIGNED_IN" && nextSession?.access_token) {
@@ -238,10 +252,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
       await GoogleSignin.signOut();
+      setProfile(null);
       notify({
         type: "success",
         title: "Signed out",
@@ -255,10 +270,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       console.error("Error signing out", error);
     }
-  };
+  }, [notify]);
 
   useEffect(() => {
     const token = session?.access_token;
+
+    // Если уже знаем что нужна регистрация - не делаем запросы
+    if (needsCompleteRegistration) {
+      console.log("[AuthContext] Skipping profile load - registration needed");
+      return;
+    }
+
     if (!token) return;
 
     let cancelled = false;
@@ -267,14 +289,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const loadProfile = async () => {
       try {
-        await profileApi.getProfile(token);
+        console.log("[AuthContext] Loading profile with token...");
+        const backendProfile = await profileApi.getProfile(token);
         if (cancelled) return;
+        setProfile(backendProfile);
         setNeedsCompleteRegistrationState(false);
       } catch (error: unknown) {
+        console.log("[AuthContext] Error loading profile:", error);
         if (cancelled) return;
 
         if (error instanceof ApiError) {
+          console.log(
+            "[AuthContext] ApiError - code:",
+            error.code,
+            "status:",
+            error.status,
+            "message:",
+            error.message,
+          );
+
           if (error.code === "unauthorized") {
+            console.log("[AuthContext] Unauthorized - signing out");
             notify({
               type: "error",
               title: "Session expired",
@@ -286,26 +321,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           if (error.code === "needs_complete_registration") {
+            console.log("[AuthContext] Needs complete registration");
+            setProfile(null);
             setNeedsCompleteRegistrationState(true);
             return;
           }
 
           if (error.code === "network") {
-            notify({
-              type: "error",
-              title: "Network error",
-              message: "Please try again.",
-            });
+            console.warn(
+              "[AuthContext] Network error - continuing without profile",
+            );
             return;
           }
 
+          console.log("[AuthContext] Other ApiError - showing notification");
           notify({
             type: "error",
-            title: "Couldn’t load profile",
+            title: "Couldn't load profile",
             message: error.message,
           });
           return;
         }
+
+        console.log("[AuthContext] Unknown error type:", typeof error);
 
         notify({
           type: "error",
@@ -322,7 +360,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [notify, router, session?.access_token, signOut]);
+  }, [
+    needsCompleteRegistration,
+    notify,
+    router,
+    session?.access_token,
+    signOut,
+  ]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -341,7 +385,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (needsCompleteRegistration && !inOnboardingGroup) {
       const href = `/(onboarding)/complete-registration?returnTo=${encodeURIComponent(
-        pathname
+        pathname,
       )}`;
       router.replace(href as Href);
       return;
@@ -364,6 +408,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         session,
+        profile,
         needsCompleteRegistration,
         profileLoading,
         setNeedsCompleteRegistration: (value: boolean) =>

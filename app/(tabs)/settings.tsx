@@ -51,7 +51,7 @@ type LanguageModalTarget = "ui" | "content" | null;
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { language: uiLanguage, setLanguage } = useLanguage();
 
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
@@ -138,12 +138,15 @@ export default function SettingsScreen() {
       <YStack gap="$4">
         <UserProfileCard
           name={
+            (profile?.name && profile?.surname
+              ? `${profile.name} ${profile.surname}`.trim()
+              : profile?.name || profile?.surname) ||
             user?.user_metadata?.full_name ||
             user?.email?.split("@")[0] ||
             "User"
           }
-          email={user?.email || ""}
-          avatarUrl={user?.user_metadata?.avatar_url}
+          email={profile?.email || user?.email || ""}
+          avatarUrl={profile?.avatar || user?.user_metadata?.avatar_url}
           onPress={() => router.push("/settings/profile")}
         />
 

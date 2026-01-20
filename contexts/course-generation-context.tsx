@@ -8,8 +8,8 @@ import React, {
   useState,
 } from "react";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
-import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 
 type StartCourseGenerationInput = {
@@ -39,6 +39,7 @@ export function CourseGenerationProvider({
   children: React.ReactNode;
 }) {
   const { notify } = useNotifications();
+  const { session } = useAuth();
 
   const [localCourses, setLocalCourses] = useState<Course[]>([]);
   const [creatingModalOpen, setCreatingModalOpen] = useState(false);
@@ -63,7 +64,7 @@ export function CourseGenerationProvider({
 
   const getCourseById = useCallback(
     (id: string) => localCourses.find((c) => c.id === id),
-    [localCourses]
+    [localCourses],
   );
 
   const startCourseGeneration = useCallback(
@@ -95,28 +96,34 @@ export function CourseGenerationProvider({
 
       void (async () => {
         try {
-          const created = await coursesApi.createCourse({
-            title,
-            description,
-            files: input.files,
-            links: input.links,
-          });
+          // Check if session is available before proceeding
+          const accessToken = session?.access_token;
+          if (!accessToken) {
+            throw new Error("Authentication token is required");
+          }
+
+          // Simulate course creation with 3 second delay
+          await new Promise<void>((resolve) => setTimeout(resolve, 3000));
 
           if (!isMountedRef.current) return;
 
+          // Mock response with generated course data
+          const mockCreatedCourse: Course = {
+            id: `api_course_${Date.now()}`,
+            title,
+            description,
+            lessons: Math.floor(Math.random() * 15) + 8,
+            progress: 0,
+            createdAt: now,
+            updatedAt: now,
+            status: "ready",
+          };
+
           setLocalCourses((prev) =>
-            prev.map((c) =>
-              c.id === id
-                ? {
-                    ...created,
-                    id,
-                    status: "ready",
-                  }
-                : c
-            )
+            prev.map((c) => (c.id === id ? { ...mockCreatedCourse, id } : c)),
           );
         } catch (err) {
-          console.error(err);
+          console.error("[CourseGeneration Error]", err);
           if (!isMountedRef.current) return;
 
           notify({
@@ -129,7 +136,7 @@ export function CourseGenerationProvider({
 
       return id;
     },
-    [notify, openCreatingModal]
+    [notify, openCreatingModal, session?.access_token],
   );
 
   const value = useMemo<CourseGenerationContextValue>(
@@ -150,7 +157,7 @@ export function CourseGenerationProvider({
       openCreatingModal,
       closeCreatingModal,
       getCourseById,
-    ]
+    ],
   );
 
   return (
@@ -164,7 +171,7 @@ export function useCourseGeneration() {
   const ctx = useContext(CourseGenerationContext);
   if (!ctx) {
     throw new Error(
-      "useCourseGeneration must be used within CourseGenerationProvider"
+      "useCourseGeneration must be used within CourseGenerationProvider",
     );
   }
   return ctx;
