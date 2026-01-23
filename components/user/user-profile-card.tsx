@@ -24,7 +24,6 @@ export function UserProfileCard({
     <Card
       padded
       pressStyle={{ scale: 0.98 }}
-      animation="quick"
       onPress={onPress}
       backgroundColor={colors.cardBackground}
       borderRadius="$5"

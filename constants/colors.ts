@@ -32,8 +32,8 @@ export const lightColors: ThemeColors = (() => {
   stats.streak = streak;
 
   const colors: any = {};
-  colors.background = "$gray2";
-  colors.cardBackground = "white";
+  colors.background = "$backgroundStrong";
+  colors.cardBackground = "$background";
   colors.textPrimary = "$gray12";
   colors.textSecondary = "$gray11";
   colors.textTertiary = "$gray10";
@@ -63,8 +63,8 @@ export const darkColors: ThemeColors = (() => {
   stats.streak = streak;
 
   const colors: any = {};
-  colors.background = "$gray2";
-  colors.cardBackground = "$gray3";
+  colors.background = "$background";
+  colors.cardBackground = "$backgroundStrong";
   colors.textPrimary = "$gray12";
   colors.textSecondary = "$gray11";
   colors.textTertiary = "$gray10";

@@ -13,7 +13,7 @@ import {
 import { UserProfileCard } from "@/components/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/language-context";
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import { useTheme as useAppTheme } from "@/contexts/theme-context";
 import {
   accountSettingsItems,
   aiSettingsItems,
@@ -34,7 +34,7 @@ import {
 import { useRouter } from "expo-router";
 import type { ComponentType } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { YStack } from "tamagui";
+import { YStack, useTheme as useTamaguiTheme } from "tamagui";
 
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
 
@@ -50,9 +50,13 @@ type LanguageModalTarget = "ui" | "content" | null;
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const colors = useThemeColors();
+  const tamaguiTheme = useTamaguiTheme();
+  const { activeTheme } = useAppTheme();
   const { user, profile } = useAuth();
   const { language: uiLanguage, setLanguage } = useLanguage();
+
+  const settingsIconColor = tamaguiTheme.colorHover.get();
+  const chevronIconColor = tamaguiTheme.colorPress.get();
 
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [languageModalTarget, setLanguageModalTarget] =
@@ -158,12 +162,22 @@ export default function SettingsScreen() {
               <SettingsItem
                 key={item.id}
                 icon={
-                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                  Icon ? (
+                    <Icon
+                      key={`${item.id}-${activeTheme}`}
+                      size={20}
+                      color={settingsIconColor}
+                    />
+                  ) : null
                 }
                 title={item.title}
                 description={item.description}
                 rightElement={
-                  <ChevronRight size={20} color={colors.textTertiary} />
+                  <ChevronRight
+                    key={`chevron-${item.id}-${activeTheme}`}
+                    size={20}
+                    color={chevronIconColor}
+                  />
                 }
                 onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < accountSettingsItems.length - 1}
@@ -180,7 +194,13 @@ export default function SettingsScreen() {
               <SettingsItem
                 key={item.id}
                 icon={
-                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                  Icon ? (
+                    <Icon
+                      key={`${item.id}-${activeTheme}`}
+                      size={20}
+                      color={settingsIconColor}
+                    />
+                  ) : null
                 }
                 title={item.title}
                 description={
@@ -189,7 +209,11 @@ export default function SettingsScreen() {
                     : item.description
                 }
                 rightElement={
-                  <ChevronRight size={20} color={colors.textTertiary} />
+                  <ChevronRight
+                    key={`chevron-${item.id}-${activeTheme}`}
+                    size={20}
+                    color={chevronIconColor}
+                  />
                 }
                 onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < aiSettingsItems.length - 1}
@@ -201,18 +225,34 @@ export default function SettingsScreen() {
         <SectionHeader title="App Settings" />
         <SettingsCard>
           <SettingsItem
-            icon={<Moon size={20} color={colors.textSecondary} />}
+            icon={
+              <Moon
+                key={`moon-${activeTheme}`}
+                size={20}
+                color={settingsIconColor}
+              />
+            }
             title="Dark Mode"
             description="Enable dark theme"
             rightElement={<ThemeToggle />}
             showDivider
           />
           <SettingsItem
-            icon={<Globe size={20} color={colors.textSecondary} />}
+            icon={
+              <Globe
+                key={`globe-${activeTheme}`}
+                size={20}
+                color={settingsIconColor}
+              />
+            }
             title="Language"
             description={uiLanguageLabel}
             rightElement={
-              <ChevronRight size={20} color={colors.textTertiary} />
+              <ChevronRight
+                key={`chevron-language-${activeTheme}`}
+                size={20}
+                color={chevronIconColor}
+              />
             }
             onPress={() => {
               setLanguageModalTarget("ui");
@@ -229,12 +269,22 @@ export default function SettingsScreen() {
               <SettingsItem
                 key={item.id}
                 icon={
-                  Icon ? <Icon size={20} color={colors.textSecondary} /> : null
+                  Icon ? (
+                    <Icon
+                      key={`${item.id}-${activeTheme}`}
+                      size={20}
+                      color={settingsIconColor}
+                    />
+                  ) : null
                 }
                 title={item.title}
                 description={item.description}
                 rightElement={
-                  <ChevronRight size={20} color={colors.textTertiary} />
+                  <ChevronRight
+                    key={`chevron-${item.id}-${activeTheme}`}
+                    size={20}
+                    color={chevronIconColor}
+                  />
                 }
                 onPress={() => handleSettingsItemPress(item.id)}
                 showDivider={index < supportItems.length - 1}

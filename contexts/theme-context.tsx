@@ -1,4 +1,3 @@
-import { darkColors, lightColors } from "@/constants/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeModulesProxy } from "expo-modules-core";
 import {
@@ -10,7 +9,6 @@ import {
   useState,
 } from "react";
 import { Platform, useColorScheme as useSystemColorScheme } from "react-native";
-import { getTokenValue } from "tamagui";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -46,13 +44,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     void loadTheme();
   }, []);
 
-  const setThemeMode = async (mode: ThemeMode) => {
-    try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-      setThemeModeState(mode);
-    } catch (error) {
+  const setThemeMode = (mode: ThemeMode) => {
+    // Update UI immediately; persist preference asynchronously.
+    setThemeModeState(mode);
+    AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch((error) => {
       console.error("Failed to save theme:", error);
-    }
+    });
   };
 
   const activeTheme = useMemo<"light" | "dark">(() => {
@@ -62,18 +59,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return themeMode;
   }, [themeMode, systemColorScheme]);
 
-  const resolveThemeColor = (color: string): string => {
-    if (color.startsWith("$")) {
-      return String(getTokenValue(color as never));
-    }
-    return color;
-  };
-
   useEffect(() => {
     if (Platform.OS !== "android") return;
 
     const hasExpoNavigationBarNativeModule = Boolean(
-      (NativeModulesProxy as any).ExpoNavigationBar
+      (NativeModulesProxy as any).ExpoNavigationBar,
     );
     if (!hasExpoNavigationBarNativeModule) return;
 
@@ -91,8 +81,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const themeColors = activeTheme === "dark" ? darkColors : lightColors;
-    const backgroundColor = resolveThemeColor(themeColors.cardBackground);
+    const backgroundColor = activeTheme === "dark" ? "#000000" : "#FFFFFF";
     const buttonStyle = activeTheme === "dark" ? "light" : "dark";
 
     try {
