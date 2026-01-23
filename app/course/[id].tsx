@@ -1,3 +1,4 @@
+import { AppSheetModal } from "@/components/modals";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
@@ -14,16 +15,7 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
-import {
-  Button,
-  Card,
-  H2,
-  Progress,
-  Sheet,
-  Text,
-  XStack,
-  YStack,
-} from "tamagui";
+import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 
 export default function CourseDetailPage() {
   const colors = useThemeColors();
@@ -428,133 +420,100 @@ export default function CourseDetailPage() {
         </YStack>
       </ScrollView>
 
-      <Sheet
+      <AppSheetModal
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
-        modal
         snapPoints={[45]}
-        dismissOnSnapToBottom
-        dismissOnOverlayPress
+        title="Settings"
+        headerRight={
+          <Button size="$3" chromeless onPress={() => setSettingsOpen(false)}>
+            Close
+          </Button>
+        }
       >
-        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        <YStack gap="$3">
+          <Button
+            size="$5"
+            backgroundColor={colors.primary}
+            color={colors.primaryText}
+            borderRadius="$6"
+            fontWeight="700"
+            disabled={!canPublish || publishing}
+            opacity={!canPublish || publishing ? 0.7 : 1}
+            icon={<Globe size={16} color={colors.primaryText} />}
+            onPress={handlePublish}
+          >
+            Publish course
+          </Button>
 
-        <Sheet.Frame
-          backgroundColor={colors.background}
-          padding="$4"
-          paddingBottom="$6"
-          gap="$4"
-        >
-          <Sheet.Handle />
+          <Button
+            size="$5"
+            backgroundColor="$red9"
+            color="white"
+            borderRadius="$6"
+            fontWeight="700"
+            disabled={!canDelete}
+            opacity={!canDelete ? 0.7 : 1}
+            icon={<Trash2 size={16} color="white" />}
+            onPress={handleDelete}
+          >
+            Delete course
+          </Button>
 
-          <XStack justifyContent="space-between" alignItems="center">
-            <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-              Settings
-            </Text>
-            <Button size="$3" chromeless onPress={() => setSettingsOpen(false)}>
-              Close
-            </Button>
-          </XStack>
-
-          <YStack gap="$3">
+          {course.isPublic ? (
             <Button
               size="$5"
-              backgroundColor={colors.primary}
-              color={colors.primaryText}
               borderRadius="$6"
               fontWeight="700"
-              disabled={!canPublish || publishing}
-              opacity={!canPublish || publishing ? 0.7 : 1}
-              icon={<Globe size={16} color={colors.primaryText} />}
-              onPress={handlePublish}
+              backgroundColor={colors.cardBackground}
+              borderWidth={1}
+              borderColor="$gray5"
+              disabled={!canRate}
+              opacity={!canRate ? 0.7 : 1}
+              icon={<Star size={16} color={colors.textSecondary} />}
+              onPress={() => {
+                if (!canRate) return;
+                setSettingsOpen(false);
+                setRateOpen(true);
+              }}
             >
-              Publish course
+              Rate course
             </Button>
+          ) : null}
+        </YStack>
+      </AppSheetModal>
 
-            <Button
-              size="$5"
-              backgroundColor="$red9"
-              color="white"
-              borderRadius="$6"
-              fontWeight="700"
-              disabled={!canDelete}
-              opacity={!canDelete ? 0.7 : 1}
-              icon={<Trash2 size={16} color="white" />}
-              onPress={handleDelete}
-            >
-              Delete course
-            </Button>
-
-            {course.isPublic ? (
-              <Button
-                size="$5"
-                borderRadius="$6"
-                fontWeight="700"
-                backgroundColor={colors.cardBackground}
-                borderWidth={1}
-                borderColor="$gray5"
-                disabled={!canRate}
-                opacity={!canRate ? 0.7 : 1}
-                icon={<Star size={16} color={colors.textSecondary} />}
-                onPress={() => {
-                  if (!canRate) return;
-                  setSettingsOpen(false);
-                  setRateOpen(true);
-                }}
-              >
-                Rate course
-              </Button>
-            ) : null}
-          </YStack>
-        </Sheet.Frame>
-      </Sheet>
-
-      <Sheet
+      <AppSheetModal
         open={rateOpen}
         onOpenChange={setRateOpen}
-        modal
         snapPoints={[40]}
-        dismissOnSnapToBottom
-        dismissOnOverlayPress
+        title="Rate this course"
       >
-        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        <YStack gap="$2">
+          <Text color={colors.textSecondary} fontSize="$4">
+            Select a rating from 1 to 5.
+          </Text>
+        </YStack>
 
-        <Sheet.Frame
-          backgroundColor={colors.background}
-          padding="$4"
-          paddingBottom="$6"
-          gap="$4"
-        >
-          <Sheet.Handle />
-
-          <YStack gap="$2">
-            <Text fontSize="$6" fontWeight="800" color={colors.textPrimary}>
-              Rate this course
-            </Text>
-            <Text color={colors.textSecondary} fontSize="$4">
-              Select a rating from 1 to 5.
-            </Text>
-          </YStack>
-
-          <XStack gap="$2" justifyContent="space-between">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <Button
-                key={`rating-${value}`}
-                flex={1}
-                size="$4"
-                backgroundColor={colors.cardBackground}
-                borderWidth={1}
-                borderColor="$gray5"
-                icon={<Star size={16} color={colors.textSecondary} />}
-                onPress={() => handleRate(value)}
-              >
-                <Text color={colors.textPrimary} fontWeight="700">
-                  {value}
-                </Text>
-              </Button>
-            ))}
-          </XStack>
-        </Sheet.Frame>
-      </Sheet>
+        <XStack gap="$2" justifyContent="space-between">
+          {[1, 2, 3, 4, 5].map((value) => (
+            <Button
+              key={`rating-${value}`}
+              flex={1}
+              size="$4"
+              backgroundColor={colors.cardBackground}
+              borderWidth={1}
+              borderColor="$gray5"
+              icon={<Star size={16} color={colors.textSecondary} />}
+              onPress={() => handleRate(value)}
+            >
+              <Text color={colors.textPrimary} fontWeight="700">
+                {value}
+              </Text>
+            </Button>
+          ))}
+        </XStack>
+      </AppSheetModal>
     </>
   );
 }

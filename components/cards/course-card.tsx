@@ -30,6 +30,11 @@ export function CourseCard({
       ? Math.round((progress / lessons) * 100)
       : progress;
 
+  const shouldShowProgress =
+    !isGenerating &&
+    !isFailed &&
+    (lessons !== undefined || progress !== undefined);
+
   return (
     <Card
       padding="$4"
@@ -52,16 +57,24 @@ export function CourseCard({
           {title}
         </Text>
         <Text color={colors.textSecondary} fontSize="$3" lineHeight="$2">
-          {isGenerating
-            ? "Создается курс…"
-            : isFailed
-              ? "Ошибка создания курса"
-              : description}
+          {description}
         </Text>
 
-        {!isGenerating &&
-          !isFailed &&
-          (lessons !== undefined || progress !== undefined) && (
+        {isGenerating ? (
+          <XStack gap="$2" alignItems="center" marginTop="$1">
+            <Text color={colors.textTertiary} fontSize="$2" fontWeight="600">
+              Generating
+            </Text>
+          </XStack>
+        ) : isFailed ? (
+          <XStack gap="$2" alignItems="center" marginTop="$1">
+            <Text color={colors.textTertiary} fontSize="$2" fontWeight="600">
+              Creation failed
+            </Text>
+          </XStack>
+        ) : null}
+
+        {shouldShowProgress && (
             <>
               <XStack gap="$2" alignItems="center" marginTop="$1">
                 {lessons !== undefined && (

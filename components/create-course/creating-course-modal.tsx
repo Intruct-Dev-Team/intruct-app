@@ -14,7 +14,7 @@ export function CreatingCourseModal() {
   } = useCourseGeneration();
 
   const course = activeCourseId ? getCourseById(activeCourseId) : undefined;
-  const status = course?.status ?? "ready";
+  const status = course?.status ?? "generating";
   const isGenerating = status === "generating";
   const isFailed = status === "failed";
 
@@ -61,10 +61,10 @@ export function CreatingCourseModal() {
             <YStack gap="$2" alignItems="center">
               <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
                 {isGenerating
-                  ? "Курс создается"
+                  ? "Creating course"
                   : isFailed
-                    ? "Ошибка создания"
-                    : "Курс готов"}
+                    ? "Creation failed"
+                    : "Course is ready"}
               </Text>
               <Text
                 fontSize="$4"
@@ -72,10 +72,10 @@ export function CreatingCourseModal() {
                 textAlign="center"
               >
                 {isGenerating
-                  ? "Генерация идет на сервере. Статус обновится, когда курс будет готов."
+                  ? "Generation is running on the server. The status will update when the course is ready."
                   : isFailed
-                    ? "Не удалось создать курс. Проверьте файл (PDF/TXT) и попробуйте снова."
-                    : "Можно закрыть это окно и открыть курс из списка."}
+                    ? "Couldn’t create the course. Check your file (PDF/TXT) and try again."
+                    : "You can close this window and open the course from the list."}
               </Text>
             </YStack>
           </YStack>

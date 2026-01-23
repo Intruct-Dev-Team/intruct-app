@@ -70,7 +70,22 @@ export default function CoursesScreen() {
     );
   }
 
-  const allCourses = [...localCourses, ...courses];
+  const localBackendIds = new Set(
+    localCourses
+      .map((c) => c.backendId)
+      .filter((id): id is number => typeof id === "number"),
+  );
+
+  // When a course is being generated we create a local placeholder.
+  // The backend may also return the same course immediately (often with 0 lessons).
+  // Prefer the local placeholder entry and hide the duplicate backend entry.
+  const allCourses = [
+    ...localCourses,
+    ...courses.filter((c) => {
+      const id = c.backendId;
+      return !(typeof id === "number" && localBackendIds.has(id));
+    }),
+  ];
 
   if (!allCourses || allCourses.length === 0) {
     return (

@@ -554,22 +554,25 @@ export const coursesApi = {
           const backendId = typeof item.id === "number" ? item.id : undefined;
           const now = new Date().toISOString();
 
+          const lessons =
+            typeof item.lessons_number === "number" ? item.lessons_number : 0;
+          const progress =
+            typeof item.finished_lessons === "number"
+              ? item.finished_lessons
+              : 0;
+
           return {
             id: String(backendId ?? `course_${Date.now()}`),
             backendId,
             title: item.title || "",
             description: item.description || "",
-            lessons:
-              typeof item.lessons_number === "number" ? item.lessons_number : 0,
-            progress:
-              typeof item.finished_lessons === "number"
-                ? item.finished_lessons
-                : 0,
+            lessons,
+            progress,
             createdAt: item.created_at || now,
             updatedAt: item.updated_at || item.created_at || now,
             isPublic: item.is_public,
             isMine: item.is_mine,
-            status: "ready",
+            status: lessons === 0 ? "generating" : "ready",
           };
         };
 
@@ -644,22 +647,25 @@ export const coursesApi = {
           const backendId = typeof item.id === "number" ? item.id : undefined;
           const now = new Date().toISOString();
 
+          const lessons =
+            typeof item.lessons_number === "number" ? item.lessons_number : 0;
+          const progress =
+            typeof item.finished_lessons === "number"
+              ? item.finished_lessons
+              : 0;
+
           return {
             id: String(backendId ?? `course_${Date.now()}`),
             backendId,
             title: item.title || "",
             description: item.description || "",
-            lessons:
-              typeof item.lessons_number === "number" ? item.lessons_number : 0,
-            progress:
-              typeof item.finished_lessons === "number"
-                ? item.finished_lessons
-                : 0,
+            lessons,
+            progress,
             createdAt: item.created_at || now,
             updatedAt: item.updated_at || item.created_at || now,
             isPublic: item.is_public,
             isMine: item.is_mine,
-            status: "ready",
+            status: lessons === 0 ? "generating" : "ready",
           };
         };
 
@@ -750,22 +756,23 @@ export const coursesApi = {
 
         const now = new Date().toISOString();
 
+        const lessons =
+          typeof json.lessons_number === "number" ? json.lessons_number : 0;
+        const progress =
+          typeof json.finished_lessons === "number" ? json.finished_lessons : 0;
+
         return {
           id: String(json.id),
           backendId: json.id,
           title: json.title || "",
           description: json.description || "",
-          lessons:
-            typeof json.lessons_number === "number" ? json.lessons_number : 0,
-          progress:
-            typeof json.finished_lessons === "number"
-              ? json.finished_lessons
-              : 0,
+          lessons,
+          progress,
           createdAt: json.created_at || now,
           updatedAt: json.updated_at || json.created_at || now,
           isPublic: json.is_public,
           isMine: json.is_mine,
-          status: "ready",
+          status: lessons === 0 ? "generating" : "ready",
           modules: Array.isArray(json.modules)
             ? json.modules.map((m) => ({
                 id: String(m.id ?? `module_${Date.now()}`),
