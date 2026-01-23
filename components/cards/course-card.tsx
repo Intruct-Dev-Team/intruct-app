@@ -75,52 +75,52 @@ export function CourseCard({
         ) : null}
 
         {shouldShowProgress && (
-            <>
-              <XStack gap="$2" alignItems="center" marginTop="$1">
-                {lessons !== undefined && (
-                  <>
-                    <Text
-                      color={colors.textTertiary}
-                      fontSize="$2"
-                      fontWeight="500"
-                    >
-                      {lessons} lessons
-                    </Text>
-                    {progress !== undefined && (
-                      <Text color={colors.textTertiary} fontSize="$2">
-                        •
-                      </Text>
-                    )}
-                  </>
-                )}
-                {progress !== undefined && (
+          <>
+            <XStack gap="$2" alignItems="center" marginTop="$1">
+              {lessons !== undefined && (
+                <>
                   <Text
                     color={colors.textTertiary}
                     fontSize="$2"
                     fontWeight="500"
                   >
-                    {percentComplete}% complete
+                    {lessons} lessons
                   </Text>
-                )}
-              </XStack>
-
-              {progress !== undefined && (
-                <Progress
-                  value={
-                    typeof percentComplete === "number" ? percentComplete : 0
-                  }
-                  backgroundColor="$gray5"
-                  height={6}
-                  borderRadius="$2"
-                >
-                  <Progress.Indicator
-                    animation="bouncy"
-                    backgroundColor={colors.primary}
-                  />
-                </Progress>
+                  {progress !== undefined && (
+                    <Text color={colors.textTertiary} fontSize="$2">
+                      •
+                    </Text>
+                  )}
+                </>
               )}
-            </>
-          )}
+              {progress !== undefined && (
+                <Text
+                  color={colors.textTertiary}
+                  fontSize="$2"
+                  fontWeight="500"
+                >
+                  {percentComplete}% complete
+                </Text>
+              )}
+            </XStack>
+
+            {progress !== undefined && (
+              <Progress
+                value={
+                  typeof percentComplete === "number" ? percentComplete : 0
+                }
+                backgroundColor="$gray5"
+                height={6}
+                borderRadius="$2"
+              >
+                <Progress.Indicator
+                  animation="bouncy"
+                  backgroundColor={colors.primary}
+                />
+              </Progress>
+            )}
+          </>
+        )}
       </YStack>
     </Card>
   );
