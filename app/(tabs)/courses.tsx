@@ -1,5 +1,4 @@
 import { CourseCard, CourseCardSkeleton } from "@/components/cards";
-import { PageHeader, ScreenContainer } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
@@ -8,7 +7,7 @@ import type { Course } from "@/types";
 import { Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Button, H2, Text, YStack } from "tamagui";
+import { Button, H1, ScrollView, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
   const router = useRouter();
@@ -17,6 +16,19 @@ export default function CoursesScreen() {
   const { localCourses, openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const header = (
+    <YStack backgroundColor={colors.cardBackground}>
+      <YStack padding="$4" paddingTop="$6" gap="$1">
+        <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
+          My Courses
+        </H1>
+        <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
+          All courses you are currently taking
+        </Text>
+      </YStack>
+    </YStack>
+  );
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -52,19 +64,15 @@ export default function CoursesScreen() {
   if (loading) {
     return (
       <YStack flex={1}>
-        <ScreenContainer>
-          <PageHeader
-            title="Courses"
-            subtitle="All courses you are currently taking"
-          />
-          <YStack gap="$3">
-            <H2 fontSize="$7" fontWeight="700">
-              My Courses
-            </H2>
-            <CourseCardSkeleton />
-            <CourseCardSkeleton />
+        {header}
+        <ScrollView backgroundColor={colors.background} flex={1}>
+          <YStack padding="$4" gap="$4" paddingBottom="$8">
+            <YStack gap="$3">
+              <CourseCardSkeleton />
+              <CourseCardSkeleton />
+            </YStack>
           </YStack>
-        </ScreenContainer>
+        </ScrollView>
         {createCourseFab}
       </YStack>
     );
@@ -90,15 +98,23 @@ export default function CoursesScreen() {
   if (!allCourses || allCourses.length === 0) {
     return (
       <YStack flex={1}>
-        <ScreenContainer>
-          <PageHeader
-            title="Courses"
-            subtitle="Your enrolled courses will appear here"
-          />
-          <YStack gap="$3">
-            <Text color="$color">You have no courses yet.</Text>
+        <YStack backgroundColor={colors.cardBackground}>
+          <YStack padding="$4" paddingTop="$6" gap="$1">
+            <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
+              My Courses
+            </H1>
+            <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
+              Your enrolled courses will appear here
+            </Text>
           </YStack>
-        </ScreenContainer>
+        </YStack>
+        <ScrollView backgroundColor={colors.background} flex={1}>
+          <YStack padding="$4" gap="$4" paddingBottom="$8">
+            <YStack gap="$3">
+              <Text color="$color">You have no courses yet.</Text>
+            </YStack>
+          </YStack>
+        </ScrollView>
         {createCourseFab}
       </YStack>
     );
@@ -106,36 +122,30 @@ export default function CoursesScreen() {
 
   return (
     <YStack flex={1}>
-      <ScreenContainer>
-        <PageHeader
-          title="My Courses"
-          subtitle="All courses you are currently taking"
-        />
-
-        <YStack gap="$3">
-          <H2 fontSize="$7" fontWeight="700">
-            My Courses
-          </H2>
-
-          {allCourses.map((course) => {
-            return (
-              <CourseCard
-                key={course.id}
-                title={course.title}
-                description={course.description || ""}
-                status={course.status}
-                lessons={course.lessons}
-                progress={course.progress}
-                onPress={() =>
-                  course.status === "generating" || course.status === "failed"
-                    ? openCreatingModal(course.id)
-                    : router.push(`/course/${course.id}` as any)
-                }
-              />
-            );
-          })}
+      {header}
+      <ScrollView backgroundColor={colors.background} flex={1}>
+        <YStack padding="$4" gap="$4" paddingBottom="$8">
+          <YStack gap="$3">
+            {allCourses.map((course) => {
+              return (
+                <CourseCard
+                  key={course.id}
+                  title={course.title}
+                  description={course.description || ""}
+                  status={course.status}
+                  lessons={course.lessons}
+                  progress={course.progress}
+                  onPress={() =>
+                    course.status === "generating" || course.status === "failed"
+                      ? openCreatingModal(course.id)
+                      : router.push(`/course/${course.id}` as any)
+                  }
+                />
+              );
+            })}
+          </YStack>
         </YStack>
-      </ScreenContainer>
+      </ScrollView>
       {createCourseFab}
     </YStack>
   );

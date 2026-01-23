@@ -7,35 +7,40 @@ import {
 } from "@/components/cards";
 import { PageHeader, ScreenContainer } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { H2, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const colors = useThemeColors();
   const router = useRouter();
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
+  const { openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    setLoading(true);
     try {
-      const coursesData = await coursesApi.getMyCourses();
+      const coursesData = await coursesApi.getMyCourses(session?.access_token);
       setCourses(coursesData);
     } catch (error) {
       console.error("Failed to load courses:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  const coursesToShow = useMemo(() => courses.slice(0, 4), [courses]);
 
   if (loading || !profile) {
     return (
@@ -57,6 +62,8 @@ export default function HomeScreen() {
           <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
             My Courses
           </H2>
+          <CourseCardSkeleton />
+          <CourseCardSkeleton />
           <CourseCardSkeleton />
           <CourseCardSkeleton />
         </YStack>
@@ -99,14 +106,19 @@ export default function HomeScreen() {
           My Courses
         </H2>
 
-        {courses.map((course) => (
+        {coursesToShow.map((course) => (
           <CourseCard
             key={course.id}
             title={course.title}
             description={course.description}
+            status={course.status}
             lessons={course.lessons}
             progress={course.progress}
-            onPress={() => router.push(`/course/${course.id}` as any)}
+            onPress={() =>
+              course.status === "generating" || course.status === "failed"
+                ? openCreatingModal(course.id)
+                : router.push(`/course/${course.id}` as any)
+            }
           />
         ))}
       </YStack>
