@@ -58,6 +58,12 @@ export default function SettingsScreen() {
   const settingsIconColor = tamaguiTheme.colorHover.get();
   const chevronIconColor = tamaguiTheme.colorPress.get();
 
+  const avatarUrl =
+    profile?.avatar ??
+    (typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : undefined);
+
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [languageModalTarget, setLanguageModalTarget] =
     useState<LanguageModalTarget>(null);
@@ -150,7 +156,7 @@ export default function SettingsScreen() {
             "User"
           }
           email={profile?.email || user?.email || ""}
-          avatarUrl={profile?.avatar || user?.user_metadata?.avatar_url}
+          avatarUrl={avatarUrl}
           onPress={() => router.push("/settings/profile")}
         />
 

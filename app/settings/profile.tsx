@@ -10,27 +10,18 @@ export default function ProfileScreen() {
   const colors = useThemeColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { profile, user, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
 
   const fullName =
     (profile?.name && profile?.surname
       ? `${profile.name} ${profile.surname}`.trim()
-      : profile?.name || profile?.surname) ||
-    user?.user_metadata?.full_name ||
-    user?.email?.split("@")[0] ||
-    "User";
+      : profile?.name || profile?.surname) || "User";
 
-  const email = profile?.email || user?.email || "";
+  const email = profile?.email || "";
 
   const birthdate = profile?.birthdate || "";
 
-  const avatarSrc =
-    normalizeAvatarUri(profile?.avatar) ??
-    normalizeAvatarUri(
-      typeof user?.user_metadata?.avatar_url === "string"
-        ? user.user_metadata.avatar_url
-        : undefined,
-    );
+  const avatarSrc = normalizeAvatarUri(profile?.avatar);
 
   const initials = fullName
     .split(" ")
