@@ -1,24 +1,39 @@
 import { CourseCard, CourseCardSkeleton } from "@/components/cards";
 import { PageHeader, ScreenContainer } from "@/components/layout";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 import { Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, H2, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { session } = useAuth();
   const { localCourses, openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const c = await coursesApi.getMyCourses(session?.access_token);
+      console.log("[CoursesScreen] Loaded courses", c);
+      setCourses(c);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.access_token]);
+
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+  }, [loadData]);
 
   const createCourseFab = (
     <YStack position="absolute" right={16} bottom={16}>
@@ -33,18 +48,6 @@ export default function CoursesScreen() {
       />
     </YStack>
   );
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const c = await coursesApi.getMyCourses();
-      setCourses(c);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -109,7 +112,7 @@ export default function CoursesScreen() {
                 lessons={course.lessons}
                 progress={course.progress}
                 onPress={() =>
-                  course.status === "generating"
+                  course.status === "generating" || course.status === "failed"
                     ? openCreatingModal(course.id)
                     : router.push(`/course/${course.id}` as any)
                 }

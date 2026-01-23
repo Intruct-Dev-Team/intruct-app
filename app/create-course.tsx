@@ -1,4 +1,5 @@
 import { StepIndicator } from "@/components/common";
+import type { PickedFile } from "@/components/create-course/attach-materials-step";
 import { AttachMaterialsStep } from "@/components/create-course/attach-materials-step";
 import { CourseDetailsStep } from "@/components/create-course/course-details-step";
 import { ReviewStep } from "@/components/create-course/review-step";
@@ -23,7 +24,7 @@ export default function CreateCourseScreen() {
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    files: [] as string[],
+    files: [] as PickedFile[],
     title: "",
     description: "",
     contentLanguage: "en",

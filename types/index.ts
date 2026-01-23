@@ -9,6 +9,7 @@ export interface User {
 // Course types
 export interface Course {
   id: string;
+  backendId?: number;
   title: string;
   description: string;
   lessons: number;
@@ -21,7 +22,8 @@ export interface Course {
   rating?: number | null; // nullable: private/unavailable
   students?: number | null; // nullable: private/unavailable
   isPublic?: boolean;
-  status?: "generating" | "ready"; // backend-driven
+  isMine?: boolean;
+  status?: "generating" | "ready" | "failed"; // backend-driven
 }
 
 export interface Module {

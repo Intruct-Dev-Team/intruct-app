@@ -19,7 +19,7 @@ export type LanguageContextValue = {
 };
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 const DEFAULT_LANGUAGE: UiLanguageCode = "en";
@@ -28,14 +28,12 @@ const SUPPORTED_UI_LANGUAGES = new Set<UiLanguageCode>([
   "en",
   "zh",
   "hi",
+  "de",
   "es",
   "fr",
-  "ar",
-  "bn",
   "pt",
   "ru",
   "sr",
-  "ur",
 ]);
 
 function normalizeLanguage(value: unknown): UiLanguageCode {

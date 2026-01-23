@@ -27,6 +27,7 @@ export function LanguageModal({
       onOpenChange={onOpenChange}
       modal
       snapPoints={[80]}
+      dismissOnSnapToBottom
       dismissOnOverlayPress
     >
       <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />

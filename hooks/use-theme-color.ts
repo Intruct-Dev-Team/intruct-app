@@ -26,13 +26,13 @@ function isThemeVar(value: unknown): value is ThemeVar {
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
-  colorName: ThemeColorName
+  colorName: ThemeColorName,
 ) {
+  const theme = useTheme();
+
   const scheme = useColorScheme() ?? "light";
   const colorFromProps = scheme === "dark" ? props.dark : props.light;
   if (colorFromProps) return colorFromProps;
-
-  const theme = useTheme();
 
   switch (colorName) {
     case "background":

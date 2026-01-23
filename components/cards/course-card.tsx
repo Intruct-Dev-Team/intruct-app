@@ -6,7 +6,7 @@ interface CourseCardProps {
   description: string;
   lessons?: number;
   progress?: number;
-  status?: "generating" | "ready";
+  status?: "generating" | "ready" | "failed";
   onPress?: () => void;
 }
 
@@ -21,6 +21,7 @@ export function CourseCard({
   const colors = useThemeColors();
 
   const isGenerating = status === "generating";
+  const isFailed = status === "failed";
 
   // `progress` represents number of completed lessons. Compute percent
   // for UI elements that expect percentage (0-100).
@@ -51,56 +52,62 @@ export function CourseCard({
           {title}
         </Text>
         <Text color={colors.textSecondary} fontSize="$3" lineHeight="$2">
-          {isGenerating ? "Создается курс…" : description}
+          {isGenerating
+            ? "Создается курс…"
+            : isFailed
+              ? "Ошибка создания курса"
+              : description}
         </Text>
 
-        {!isGenerating && (lessons !== undefined || progress !== undefined) && (
-          <>
-            <XStack gap="$2" alignItems="center" marginTop="$1">
-              {lessons !== undefined && (
-                <>
+        {!isGenerating &&
+          !isFailed &&
+          (lessons !== undefined || progress !== undefined) && (
+            <>
+              <XStack gap="$2" alignItems="center" marginTop="$1">
+                {lessons !== undefined && (
+                  <>
+                    <Text
+                      color={colors.textTertiary}
+                      fontSize="$2"
+                      fontWeight="500"
+                    >
+                      {lessons} lessons
+                    </Text>
+                    {progress !== undefined && (
+                      <Text color={colors.textTertiary} fontSize="$2">
+                        •
+                      </Text>
+                    )}
+                  </>
+                )}
+                {progress !== undefined && (
                   <Text
                     color={colors.textTertiary}
                     fontSize="$2"
                     fontWeight="500"
                   >
-                    {lessons} lessons
+                    {percentComplete}% complete
                   </Text>
-                  {progress !== undefined && (
-                    <Text color={colors.textTertiary} fontSize="$2">
-                      •
-                    </Text>
-                  )}
-                </>
-              )}
-              {progress !== undefined && (
-                <Text
-                  color={colors.textTertiary}
-                  fontSize="$2"
-                  fontWeight="500"
-                >
-                  {percentComplete}% complete
-                </Text>
-              )}
-            </XStack>
+                )}
+              </XStack>
 
-            {progress !== undefined && (
-              <Progress
-                value={
-                  typeof percentComplete === "number" ? percentComplete : 0
-                }
-                backgroundColor="$gray5"
-                height={6}
-                borderRadius="$2"
-              >
-                <Progress.Indicator
-                  animation="bouncy"
-                  backgroundColor={colors.primary}
-                />
-              </Progress>
-            )}
-          </>
-        )}
+              {progress !== undefined && (
+                <Progress
+                  value={
+                    typeof percentComplete === "number" ? percentComplete : 0
+                  }
+                  backgroundColor="$gray5"
+                  height={6}
+                  borderRadius="$2"
+                >
+                  <Progress.Indicator
+                    animation="bouncy"
+                    backgroundColor={colors.primary}
+                  />
+                </Progress>
+              )}
+            </>
+          )}
       </YStack>
     </Card>
   );

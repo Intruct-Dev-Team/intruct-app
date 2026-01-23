@@ -5,9 +5,15 @@ import * as DocumentPicker from "expo-document-picker";
 import { Pressable } from "react-native";
 import { Card, Text, XStack, YStack } from "tamagui";
 
+export type PickedFile = {
+  uri: string;
+  name: string;
+  mimeType?: string;
+};
+
 interface AttachMaterialsStepProps {
-  files: string[];
-  onFilesChange: (files: string[]) => void;
+  files: PickedFile[];
+  onFilesChange: (files: PickedFile[]) => void;
 }
 
 export function AttachMaterialsStep({
@@ -17,21 +23,44 @@ export function AttachMaterialsStep({
   const colors = useThemeColors();
   const { notify } = useNotifications();
 
+  const isAllowedAsset = (asset: DocumentPicker.DocumentPickerAsset) => {
+    const name = (asset.name || "").toLowerCase();
+    const mimeType = (asset.mimeType || "").toLowerCase();
+
+    if (mimeType === "application/pdf" || mimeType === "text/plain")
+      return true;
+    if (name.endsWith(".pdf") || name.endsWith(".txt")) return true;
+    return false;
+  };
+
   const handleAttachFiles = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         copyToCacheDirectory: true,
-        multiple: true,
+        multiple: false,
+        type: ["application/pdf", "text/plain"],
       });
 
       if (result.canceled) return;
 
-      const picked = result.assets
-        .map((asset) => asset.name || asset.uri)
-        .filter(Boolean);
+      const asset = result.assets[0];
+      if (!asset?.uri) return;
 
-      if (picked.length === 0) return;
-      onFilesChange([...files, ...picked]);
+      if (!isAllowedAsset(asset)) {
+        notify({
+          type: "error",
+          message: "Please choose a PDF or TXT file.",
+        });
+        return;
+      }
+
+      const picked: PickedFile = {
+        uri: asset.uri,
+        name: asset.name || asset.uri,
+        mimeType: asset.mimeType,
+      };
+
+      onFilesChange([picked]);
     } catch {
       notify({
         type: "error",
@@ -83,7 +112,7 @@ export function AttachMaterialsStep({
                 Tap to attach files
               </Text>
               <Text fontSize="$3" color={colors.textSecondary}>
-                PDF, DOC, TXT, Images
+                PDF or TXT
               </Text>
             </YStack>
           </Card>
@@ -102,7 +131,7 @@ export function AttachMaterialsStep({
                   <XStack gap="$2" alignItems="center" flex={1}>
                     <Paperclip size={16} color={colors.textSecondary} />
                     <Text fontSize="$3" color={colors.textPrimary} flex={1}>
-                      {file}
+                      {file.name}
                     </Text>
                   </XStack>
                   <Pressable onPress={() => handleRemoveFile(index)}>

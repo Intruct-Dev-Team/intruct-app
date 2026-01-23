@@ -8,14 +8,16 @@ import React, {
   useState,
 } from "react";
 
+import type { PickedFile } from "@/components/create-course/attach-materials-step";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { ApiError, coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 
 type StartCourseGenerationInput = {
   title: string;
   description: string;
-  files: string[];
+  files: PickedFile[];
   links: string[];
   contentLanguage: string;
 };
@@ -96,40 +98,69 @@ export function CourseGenerationProvider({
 
       void (async () => {
         try {
-          // Check if session is available before proceeding
           const accessToken = session?.access_token;
-          if (!accessToken) {
-            throw new Error("Authentication token is required");
-          }
+          if (!accessToken) throw new Error("Authentication token is required");
 
-          // Simulate course creation with 3 second delay
-          await new Promise<void>((resolve) => setTimeout(resolve, 3000));
+          const firstFile = input.files[0];
+          if (!firstFile) throw new Error("At least one file is required");
+
+          const nameLower = (firstFile.name || "").toLowerCase();
+          const inferredType = nameLower.endsWith(".pdf")
+            ? "application/pdf"
+            : nameLower.endsWith(".txt")
+              ? "text/plain"
+              : undefined;
+
+          const backendCourseId = await coursesApi.createCourse(accessToken, {
+            title,
+            description,
+            file: {
+              uri: firstFile.uri,
+              name: firstFile.name,
+              type: firstFile.mimeType || inferredType,
+            },
+            language: input.contentLanguage,
+          });
 
           if (!isMountedRef.current) return;
 
-          // Mock response with generated course data
-          const mockCreatedCourse: Course = {
-            id: `api_course_${Date.now()}`,
-            title,
-            description,
-            lessons: Math.floor(Math.random() * 15) + 8,
-            progress: 0,
-            createdAt: now,
-            updatedAt: now,
-            status: "ready",
-          };
-
           setLocalCourses((prev) =>
-            prev.map((c) => (c.id === id ? { ...mockCreatedCourse, id } : c)),
+            prev.map((c) =>
+              c.id === id
+                ? {
+                    ...c,
+                    backendId: backendCourseId,
+                    status: "generating",
+                    updatedAt: new Date().toISOString(),
+                  }
+                : c,
+            ),
           );
         } catch (err) {
           console.error("[CourseGeneration Error]", err);
           if (!isMountedRef.current) return;
 
+          const errorMessage =
+            err instanceof ApiError
+              ? err.message
+              : "Something went wrong. Please try again.";
+
+          setLocalCourses((prev) =>
+            prev.map((c) =>
+              c.id === id
+                ? {
+                    ...c,
+                    status: "failed",
+                    updatedAt: new Date().toISOString(),
+                  }
+                : c,
+            ),
+          );
+
           notify({
             type: "error",
             title: "Course creation failed",
-            message: "Something went wrong. Please try again.",
+            message: errorMessage,
           });
         }
       })();

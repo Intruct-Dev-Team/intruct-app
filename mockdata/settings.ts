@@ -1,17 +1,15 @@
 import type { LanguageOption, SettingsMenuItem } from "@/types";
 
 export const languageOptions: LanguageOption[] = [
-  { code: "en", label: "English (US)", flag: "🇺🇸" },
+  { code: "en", label: "English", flag: "🇺🇸" },
+  { code: "sr", label: "Srpski", flag: "🇷🇸" },
   { code: "zh", label: "中文", flag: "🇨🇳" },
   { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
+  { code: "ru", label: "Русский", flag: "🇷🇺" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
   { code: "es", label: "Español", flag: "🇪🇸" },
   { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "ar", label: "العربية", flag: "🇸🇦" },
-  { code: "bn", label: "বাংলা", flag: "🇧🇩" },
   { code: "pt", label: "Português", flag: "🇧🇷" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
-  { code: "sr", label: "Srpski", flag: "🇷🇸" },
-  { code: "ur", label: "اردو", flag: "🇵🇰" },
 ];
 
 export const accountSettingsItems: SettingsMenuItem[] = [

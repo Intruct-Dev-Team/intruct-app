@@ -3,9 +3,16 @@ import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
-import { ArrowLeft, Globe, Play, Star } from "@tamagui/lucide-icons";
+import {
+  ArrowLeft,
+  Globe,
+  MoreVertical,
+  Play,
+  Star,
+  Trash2,
+} from "@tamagui/lucide-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import {
   Button,
@@ -22,48 +29,69 @@ export default function CourseDetailPage() {
   const colors = useThemeColors();
   const router = useRouter();
   const { notify } = useNotifications();
-  const { user } = useAuth();
+  const { session } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const loadCourse = useCallback(
+    async (courseId: string) => {
+      setLoading(true);
+      try {
+        const c = await coursesApi.getCourseById(
+          courseId,
+          session?.access_token,
+        );
+        setCourse(c);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [session?.access_token],
+  );
 
   useEffect(() => {
     if (!id) return;
-    loadCourse(id);
-  }, [id]);
-
-  const loadCourse = async (courseId: string) => {
-    setLoading(true);
-    try {
-      const c = await coursesApi.getCourseById(courseId);
-      setCourse(c);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    void loadCourse(id);
+  }, [id, loadCourse]);
 
   const handlePublish = async () => {
     if (!course || publishing) return;
 
+    const token = session?.access_token;
+    const courseId = course.backendId;
+
+    if (!token || !courseId) {
+      notify({ type: "error", message: "Couldn’t publish course." });
+      return;
+    }
+
     setPublishing(true);
     try {
-      const updated = await coursesApi.setCoursePublication(course.id, true);
-      if (!updated) {
-        notify({ type: "error", message: "Couldn’t publish course." });
-        return;
-      }
-      setCourse(updated);
+      await coursesApi.publishCourse(token, courseId);
+      setCourse({ ...course, isPublic: true });
       notify({ type: "success", message: "Course published." });
+      setSettingsOpen(false);
     } catch {
       notify({ type: "error", message: "Couldn’t publish course." });
     } finally {
       setPublishing(false);
     }
+  };
+
+  const handleDelete = () => {
+    if (!canDelete) return;
+    notify({
+      type: "error",
+      message: "Course deletion isn’t supported yet.",
+    });
+    setSettingsOpen(false);
   };
 
   if (loading || !course) {
@@ -75,14 +103,10 @@ export default function CourseDetailPage() {
     );
   }
 
-  const currentUserName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
-
-  const canRate =
-    !!course.isPublic &&
-    !!course.author &&
-    !!currentUserName &&
-    course.author !== currentUserName;
+  const isMine = !!course.isMine;
+  const canRate = !!course.isPublic && !isMine;
+  const canPublish = !course.isPublic && isMine;
+  const canDelete = isMine;
 
   const handleRate = async (reviewGrade: number) => {
     if (!canRate) return;
@@ -126,34 +150,13 @@ export default function CourseDetailPage() {
                   onPress={() => router.back()}
                 />
 
-                {canRate ? (
-                  <Button
-                    marginLeft="auto"
-                    size="$3"
-                    chromeless
-                    icon={<Star size={16} color={colors.textPrimary} />}
-                    onPress={() => setRateOpen(true)}
-                  >
-                    Rate
-                  </Button>
-                ) : null}
-
-                {!course.isPublic ? (
-                  <Button
-                    marginLeft="auto"
-                    size="$3"
-                    backgroundColor={colors.primary}
-                    color={colors.primaryText}
-                    borderRadius="$6"
-                    fontWeight="700"
-                    disabled={publishing}
-                    opacity={publishing ? 0.7 : 1}
-                    icon={<Globe size={16} color={colors.primaryText} />}
-                    onPress={handlePublish}
-                  >
-                    Publish
-                  </Button>
-                ) : null}
+                <Button
+                  marginLeft="auto"
+                  size="$3"
+                  chromeless
+                  icon={<MoreVertical size={18} color={colors.textPrimary} />}
+                  onPress={() => setSettingsOpen(true)}
+                />
               </XStack>
 
               <YStack marginTop="$2">
@@ -426,10 +429,91 @@ export default function CourseDetailPage() {
       </ScrollView>
 
       <Sheet
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        modal
+        snapPoints={[45]}
+        dismissOnSnapToBottom
+        dismissOnOverlayPress
+      >
+        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+
+        <Sheet.Frame
+          backgroundColor={colors.background}
+          padding="$4"
+          paddingBottom="$6"
+          gap="$4"
+        >
+          <Sheet.Handle />
+
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
+              Settings
+            </Text>
+            <Button size="$3" chromeless onPress={() => setSettingsOpen(false)}>
+              Close
+            </Button>
+          </XStack>
+
+          <YStack gap="$3">
+            <Button
+              size="$5"
+              backgroundColor={colors.primary}
+              color={colors.primaryText}
+              borderRadius="$6"
+              fontWeight="700"
+              disabled={!canPublish || publishing}
+              opacity={!canPublish || publishing ? 0.7 : 1}
+              icon={<Globe size={16} color={colors.primaryText} />}
+              onPress={handlePublish}
+            >
+              Publish course
+            </Button>
+
+            <Button
+              size="$5"
+              backgroundColor="$red9"
+              color="white"
+              borderRadius="$6"
+              fontWeight="700"
+              disabled={!canDelete}
+              opacity={!canDelete ? 0.7 : 1}
+              icon={<Trash2 size={16} color="white" />}
+              onPress={handleDelete}
+            >
+              Delete course
+            </Button>
+
+            {course.isPublic ? (
+              <Button
+                size="$5"
+                borderRadius="$6"
+                fontWeight="700"
+                backgroundColor={colors.cardBackground}
+                borderWidth={1}
+                borderColor="$gray5"
+                disabled={!canRate}
+                opacity={!canRate ? 0.7 : 1}
+                icon={<Star size={16} color={colors.textSecondary} />}
+                onPress={() => {
+                  if (!canRate) return;
+                  setSettingsOpen(false);
+                  setRateOpen(true);
+                }}
+              >
+                Rate course
+              </Button>
+            ) : null}
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
+
+      <Sheet
         open={rateOpen}
         onOpenChange={setRateOpen}
         modal
         snapPoints={[40]}
+        dismissOnSnapToBottom
         dismissOnOverlayPress
       >
         <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />

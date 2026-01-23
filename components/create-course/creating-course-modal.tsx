@@ -1,6 +1,6 @@
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { Check } from "@tamagui/lucide-icons";
+import { AlertTriangle, Check } from "@tamagui/lucide-icons";
 import { Modal, Pressable, StyleSheet } from "react-native";
 import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
@@ -16,6 +16,7 @@ export function CreatingCourseModal() {
   const course = activeCourseId ? getCourseById(activeCourseId) : undefined;
   const status = course?.status ?? "ready";
   const isGenerating = status === "generating";
+  const isFailed = status === "failed";
 
   if (!creatingModalOpen) return null;
 
@@ -43,11 +44,15 @@ export function CreatingCourseModal() {
               height={80}
               alignItems="center"
               justifyContent="center"
-              backgroundColor={isGenerating ? "$blue2" : "$green2"}
+              backgroundColor={
+                isGenerating ? "$blue2" : isFailed ? "$red2" : "$green2"
+              }
               borderRadius="$10"
             >
               {isGenerating ? (
                 <Spinner size="large" color="$blue10" />
+              ) : isFailed ? (
+                <AlertTriangle size={40} color="$red10" />
               ) : (
                 <Check size={40} color="$green10" />
               )}
@@ -55,7 +60,11 @@ export function CreatingCourseModal() {
 
             <YStack gap="$2" alignItems="center">
               <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-                {isGenerating ? "Курс создается" : "Курс готов"}
+                {isGenerating
+                  ? "Курс создается"
+                  : isFailed
+                    ? "Ошибка создания"
+                    : "Курс готов"}
               </Text>
               <Text
                 fontSize="$4"
@@ -64,7 +73,9 @@ export function CreatingCourseModal() {
               >
                 {isGenerating
                   ? "Генерация идет на сервере. Статус обновится, когда курс будет готов."
-                  : "Можно закрыть это окно и открыть курс из списка."}
+                  : isFailed
+                    ? "Не удалось создать курс. Проверьте файл (PDF/TXT) и попробуйте снова."
+                    : "Можно закрыть это окно и открыть курс из списка."}
               </Text>
             </YStack>
           </YStack>

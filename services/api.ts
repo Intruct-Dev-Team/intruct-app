@@ -114,6 +114,18 @@ const emitNeedsCompleteRegistration = (): void => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
+const COURSE_LANGUAGE_CODE_TO_BACKEND: Record<string, string> = {
+  en: "English",
+  sr: "Srpski",
+  zh: "中文",
+  hi: "हिन्दी",
+  ru: "Русский",
+  de: "Deutsch",
+  es: "Español",
+  fr: "Français",
+  pt: "Português",
+};
+
 const isRegistrationNotCompletedBody = (
   value: unknown,
 ): value is { error: string } =>
@@ -144,6 +156,40 @@ const readJsonResponse = async (res: Response): Promise<unknown | null> => {
   } catch (err) {
     if (err instanceof ApiError) throw err;
     return null;
+  }
+};
+
+const readErrorPayload = async (
+  res: Response,
+): Promise<{ json: unknown | null; text: string | null }> => {
+  try {
+    const text = await res.text();
+    const trimmed = text.trim();
+    if (!trimmed) return { json: null, text: null };
+
+    try {
+      const json = JSON.parse(trimmed) as unknown;
+
+      if (
+        isRegistrationNotCompletedBody(json) &&
+        json.error === REGISTRATION_NOT_COMPLETED_ERROR
+      ) {
+        emitNeedsCompleteRegistration();
+        throw new ApiError(
+          res.status || 400,
+          "needs_complete_registration",
+          REGISTRATION_NOT_COMPLETED_ERROR,
+        );
+      }
+
+      return { json, text: trimmed };
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      return { json: null, text: trimmed };
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    return { json: null, text: null };
   }
 };
 
@@ -447,21 +493,365 @@ export const authApi = {
    Courses API
    ============================================================================ */
 
+/* ============================================================================
+   Courses API
+   ============================================================================ */
+
 export const coursesApi = {
-  async getMyCourses(): Promise<Course[]> {
+  async getMyCourses(token?: string): Promise<Course[]> {
     await delay(DELAYS.courses);
+
+    const baseUrl = getApiBaseUrl();
+
+    // Courses endpoints require auth per swagger; if we don't have a token yet,
+    // keep behavior non-blocking and fall back to mock data.
+    if (!token) {
+      return mockCourses;
+    }
+
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/courses?in_mine=true`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          const body = (await readJsonResponse(
+            res,
+          )) as ApiErrorResponseBody | null;
+          const message = body?.error?.message || "Failed to load courses";
+          throw new ApiError(res.status, "unknown", message);
+        }
+
+        // Backend returns { courses: [...] }
+        const json = (await readJsonResponse(res)) as {
+          courses?: unknown[];
+        } | null;
+
+        if (!json || !Array.isArray(json.courses)) {
+          throw new ApiError(500, "unknown", "Invalid courses response");
+        }
+
+        type BackendCourseItem = {
+          id?: number;
+          title?: string;
+          description?: string;
+          created_at?: string;
+          updated_at?: string;
+          lessons_number?: number;
+          finished_lessons?: number;
+          is_public?: boolean;
+          is_mine?: boolean;
+        };
+
+        const mapBackendCourseItemToCourse = (
+          item: BackendCourseItem,
+        ): Course => {
+          const backendId = typeof item.id === "number" ? item.id : undefined;
+          const now = new Date().toISOString();
+
+          return {
+            id: String(backendId ?? `course_${Date.now()}`),
+            backendId,
+            title: item.title || "",
+            description: item.description || "",
+            lessons:
+              typeof item.lessons_number === "number" ? item.lessons_number : 0,
+            progress:
+              typeof item.finished_lessons === "number"
+                ? item.finished_lessons
+                : 0,
+            createdAt: item.created_at || now,
+            updatedAt: item.updated_at || item.created_at || now,
+            isPublic: item.is_public,
+            isMine: item.is_mine,
+            status: "ready",
+          };
+        };
+
+        return (json.courses as BackendCourseItem[]).map(
+          mapBackendCourseItemToCourse,
+        );
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        if (err instanceof Error) {
+          throw new ApiError(0, "network", err.message);
+        }
+        throw new ApiError(0, "network", "Network error");
+      }
+    }
+
+    // Mock fallback
     return mockCourses;
   },
 
-  async getFeaturedCourses(): Promise<Course[]> {
+  async getFeaturedCourses(token?: string): Promise<Course[]> {
     await delay(DELAYS.courses);
+
+    const baseUrl = getApiBaseUrl();
+
+    // Courses endpoints require auth per swagger; if we don't have a token yet,
+    // keep behavior non-blocking and fall back to mock data.
+    if (!token) {
+      return mockFeaturedCourses;
+    }
+
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/courses?in_mine=false`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          const body = (await readJsonResponse(
+            res,
+          )) as ApiErrorResponseBody | null;
+          const message = body?.error?.message || "Failed to load courses";
+          throw new ApiError(res.status, "unknown", message);
+        }
+
+        const json = (await readJsonResponse(res)) as {
+          courses?: unknown[];
+        } | null;
+
+        if (!json || !Array.isArray(json.courses)) {
+          throw new ApiError(500, "unknown", "Invalid courses response");
+        }
+
+        type BackendCourseItem = {
+          id?: number;
+          title?: string;
+          description?: string;
+          created_at?: string;
+          updated_at?: string;
+          lessons_number?: number;
+          finished_lessons?: number;
+          is_public?: boolean;
+          is_mine?: boolean;
+        };
+
+        const mapBackendCourseItemToCourse = (
+          item: BackendCourseItem,
+        ): Course => {
+          const backendId = typeof item.id === "number" ? item.id : undefined;
+          const now = new Date().toISOString();
+
+          return {
+            id: String(backendId ?? `course_${Date.now()}`),
+            backendId,
+            title: item.title || "",
+            description: item.description || "",
+            lessons:
+              typeof item.lessons_number === "number" ? item.lessons_number : 0,
+            progress:
+              typeof item.finished_lessons === "number"
+                ? item.finished_lessons
+                : 0,
+            createdAt: item.created_at || now,
+            updatedAt: item.updated_at || item.created_at || now,
+            isPublic: item.is_public,
+            isMine: item.is_mine,
+            status: "ready",
+          };
+        };
+
+        return (json.courses as BackendCourseItem[]).map(
+          mapBackendCourseItemToCourse,
+        );
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        if (err instanceof Error) {
+          throw new ApiError(0, "network", err.message);
+        }
+        throw new ApiError(0, "network", "Network error");
+      }
+    }
+
+    // Mock fallback
     return mockFeaturedCourses;
   },
 
-  async getCourseById(id: string): Promise<Course | null> {
+  async getCourseById(id: string, token?: string): Promise<Course | null> {
     await delay(DELAYS.courses);
+
+    const baseUrl = getApiBaseUrl();
+    const numericId = Number(id);
+
+    if (token && baseUrl && Number.isFinite(numericId)) {
+      try {
+        const res = await fetch(`${baseUrl}/courses/${numericId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          const payload = await readErrorPayload(res);
+          const messageFromJson =
+            (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+            (isRecord(payload.json) && typeof payload.json.error === "string"
+              ? payload.json.error
+              : undefined) ||
+            (payload.json as { message?: string } | null)?.message ||
+            (payload.json as { detail?: string } | null)?.detail;
+          const message =
+            messageFromJson || payload.text || "Failed to load course";
+          throw new ApiError(res.status, "unknown", message);
+        }
+
+        type BackendLessonItem = {
+          id?: number;
+          title?: string;
+          description?: string;
+          serial_number?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+
+        type BackendModuleItem = {
+          id?: number;
+          title?: string;
+          description?: string;
+          serial_number?: number;
+          created_at?: string;
+          updated_at?: string;
+          lessons?: BackendLessonItem[];
+        };
+
+        type BackendGetCourseResponse = {
+          id?: number;
+          title?: string;
+          description?: string;
+          created_at?: string;
+          updated_at?: string;
+          lessons_number?: number;
+          finished_lessons?: number;
+          is_public?: boolean;
+          is_mine?: boolean;
+          modules?: BackendModuleItem[];
+        };
+
+        const json = (await readJsonResponse(
+          res,
+        )) as BackendGetCourseResponse | null;
+        if (!json || typeof json.id !== "number") {
+          throw new ApiError(500, "unknown", "Invalid course response");
+        }
+
+        const now = new Date().toISOString();
+
+        return {
+          id: String(json.id),
+          backendId: json.id,
+          title: json.title || "",
+          description: json.description || "",
+          lessons:
+            typeof json.lessons_number === "number" ? json.lessons_number : 0,
+          progress:
+            typeof json.finished_lessons === "number"
+              ? json.finished_lessons
+              : 0,
+          createdAt: json.created_at || now,
+          updatedAt: json.updated_at || json.created_at || now,
+          isPublic: json.is_public,
+          isMine: json.is_mine,
+          status: "ready",
+          modules: Array.isArray(json.modules)
+            ? json.modules.map((m) => ({
+                id: String(m.id ?? `module_${Date.now()}`),
+                title: m.title || "",
+                lessons: Array.isArray(m.lessons)
+                  ? m.lessons.map((l) => ({
+                      id: String(l.id ?? `lesson_${Date.now()}`),
+                      title: l.title || "",
+                    }))
+                  : [],
+              }))
+            : [],
+        };
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        if (err instanceof Error) {
+          throw new ApiError(0, "network", err.message);
+        }
+        throw new ApiError(0, "network", "Network error");
+      }
+    }
+
     const allCourses = [...mockCourses, ...mockFeaturedCourses];
     return allCourses.find((course) => course.id === id) || null;
+  },
+
+  async publishCourse(token: string, courseId: number): Promise<void> {
+    await delay(DELAYS.courses);
+
+    if (!token) {
+      throw new ApiError(401, "unauthorized", "Token is required");
+    }
+
+    if (!courseId) {
+      throw new ApiError(400, "validation", "Course ID is required");
+    }
+
+    const baseUrl = getApiBaseUrl();
+
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/courses/${courseId}/publish`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (res.status === 401) {
+          throw new ApiError(401, "unauthorized", "Unauthorized");
+        }
+
+        if (res.status === 403) {
+          throw new ApiError(403, "unknown", "Not the owner of this course");
+        }
+
+        if (res.status === 404) {
+          throw new ApiError(404, "unknown", "Course not found");
+        }
+
+        if (res.status === 409) {
+          throw new ApiError(409, "unknown", "Course already published");
+        }
+
+        if (!res.ok) {
+          const body = (await readJsonResponse(
+            res,
+          )) as ApiErrorResponseBody | null;
+          const message = body?.error?.message || "Failed to publish course";
+          throw new ApiError(res.status, "unknown", message);
+        }
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        if (err instanceof Error) {
+          throw new ApiError(0, "network", err.message);
+        }
+        throw new ApiError(0, "network", "Network error");
+      }
+    } else {
+      throw new ApiError(
+        0,
+        "network",
+        "Backend not configured - publishCourse requires API",
+      );
+    }
   },
 
   async setCoursePublication(
@@ -470,6 +860,7 @@ export const coursesApi = {
   ): Promise<Course | null> {
     await delay(DELAYS.courses);
 
+    // Deprecated – use publishCourse() instead
     const updatedAt = new Date().toISOString();
     const updateInList = (list: Course[]): Course | null => {
       const idx = list.findIndex((c) => c.id === courseId);
@@ -494,7 +885,13 @@ export const coursesApi = {
     data: {
       title: string;
       description: string;
-      file: Blob;
+      file:
+        | Blob
+        | {
+            uri: string;
+            name: string;
+            type?: string;
+          };
       language: string;
     },
   ): Promise<number> {
@@ -512,11 +909,33 @@ export const coursesApi = {
 
     if (baseUrl) {
       try {
+        const normalizedLanguage =
+          COURSE_LANGUAGE_CODE_TO_BACKEND[data.language] ?? data.language;
+
+        const normalizedFile =
+          data.file instanceof Blob
+            ? data.file
+            : (() => {
+                const name = data.file.name || "file";
+                const nameLower = name.toLowerCase();
+                const inferredType = nameLower.endsWith(".pdf")
+                  ? "application/pdf"
+                  : nameLower.endsWith(".txt")
+                    ? "text/plain"
+                    : undefined;
+
+                return {
+                  uri: data.file.uri,
+                  name,
+                  type: data.file.type || inferredType,
+                };
+              })();
+
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description || "");
-        formData.append("file", data.file);
-        formData.append("language", data.language);
+        formData.append("file", normalizedFile as any);
+        formData.append("language", normalizedLanguage);
 
         const res = await fetch(`${baseUrl}/course`, {
           method: "POST",
@@ -532,18 +951,31 @@ export const coursesApi = {
         }
 
         if (res.status === 400) {
-          const body = (await readJsonResponse(
-            res,
-          )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Validation error";
+          const payload = await readErrorPayload(res);
+
+          const messageFromJson =
+            (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+            (isRecord(payload.json) && typeof payload.json.error === "string"
+              ? payload.json.error
+              : undefined) ||
+            (payload.json as { message?: string } | null)?.message ||
+            (payload.json as { detail?: string } | null)?.detail;
+
+          const message = messageFromJson || payload.text || "Validation error";
           throw new ApiError(400, "validation", message);
         }
 
         if (!res.ok) {
-          const body = (await readJsonResponse(
-            res,
-          )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to create course";
+          const payload = await readErrorPayload(res);
+          const messageFromJson =
+            (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+            (isRecord(payload.json) && typeof payload.json.error === "string"
+              ? payload.json.error
+              : undefined) ||
+            (payload.json as { message?: string } | null)?.message ||
+            (payload.json as { detail?: string } | null)?.detail;
+          const message =
+            messageFromJson || payload.text || "Failed to create course";
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -692,9 +1124,7 @@ export const settingsApi = {
     return inMemorySettings;
   },
 
-  async updateSettings(
-    settings: Partial<AppSettings>,
-  ): Promise<AppSettings> {
+  async updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
     await delay(DELAYS.settings);
     await loadSettingsFromStorage();
     inMemorySettings = { ...inMemorySettings, ...settings };
@@ -739,8 +1169,7 @@ export const catalogApi = {
             return (b.students || 0) - (a.students || 0);
           case "newest":
             return (
-              new Date(b.createdAt).getTime() -
-              new Date(a.createdAt).getTime()
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
           case "rating":
             return (b.rating || 0) - (a.rating || 0);

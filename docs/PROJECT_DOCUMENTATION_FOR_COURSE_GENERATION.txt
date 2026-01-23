@@ -1,0 +1,276 @@
+INTRUCT APP — PROJECT DOCUMENTATION (TEST TEXT FOR COURSE GENERATION)
+
+Purpose of this document
+------------------------
+This text file is intentionally long and detailed so you can attach it to the “Create course” flow and test backend course generation with a realistic amount of content. It describes the project’s goals, architecture, UI structure, data layer, and operational workflows.
+
+This document is original content written specifically for this repository. It contains no secrets or credentials.
+
+
+1) High-level overview
+----------------------
+Intruct is a mobile app built with Expo + React Native + TypeScript. The app uses Expo Router for file-based navigation and Tamagui for UI primitives and theming. The core product concept is:
+- Users authenticate (via Supabase session used as the token source).
+- The app talks to a backend REST API (Swagger-described) at https://intruct.com/api.
+- Users can browse a catalog, view their courses, and create new courses.
+- Course creation is driven by user-provided materials (e.g., a PDF or TXT file). Those materials are uploaded to the backend, which returns a course identifier and (eventually) generates lessons/content.
+
+The app emphasizes:
+- A single centralized API layer (services/api.ts) rather than scattered fetch() usage.
+- Consistent error handling and clear UX states (loading/empty/error).
+- Theme correctness (light/dark) using Tamagui tokens + helper hooks.
+
+
+2) Tech stack
+-------------
+Runtime:
+- Expo (managed workflow)
+- React Native
+- TypeScript
+
+Navigation:
+- Expo Router (file-based routing in app/)
+
+UI:
+- Tamagui components (YStack, XStack, Card, Text, Button, etc.)
+- Theme tokens (e.g., $gray5) and theme helpers (useThemeColors)
+
+Auth:
+- Supabase session (access_token), used as a Bearer token for the backend API
+
+Data layer:
+- services/api.ts for API calls and mapping
+- types/ for shared TS types
+- mockdata/ for fallback data (where applicable)
+
+Storage:
+- AsyncStorage (theme/language preferences, etc.)
+
+
+3) Repository structure
+-----------------------
+Top-level folders:
+- app/                 Expo Router routes and screens
+- components/          Reusable UI components
+- contexts/            React contexts (Auth, Theme, Language, Notifications, Course Generation)
+- services/            API layer (services/api.ts)
+- types/               Shared types (types/index.ts)
+- hooks/               Reusable hooks (theme/colors, etc.)
+- docs/                Project documentation (this file lives here)
+- assets/              Images and icons
+- mockdata/            Mock/fallback data for some flows
+- utils/               Helper utilities (e.g., supabase client)
+
+Important docs already present in docs/:
+- CREATE-COURSE.md
+- DATA-LAYER.md
+- THEMING.md
+- LOCALIZATION.md
+- EXPO-GO-LIMITATIONS.md
+
+
+4) Navigation (Expo Router)
+---------------------------
+The app uses file-based routing:
+- app/_layout.tsx              Global layout and providers
+- app/(tabs)/_layout.tsx       Tab navigator layout
+- app/(tabs)/index.tsx         Home screen
+- app/(tabs)/catalog.tsx       Catalog screen
+- app/(tabs)/courses.tsx       Courses screen
+- app/(tabs)/settings.tsx      Settings screen
+- app/settings/profile.tsx     Personal information / profile settings
+- app/create-course.tsx        Multi-step create-course flow
+
+Router conventions:
+- (tabs)/ and (auth)/ are route groups
+- Modals may be defined in app/modal.tsx and similar files
+
+
+5) UI + theming
+---------------
+Tamagui is used throughout the UI.
+Rules of thumb:
+- Prefer Tamagui components over raw React Native primitives for layout.
+- Avoid hardcoded colors; use theme tokens or useThemeColors.
+- Ensure text and backgrounds remain readable in both light and dark themes.
+
+Theme color access patterns:
+- useThemeColors(): returns semantic colors such as textPrimary, cardBackground, etc.
+- useThemeColor(): selects a specific theme color variable by name
+
+Common layout patterns:
+- Screen = YStack with padding and a header section
+- Cards for grouped information
+- Bottom action bars for primary CTA actions (where appropriate)
+
+
+6) Authentication and profile
+-----------------------------
+The app stores a Supabase session which includes an access token.
+This access token is then used as the backend Bearer token:
+- Authorization: Bearer <access_token>
+
+Backend profile:
+- The app uses a backend user profile for display in Settings and other screens.
+- The profile includes counters used on Home (e.g., completed courses, in-progress courses).
+
+Registration completion:
+- Some accounts may require an onboarding completion step.
+- When the backend indicates registration is incomplete, the app routes to the onboarding completion screen.
+
+
+7) Data layer and API conventions
+---------------------------------
+All backend calls should go through services/api.ts.
+Primary goals:
+- Centralize base URL, headers, and error parsing
+- Provide typed APIs (e.g., profileApi, coursesApi)
+- Normalize/transform backend responses to app-friendly shapes
+
+Error handling:
+- The API layer uses a typed ApiError with codes/status.
+- UI should show clear error states; avoid silently swallowing backend failures.
+
+Mock data usage:
+- Some endpoints may be guarded by token presence.
+- When a token is missing, the app may fall back to mock data to avoid 401-driven crashes.
+
+
+8) Course creation (Create Course flow)
+---------------------------------------
+The create-course flow is a multi-step UI:
+1) Course details step (title/description/language)
+2) Attach materials step (select file)
+3) Review/confirm
+4) Creating modal / progress UI
+
+Current backend integration:
+- The app uses a swagger-defined endpoint to create a course:
+  POST /course
+  Content-Type: multipart/form-data
+  Auth: Bearer token
+  Fields typically include:
+  - title
+  - description
+  - language
+  - file (PDF/TXT)
+
+File selection requirements (current UI rule):
+- Exactly ONE file can be selected.
+- Only PDF or TXT are allowed.
+
+After the POST /course call:
+- The backend responds with a course identifier (course_id).
+- The app stores that id as backendId on the local course object.
+
+Future/possible next steps (depending on backend):
+- Upload additional materials
+- Poll generation status
+- Fetch generated lessons/content
+
+
+9) File formats and recommendations
+-----------------------------------
+For test files:
+- TXT should be UTF-8 plain text.
+- Keep paragraphs separated by blank lines.
+- Use clear headings and consistent structure.
+
+For PDF:
+- Avoid scanned images-only PDFs if possible.
+- Text-selectable PDFs generate better extraction results.
+
+
+10) Localization
+----------------
+The app maintains a supported UI language list.
+Some RTL languages may be excluded if RTL layout support is not implemented.
+
+Language in course creation:
+- The UI typically stores a language code (en, de, ru, etc.).
+- If the backend expects full language names, a mapping can be applied at send-time.
+
+
+11) Notifications and UX feedback
+---------------------------------
+The app uses a NotificationsContext for user-visible notices:
+- info: for starting long operations
+- success: for completion
+- error: for failures
+
+During course creation:
+- When generation begins: show an info notification.
+- When backend returns course_id: update the local course state to ready.
+- If backend fails: show an error notification and keep local course state consistent.
+
+
+12) Example content blocks (for generator testing)
+--------------------------------------------------
+Below are long-form sections intentionally written to provide varied structure.
+
+A) Product requirements narrative
+---------------------------------
+The app’s primary user journey begins after authentication. The user lands on a home screen that summarizes progress and highlights key actions. The “Create Course” action is designed to be prominent and predictable. Users provide:
+- A course title that is short but descriptive
+- A concise description with clear learning outcomes
+- A content language selection that indicates the expected language of the generated lessons
+- One source document (PDF or TXT) that contains the knowledge base
+
+The system then uploads the document and uses it to generate a course outline and lesson content. The generated result should be consistent with the provided material, avoid hallucination, and prioritize correctness.
+
+B) UI/UX principles
+-------------------
+Consistency is preferred over novelty. The same spacing system, typography scale, and component set should be used across the app. Buttons should not change meaning across screens. Error states should be explicit: if a network request fails, the user should be told what happened and what to do next.
+
+On mobile, small delays and spinners are acceptable, but indefinite spinners are not. A long operation should show:
+- A clear “in progress” state
+- A sense of how long it may take
+- A safe way to exit without corrupting state
+
+C) Engineering principles
+-------------------------
+The project values a single API layer so that authentication headers, error parsing, and base URL configuration are consistent. The UI should not replicate API parsing logic or handle raw JSON structures if the API layer can provide typed data.
+
+When implementing new endpoints:
+- Add a typed function in services/api.ts
+- Add/extend types in types/
+- Keep UI code focused on state and rendering
+- Avoid side effects in render; use effects and callbacks
+
+D) Data mapping guidelines
+--------------------------
+Backend APIs frequently use snake_case while the app uses camelCase.
+A dedicated mapping function should:
+- Convert keys consistently
+- Validate required fields
+- Provide safe defaults only when appropriate
+
+E) Observability and debugging
+------------------------------
+During development, logs should be used sparingly and removed when no longer needed. Avoid logging tokens, user personal data, or large blobs. For debugging generation issues, it is acceptable to log:
+- Request start/end markers
+- Error status codes
+- Non-sensitive identifiers (e.g., course_id)
+
+
+13) Appendix: Sample “learning material” sections
+-------------------------------------------------
+This appendix includes extra content designed to increase length and variety.
+
+Section 1: Introduction to Mobile Architecture
+Mobile applications often consist of three layers: UI, domain logic, and data access. A well-structured app makes it easy to change UI without rewriting networking code, and easy to change endpoints without rewriting components. In this project, the data access layer is consolidated in services/api.ts.
+
+Section 2: Navigation as a Contract
+File-based routing is both a convenience and a contract: the file system becomes a source of truth for available screens. Consistent naming, route groups, and predictable layouts reduce bugs and make the app easier to evolve.
+
+Section 3: Theming and Accessibility
+A theme is not only colors; it is contrast, readability, and user trust. The same component should remain legible across modes. Avoid hardcoded colors and prefer semantic tokens so designs can shift without rewriting components.
+
+Section 4: Robust course generation
+Course generation should be resilient:
+- Validate inputs before upload
+- Ensure the backend token is present
+- Handle error responses gracefully
+- Update local UI state so the user can retry
+
+End of document
