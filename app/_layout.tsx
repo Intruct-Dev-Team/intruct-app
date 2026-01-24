@@ -5,6 +5,7 @@ import { CourseGenerationProvider } from "@/contexts/course-generation-context";
 import { LanguageProvider } from "@/contexts/language-context";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
+import { setServerUnavailableHandler } from "@/services/api";
 import config from "@/tamagui.config";
 import NetInfo from "@react-native-community/netinfo";
 import {
@@ -34,6 +35,7 @@ function RootLayoutContent() {
   const router = useRouter();
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
+  const isConnectedRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     pathnameRef.current = pathname;
@@ -43,6 +45,8 @@ function RootLayoutContent() {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const isOffline = state.isConnected === false;
       const currentPath = pathnameRef.current;
+
+      isConnectedRef.current = state.isConnected ?? null;
 
       if (isOffline) {
         if (currentPath !== "/no-internet") {
@@ -61,6 +65,23 @@ function RootLayoutContent() {
     });
 
     return unsubscribe;
+  }, [router]);
+
+  useEffect(() => {
+    setServerUnavailableHandler(() => {
+      const currentPath = pathnameRef.current;
+      const isOffline = isConnectedRef.current === false;
+
+      if (isOffline) return;
+      if (currentPath === "/no-internet") return;
+      if (currentPath === "/server-unavailable") return;
+
+      router.replace("/server-unavailable");
+    });
+
+    return () => {
+      setServerUnavailableHandler(null);
+    };
   }, [router]);
 
   useEffect(() => {
@@ -111,6 +132,10 @@ function RootLayoutContent() {
               />
               <Stack.Screen
                 name="no-internet"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="server-unavailable"
                 options={{ headerShown: false }}
               />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />

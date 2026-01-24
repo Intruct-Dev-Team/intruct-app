@@ -1,9 +1,9 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { WifiOff } from "@tamagui/lucide-icons";
+import { AlertTriangle } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
 import { Button, Text, YStack } from "tamagui";
 
-export default function NoInternetScreen() {
+export default function ServerUnavailableScreen() {
   const router = useRouter();
   const colors = useThemeColors();
 
@@ -23,9 +23,9 @@ export default function NoInternetScreen() {
         justifyContent="center"
       >
         <YStack alignItems="center" justifyContent="center" gap="$3">
-          <WifiOff size={44} color={colors.textSecondary} />
+          <AlertTriangle size={44} color={colors.textSecondary} />
           <Text fontSize="$8" fontWeight="700" color={colors.textPrimary}>
-            No internet connection
+            Server temporarily unavailable
           </Text>
           <Text
             fontSize="$4"
@@ -33,7 +33,8 @@ export default function NoInternetScreen() {
             textAlign="center"
             lineHeight="$2"
           >
-            Please check your connection and try again.
+            The server is not responding right now. Please try again in a
+            moment.
           </Text>
         </YStack>
 

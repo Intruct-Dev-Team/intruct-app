@@ -93,15 +93,31 @@ const REGISTRATION_NOT_COMPLETED_ERROR = "registration was not completed";
 
 let needsCompleteRegistrationHandler: (() => void) | null = null;
 
+let serverUnavailableHandler: (() => void) | null = null;
+
 export const setNeedsCompleteRegistrationHandler = (
   handler: (() => void) | null,
 ): void => {
   needsCompleteRegistrationHandler = handler;
 };
 
+export const setServerUnavailableHandler = (
+  handler: (() => void) | null,
+): void => {
+  serverUnavailableHandler = handler;
+};
+
 const emitNeedsCompleteRegistration = (): void => {
   try {
     needsCompleteRegistrationHandler?.();
+  } catch {
+    // Silent
+  }
+};
+
+const emitServerUnavailable = (): void => {
+  try {
+    serverUnavailableHandler?.();
   } catch {
     // Silent
   }
@@ -289,8 +305,10 @@ export const profileApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -351,8 +369,10 @@ export const profileApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -455,8 +475,10 @@ export const authApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -582,8 +604,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -675,8 +699,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -789,8 +815,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -848,8 +876,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     } else {
@@ -998,8 +1028,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
@@ -1068,8 +1100,10 @@ export const coursesApi = {
       } catch (err) {
         if (err instanceof ApiError) throw err;
         if (err instanceof Error) {
+          emitServerUnavailable();
           throw new ApiError(0, "network", err.message);
         }
+        emitServerUnavailable();
         throw new ApiError(0, "network", "Network error");
       }
     }
