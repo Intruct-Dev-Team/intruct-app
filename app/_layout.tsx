@@ -111,8 +111,8 @@ function RootLayoutContent() {
 
   return (
     <TamaguiProvider config={config}>
-      <PortalProvider shouldAddRootHost>
-        <Theme name={activeTheme}>
+      <Theme name={activeTheme}>
+        <PortalProvider shouldAddRootHost>
           <NavigationThemeProvider
             value={activeTheme === "dark" ? DarkTheme : DefaultTheme}
           >
@@ -145,8 +145,8 @@ function RootLayoutContent() {
             <CreatingCourseModal />
             <StatusBar style={activeTheme === "dark" ? "light" : "dark"} />
           </NavigationThemeProvider>
-        </Theme>
-      </PortalProvider>
+        </PortalProvider>
+      </Theme>
     </TamaguiProvider>
   );
 }

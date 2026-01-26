@@ -1,3 +1,4 @@
+import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ReactNode } from "react";
 import { Text, XStack, YStack } from "tamagui";
@@ -20,6 +21,8 @@ export function SettingsItem({
   showDivider = false,
 }: SettingsItemProps) {
   const colors = useThemeColors();
+  const { activeTheme } = useTheme();
+  const iconBackground = activeTheme === "dark" ? "$gray4" : "$gray2";
 
   return (
     <>
@@ -44,7 +47,7 @@ export function SettingsItem({
               height={48}
               alignItems="center"
               justifyContent="center"
-              backgroundColor="$gray4"
+              backgroundColor={iconBackground}
               borderRadius="$3"
             >
               {icon}

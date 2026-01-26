@@ -33,7 +33,7 @@ export const lightColors: ThemeColors = (() => {
 
   const colors: any = {};
   colors.background = "$backgroundStrong";
-  colors.cardBackground = "$background";
+  colors.cardBackground = "$white1";
   colors.textPrimary = "$gray12";
   colors.textSecondary = "$gray11";
   colors.textTertiary = "$gray10";

@@ -151,3 +151,27 @@ export interface UploadCourseContentRequest {
   total_lessons: number;
   modules: UploadModuleRequest[];
 }
+
+// GET /lessons/{lesson_id} response types (Swagger)
+export interface LessonQuizItemResponse {
+  id?: number;
+  question?: string;
+  options?: string[];
+  correct_index?: number;
+  serial_number?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface GetLessonResponse {
+  id?: number;
+  course_id?: number;
+  module_id?: number;
+  serial_number?: number;
+  title?: string;
+  description?: string;
+  content?: string;
+  quizzes?: LessonQuizItemResponse[];
+  created_at?: string;
+  updated_at?: string;
+}
