@@ -9,7 +9,7 @@ import { PageHeader, ScreenContainer } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { coursesApi } from "@/services/api";
+import { coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
@@ -43,8 +43,33 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadData();
-    }, [loadData]),
+      // Keep progress fresh without refetching network data on tab switches.
+      let isActive = true;
+
+      const syncLocalProgress = async () => {
+        if (!courses || courses.length === 0) return;
+
+        const updated = await Promise.all(
+          courses.map(async (course) => {
+            const backendProgress = course.progress ?? 0;
+            const localProgress = await lessonProgressApi.getCompletedCount(
+              course.id,
+            );
+            const effectiveProgress = Math.max(backendProgress, localProgress);
+
+            if (effectiveProgress === backendProgress) return course;
+            return { ...course, progress: effectiveProgress };
+          }),
+        );
+
+        if (isActive) setCourses(updated);
+      };
+
+      void syncLocalProgress();
+      return () => {
+        isActive = false;
+      };
+    }, [courses]),
   );
 
   const coursesToShow = useMemo(() => courses.slice(0, 4), [courses]);
