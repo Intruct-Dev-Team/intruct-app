@@ -6,10 +6,9 @@ import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Link, Stack } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { Image, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
-import { LinearGradient } from "tamagui/linear-gradient";
 
 export default function RegisterScreen() {
   const colors = useThemeColors();
@@ -59,20 +58,23 @@ export default function RegisterScreen() {
           <YStack flex={1} paddingHorizontal="$5" paddingVertical="$6" gap="$6">
             {/* Logo/Icon Section */}
             <YStack alignItems="center" marginTop="$8" marginBottom="$4">
-              <LinearGradient
+              <YStack
                 width={100}
                 height={100}
                 borderRadius="$4"
-                colors={["#4c669f", "#3b5998", "#192f6a"]}
-                start={[0, 0]}
-                end={[1, 1]}
+                backgroundColor={colors.cardBackground}
+                borderWidth={1}
+                borderColor="$gray5"
                 alignItems="center"
                 justifyContent="center"
               >
-                <Text fontSize={60} color="white" fontWeight="bold">
-                  I
-                </Text>
-              </LinearGradient>
+                <Image
+                  source={require("../../assets/images/icons/icon.png")}
+                  style={{ width: 84, height: 84 }}
+                  resizeMode="contain"
+                  accessibilityLabel="Intruct"
+                />
+              </YStack>
 
               <YStack alignItems="center" marginTop="$4" gap="$2">
                 <Text
