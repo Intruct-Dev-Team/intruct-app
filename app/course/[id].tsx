@@ -2,8 +2,9 @@ import { AppSheetModal } from "@/components/modals";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { coursesApi } from "@/services/api";
+import { coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   ArrowLeft,
   Globe,
@@ -13,7 +14,7 @@ import {
   Trash2,
 } from "@tamagui/lucide-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView } from "react-native";
 import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 
@@ -29,6 +30,9 @@ export default function CourseDetailPage() {
   const [publishing, setPublishing] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const loadCourse = useCallback(
     async (courseId: string) => {
@@ -52,6 +56,37 @@ export default function CourseDetailPage() {
     if (!id) return;
     void loadCourse(id);
   }, [id, loadCourse]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) return;
+      void loadCourse(id);
+    }, [id, loadCourse]),
+  );
+
+  const courseKey = useMemo(() => {
+    if (!course) return null;
+    return course.backendId ? `backend:${course.backendId}` : `id:${course.id}`;
+  }, [course]);
+
+  useEffect(() => {
+    if (!courseKey) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const ids = await lessonProgressApi.getCompletedLessonIds(courseKey);
+        if (!cancelled) setCompletedLessonIds(ids);
+      } catch {
+        if (!cancelled) setCompletedLessonIds(new Set());
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseKey]);
 
   const handlePublish = async () => {
     if (!course || publishing) return;
@@ -115,9 +150,51 @@ export default function CourseDetailPage() {
   const modules = course.modules || [];
   const isSingleModule = modules.length <= 1;
 
+  const sortLessons = (lessons: CourseModule["lessons"]) => {
+    const copy = [...lessons];
+    copy.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (aTime !== bTime) return bTime - aTime;
+
+      const aSerial = typeof a.serialNumber === "number" ? a.serialNumber : 0;
+      const bSerial = typeof b.serialNumber === "number" ? b.serialNumber : 0;
+      return aSerial - bSerial;
+    });
+    return copy;
+  };
+
+  const orderedLessons = modules
+    .flatMap((m) => m.lessons)
+    .slice()
+    .sort((a, b) => {
+      const aSerial = typeof a.serialNumber === "number" ? a.serialNumber : 0;
+      const bSerial = typeof b.serialNumber === "number" ? b.serialNumber : 0;
+      if (aSerial !== bSerial) return aSerial - bSerial;
+      return a.id.localeCompare(b.id);
+    });
+
+  const backendProgress = course.progress ?? 0;
+  const localProgress = completedLessonIds.size;
+  const effectiveProgress = Math.max(backendProgress, localProgress);
+
+  const completionSet =
+    completedLessonIds.size > 0
+      ? completedLessonIds
+      : new Set(orderedLessons.slice(0, backendProgress).map((l) => l.id));
+
+  const nextLessonId = orderedLessons.find((l) => !completionSet.has(l.id))?.id;
+
+  const isCourseCompleted =
+    typeof course.lessons === "number" && course.lessons > 0
+      ? effectiveProgress >= course.lessons
+      : false;
+
   const percent =
-    typeof course.progress === "number" && course.lessons && course.lessons > 0
-      ? Math.round((course.progress / course.lessons) * 100)
+    typeof effectiveProgress === "number" &&
+    course.lessons &&
+    course.lessons > 0
+      ? Math.round((effectiveProgress / course.lessons) * 100)
       : 0;
 
   return (
@@ -162,12 +239,12 @@ export default function CourseDetailPage() {
                 ) : null}
               </YStack>
 
-              {typeof course.progress === "number" && (
+              {typeof effectiveProgress === "number" && (
                 <YStack paddingTop="$2" space="$2">
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text color={colors.textTertiary}>Course Progress</Text>
                     <Text color={colors.primary} fontWeight="600">
-                      {course.progress}/{course.lessons} lessons
+                      {effectiveProgress}/{course.lessons} lessons
                     </Text>
                   </XStack>
 
@@ -198,14 +275,41 @@ export default function CourseDetailPage() {
           </Text>
 
           {isSingleModule
-            ? modules[0]?.lessons.map((lesson, idx) => {
-                const isLessonCompleted = idx < (course.progress || 0);
+            ? sortLessons(modules[0]?.lessons ?? []).map((lesson, idx) => {
+                const isLessonCompleted = completionSet.has(lesson.id);
+                const isCurrentLesson = lesson.id === nextLessonId;
+                const isUnlocked = isLessonCompleted || isCurrentLesson;
                 return (
                   <Card
                     key={lesson.id}
                     padding="$4"
                     borderRadius="$6"
                     backgroundColor={colors.cardBackground}
+                    opacity={!isLessonCompleted && !isCurrentLesson ? 0.6 : 1}
+                    pressStyle={
+                      isUnlocked
+                        ? {
+                            scale: 0.99,
+                            opacity: 0.96,
+                          }
+                        : undefined
+                    }
+                    onPress={
+                      isUnlocked
+                        ? () => {
+                            router.push({
+                              pathname: "/course/lesson/[id]",
+                              params: {
+                                id: lesson.id,
+                                ...(courseKey ? { courseKey } : {}),
+                                ...(isLessonCompleted
+                                  ? { skipFinish: "1" }
+                                  : {}),
+                              },
+                            } as any);
+                          }
+                        : undefined
+                    }
                   >
                     <XStack alignItems="center" gap="$3">
                       <YStack
@@ -244,7 +348,7 @@ export default function CourseDetailPage() {
                           justifyContent="space-between"
                         >
                           <Text color={colors.textTertiary} fontSize="$2">
-                            Lesson {idx + 1}
+                            Lesson {lesson.serialNumber ?? idx + 1}
                           </Text>
 
                           {isLessonCompleted && (
@@ -275,7 +379,7 @@ export default function CourseDetailPage() {
                           {lesson.title}
                         </Text>
 
-                        {idx === course.progress && (
+                        {isCurrentLesson && (
                           <Button
                             width="100%"
                             backgroundColor={colors.primary}
@@ -285,7 +389,13 @@ export default function CourseDetailPage() {
                             fontSize="$3"
                             icon={<Play size={16} color="$white1" />}
                             onPress={() => {
-                              router.push(`/course/lesson/${lesson.id}`);
+                              router.push({
+                                pathname: "/course/lesson/[id]",
+                                params: {
+                                  id: lesson.id,
+                                  ...(courseKey ? { courseKey } : {}),
+                                },
+                              } as any);
                             }}
                             marginTop="$3"
                           >
@@ -298,22 +408,15 @@ export default function CourseDetailPage() {
                 );
               })
             : modules.map((mod: CourseModule, idx) => {
-                // Calculate how many lessons were in previous modules to get the global index offset
-                const moduleStartIndex = modules
-                  .slice(0, idx)
-                  .reduce((acc, m) => acc + m.lessons.length, 0);
-
                 return (
                   <YStack key={mod.id} gap="$2">
                     <Text fontWeight="700" color={colors.textPrimary}>
                       Module {idx + 1}
                     </Text>
-                    {mod.lessons.map((lesson, lidx) => {
-                      const globalIndex = moduleStartIndex + lidx;
-                      const isLessonCompleted =
-                        globalIndex < (course.progress || 0);
-                      const isCurrentLesson =
-                        globalIndex === (course.progress || 0);
+                    {sortLessons(mod.lessons).map((lesson, lidx) => {
+                      const isLessonCompleted = completionSet.has(lesson.id);
+                      const isCurrentLesson = lesson.id === nextLessonId;
+                      const isUnlocked = isLessonCompleted || isCurrentLesson;
 
                       return (
                         <Card
@@ -323,6 +426,30 @@ export default function CourseDetailPage() {
                           backgroundColor={colors.cardBackground}
                           opacity={
                             !isLessonCompleted && !isCurrentLesson ? 0.6 : 1
+                          }
+                          pressStyle={
+                            isUnlocked
+                              ? {
+                                  scale: 0.99,
+                                  opacity: 0.96,
+                                }
+                              : undefined
+                          }
+                          onPress={
+                            isUnlocked
+                              ? () => {
+                                  router.push({
+                                    pathname: "/course/lesson/[id]",
+                                    params: {
+                                      id: lesson.id,
+                                      ...(courseKey ? { courseKey } : {}),
+                                      ...(isLessonCompleted
+                                        ? { skipFinish: "1" }
+                                        : {}),
+                                    },
+                                  } as any);
+                                }
+                              : undefined
                           }
                         >
                           <XStack alignItems="center" gap="$3">
@@ -362,7 +489,7 @@ export default function CourseDetailPage() {
                                 justifyContent="space-between"
                               >
                                 <Text color={colors.textTertiary} fontSize="$2">
-                                  Lesson {lidx + 1}
+                                  Lesson {lesson.serialNumber ?? lidx + 1}
                                 </Text>
                                 {isLessonCompleted && (
                                   <YStack
@@ -402,7 +529,13 @@ export default function CourseDetailPage() {
                                   fontSize="$3"
                                   icon={<Play size={16} color="$white1" />}
                                   onPress={() => {
-                                    router.push(`/course/lesson/${lesson.id}`);
+                                    router.push({
+                                      pathname: "/course/lesson/[id]",
+                                      params: {
+                                        id: lesson.id,
+                                        ...(courseKey ? { courseKey } : {}),
+                                      },
+                                    } as any);
                                   }}
                                   marginTop="$3"
                                 >
@@ -514,6 +647,25 @@ export default function CourseDetailPage() {
           ))}
         </XStack>
       </AppSheetModal>
+
+      {isCourseCompleted && (
+        <YStack
+          position="absolute"
+          left={0}
+          right={0}
+          bottom={0}
+          padding="$4"
+          paddingBottom="$6"
+          borderTopLeftRadius="$6"
+          borderTopRightRadius="$6"
+          backgroundColor={colors.cardBackground}
+          elevation={4}
+        >
+          <Text color={colors.stats.completed.icon} fontWeight="700">
+            Completed
+          </Text>
+        </YStack>
+      )}
     </>
   );
 }

@@ -3,7 +3,7 @@ import TestView from "@/components/lesson/TestView";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { mockCourses } from "@/mockdata/courses";
-import { ApiError, lessonsApi } from "@/services/api";
+import { ApiError, lessonProgressApi, lessonsApi } from "@/services/api";
 import type { Course, Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -13,11 +13,26 @@ import { Button, Text, YStack, getTokenValue } from "tamagui";
 type LessonPhase = "material" | "test";
 
 export default function LessonScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    id,
+    courseKey: courseKeyParam,
+    skipFinish,
+  } = useLocalSearchParams<{
+    id: string;
+    courseKey?: string;
+    skipFinish?: string;
+  }>();
   const router = useRouter();
   const colors = useThemeColors();
   const { session } = useAuth();
   const token = session?.access_token;
+
+  const courseKey =
+    typeof courseKeyParam === "string" && courseKeyParam.trim().length > 0
+      ? courseKeyParam
+      : undefined;
+
+  const shouldSkipFinish = skipFinish === "1" || skipFinish === "true";
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [courseTitle, setCourseTitle] = useState("");
@@ -159,7 +174,18 @@ export default function LessonScreen() {
           <Text color={colors.textSecondary} textAlign="center">
             {error}
           </Text>
-          <Button onPress={() => router.replace(`/course/lesson/${id}`)}>
+          <Button
+            onPress={() => {
+              router.replace({
+                pathname: "/course/lesson/[id]",
+                params: {
+                  id: String(id),
+                  ...(courseKey ? { courseKey } : {}),
+                  ...(skipFinish ? { skipFinish } : {}),
+                },
+              } as any);
+            }}
+          >
             Retry
           </Button>
         </YStack>
@@ -203,14 +229,68 @@ export default function LessonScreen() {
       return;
     }
 
-    router.back();
+    if (shouldSkipFinish) {
+      router.back();
+      return;
+    }
+
+    void (async () => {
+      try {
+        const lessonIdNumber = Number(lesson.id);
+        if (token && Number.isFinite(lessonIdNumber)) {
+          await lessonsApi.finishLesson(lessonIdNumber, token);
+        }
+
+        if (courseKey) {
+          await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);
+        }
+
+        router.back();
+      } catch (err) {
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : "Failed to finish lesson";
+        setError(message);
+      }
+    })();
   };
 
   const handleTestComplete = (_score: number) => {
     setCompletedPhases((prev) =>
       prev.includes("test") ? prev : [...prev, "test"],
     );
-    router.back();
+
+    if (shouldSkipFinish) {
+      router.back();
+      return;
+    }
+
+    const lessonIdNumber = Number(lesson.id);
+
+    void (async () => {
+      try {
+        if (token && Number.isFinite(lessonIdNumber)) {
+          await lessonsApi.finishLesson(lessonIdNumber, token);
+        }
+
+        if (courseKey) {
+          await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);
+        }
+
+        router.back();
+      } catch (err) {
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : "Failed to finish lesson";
+        setError(message);
+      }
+    })();
   };
 
   const renderContent = () => {

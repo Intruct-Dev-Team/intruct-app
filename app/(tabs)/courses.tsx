@@ -4,6 +4,7 @@ import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
+import { useFocusEffect } from "@react-navigation/native";
 import { Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -46,6 +47,12 @@ export default function CoursesScreen() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadData();
+    }, [loadData]),
+  );
 
   const createCourseFab = (
     <YStack position="absolute" right={16} bottom={16}>

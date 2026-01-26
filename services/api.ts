@@ -96,6 +96,8 @@ interface UserProfileResponse {
 const USER_PROFILE_STORAGE_KEY = "intruct.userProfile";
 const REGISTRATION_NOT_COMPLETED_ERROR = "registration was not completed";
 
+const LESSON_COMPLETION_STORAGE_KEY = "intruct.lessonCompletion.v1";
+
 let needsCompleteRegistrationHandler: (() => void) | null = null;
 
 let serverUnavailableHandler: (() => void) | null = null;
@@ -126,6 +128,100 @@ const emitServerUnavailable = (): void => {
   } catch {
     // Silent
   }
+};
+
+/* =========================================================================
+   Local lesson completion (AsyncStorage)
+   ======================================================================= */
+
+type LessonCompletionStorage = {
+  version: 1;
+  completedByCourse: Record<string, string[]>;
+};
+
+let didLoadLessonCompletionFromStorage = false;
+let inMemoryLessonCompletion: LessonCompletionStorage = {
+  version: 1,
+  completedByCourse: {},
+};
+
+const loadLessonCompletionFromStorage = async (): Promise<void> => {
+  if (didLoadLessonCompletionFromStorage) return;
+  didLoadLessonCompletionFromStorage = true;
+
+  try {
+    const raw = await AsyncStorage.getItem(LESSON_COMPLETION_STORAGE_KEY);
+    if (!raw) return;
+
+    const parsed = JSON.parse(raw) as Partial<LessonCompletionStorage> | null;
+    if (
+      parsed &&
+      isRecord(parsed) &&
+      parsed.version === 1 &&
+      isRecord(parsed.completedByCourse)
+    ) {
+      inMemoryLessonCompletion = {
+        version: 1,
+        completedByCourse: parsed.completedByCourse as Record<string, string[]>,
+      };
+    }
+  } catch {
+    // Silent
+  }
+};
+
+const saveLessonCompletionToStorage = async (): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(
+      LESSON_COMPLETION_STORAGE_KEY,
+      JSON.stringify(inMemoryLessonCompletion),
+    );
+  } catch {
+    // Silent
+  }
+};
+
+const normalizeCourseKey = (courseKey: string): string => {
+  return courseKey.trim();
+};
+
+const getCompletedLessonIdsForCourse = (courseKey: string): Set<string> => {
+  const key = normalizeCourseKey(courseKey);
+  const raw = inMemoryLessonCompletion.completedByCourse[key] ?? [];
+  return new Set(raw.filter((id) => typeof id === "string" && id.length > 0));
+};
+
+const getCompletedCountForCourse = (courseKey: string): number => {
+  return getCompletedLessonIdsForCourse(courseKey).size;
+};
+
+export const lessonProgressApi = {
+  async markLessonCompleted(
+    courseKey: string,
+    lessonId: string,
+  ): Promise<void> {
+    await loadLessonCompletionFromStorage();
+
+    const key = normalizeCourseKey(courseKey);
+    if (!key || typeof lessonId !== "string" || lessonId.length === 0) return;
+
+    const set = getCompletedLessonIdsForCourse(key);
+    if (set.has(lessonId)) return;
+
+    set.add(lessonId);
+    inMemoryLessonCompletion.completedByCourse[key] = Array.from(set);
+    await saveLessonCompletionToStorage();
+  },
+
+  async getCompletedLessonIds(courseKey: string): Promise<Set<string>> {
+    await loadLessonCompletionFromStorage();
+    return getCompletedLessonIdsForCourse(courseKey);
+  },
+
+  async getCompletedCount(courseKey: string): Promise<number> {
+    await loadLessonCompletionFromStorage();
+    return getCompletedCountForCourse(courseKey);
+  },
 };
 
 /* ============================================================================
@@ -528,12 +624,19 @@ export const coursesApi = {
   async getMyCourses(token?: string): Promise<Course[]> {
     await delay(DELAYS.courses);
 
+    await loadLessonCompletionFromStorage();
+
     const baseUrl = getApiBaseUrl();
 
     // Courses endpoints require auth per swagger; if we don't have a token yet,
     // keep behavior non-blocking and fall back to mock data.
     if (!token) {
-      return mockCourses;
+      return mockCourses.map((c) => {
+        const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
+        const localProgress = getCompletedCountForCourse(key);
+        const progress = Math.max(c.progress ?? 0, localProgress);
+        return { ...c, progress };
+      });
     }
 
     if (baseUrl) {
@@ -588,7 +691,7 @@ export const coursesApi = {
               ? item.finished_lessons
               : 0;
 
-          return {
+          const course: Course = {
             id: String(backendId ?? `course_${Date.now()}`),
             backendId,
             title: item.title || "",
@@ -600,6 +703,13 @@ export const coursesApi = {
             isPublic: item.is_public,
             isMine: item.is_mine,
             status: lessons === 0 ? "generating" : "ready",
+          };
+
+          const key = backendId ? `backend:${backendId}` : `id:${course.id}`;
+          const localProgress = getCompletedCountForCourse(key);
+          return {
+            ...course,
+            progress: Math.max(course.progress ?? 0, localProgress),
           };
         };
 
@@ -618,18 +728,30 @@ export const coursesApi = {
     }
 
     // Mock fallback
-    return mockCourses;
+    return mockCourses.map((c) => {
+      const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
+      const localProgress = getCompletedCountForCourse(key);
+      const progress = Math.max(c.progress ?? 0, localProgress);
+      return { ...c, progress };
+    });
   },
 
   async getFeaturedCourses(token?: string): Promise<Course[]> {
     await delay(DELAYS.courses);
+
+    await loadLessonCompletionFromStorage();
 
     const baseUrl = getApiBaseUrl();
 
     // Courses endpoints require auth per swagger; if we don't have a token yet,
     // keep behavior non-blocking and fall back to mock data.
     if (!token) {
-      return mockFeaturedCourses;
+      return mockFeaturedCourses.map((c) => {
+        const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
+        const localProgress = getCompletedCountForCourse(key);
+        const progress = Math.max(c.progress ?? 0, localProgress);
+        return { ...c, progress };
+      });
     }
 
     if (baseUrl) {
@@ -683,7 +805,7 @@ export const coursesApi = {
               ? item.finished_lessons
               : 0;
 
-          return {
+          const course: Course = {
             id: String(backendId ?? `course_${Date.now()}`),
             backendId,
             title: item.title || "",
@@ -695,6 +817,13 @@ export const coursesApi = {
             isPublic: item.is_public,
             isMine: item.is_mine,
             status: lessons === 0 ? "generating" : "ready",
+          };
+
+          const key = backendId ? `backend:${backendId}` : `id:${course.id}`;
+          const localProgress = getCompletedCountForCourse(key);
+          return {
+            ...course,
+            progress: Math.max(course.progress ?? 0, localProgress),
           };
         };
 
@@ -713,11 +842,18 @@ export const coursesApi = {
     }
 
     // Mock fallback
-    return mockFeaturedCourses;
+    return mockFeaturedCourses.map((c) => {
+      const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
+      const localProgress = getCompletedCountForCourse(key);
+      const progress = Math.max(c.progress ?? 0, localProgress);
+      return { ...c, progress };
+    });
   },
 
   async getCourseById(id: string, token?: string): Promise<Course | null> {
     await delay(DELAYS.courses);
+
+    await loadLessonCompletionFromStorage();
 
     const baseUrl = getApiBaseUrl();
     const numericId = Number(id);
@@ -792,7 +928,7 @@ export const coursesApi = {
         const progress =
           typeof json.finished_lessons === "number" ? json.finished_lessons : 0;
 
-        return {
+        const course: Course = {
           id: String(json.id),
           backendId: json.id,
           title: json.title || "",
@@ -812,10 +948,23 @@ export const coursesApi = {
                   ? m.lessons.map((l) => ({
                       id: String(l.id ?? `lesson_${Date.now()}`),
                       title: l.title || "",
+                      serialNumber:
+                        typeof l.serial_number === "number"
+                          ? l.serial_number
+                          : undefined,
+                      createdAt: l.created_at,
+                      updatedAt: l.updated_at || l.created_at,
                     }))
                   : [],
               }))
             : [],
+        };
+
+        const key = `backend:${json.id}`;
+        const localProgress = getCompletedCountForCourse(key);
+        return {
+          ...course,
+          progress: Math.max(course.progress ?? 0, localProgress),
         };
       } catch (err) {
         if (err instanceof ApiError) throw err;
@@ -829,7 +978,13 @@ export const coursesApi = {
     }
 
     const allCourses = [...mockCourses, ...mockFeaturedCourses];
-    return allCourses.find((course) => course.id === id) || null;
+    const found = allCourses.find((course) => course.id === id) || null;
+    if (!found) return null;
+    const key = found.backendId
+      ? `backend:${found.backendId}`
+      : `id:${found.id}`;
+    const localProgress = getCompletedCountForCourse(key);
+    return { ...found, progress: Math.max(found.progress ?? 0, localProgress) };
   },
 
   async publishCourse(token: string, courseId: number): Promise<void> {
@@ -1204,6 +1359,55 @@ export const lessonsApi = {
         materials: lessonMaterial ? [lessonMaterial] : [],
         questions,
       };
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      if (err instanceof Error) {
+        emitServerUnavailable();
+        throw new ApiError(0, "network", err.message);
+      }
+      emitServerUnavailable();
+      throw new ApiError(0, "network", "Network error");
+    }
+  },
+
+  async finishLesson(lessonId: number, token: string): Promise<void> {
+    await delay(DELAYS.lessons);
+
+    if (!token) {
+      throw new ApiError(401, "unauthorized", "Token is required");
+    }
+
+    if (!Number.isFinite(lessonId)) {
+      throw new ApiError(400, "validation", "Lesson ID is required");
+    }
+
+    const baseUrl = getApiBaseUrl();
+    if (!baseUrl) {
+      throw new ApiError(500, "unknown", "API base URL is not configured");
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/lessons/${lessonId}/finish`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const payload = await readErrorPayload(res);
+        const messageFromJson =
+          (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+          (isRecord(payload.json) && typeof payload.json.error === "string"
+            ? payload.json.error
+            : undefined) ||
+          (payload.json as { message?: string } | null)?.message ||
+          (payload.json as { detail?: string } | null)?.detail;
+        const message =
+          messageFromJson || payload.text || "Failed to finish lesson";
+        throw new ApiError(res.status, "unknown", message);
+      }
     } catch (err) {
       if (err instanceof ApiError) throw err;
       if (err instanceof Error) {

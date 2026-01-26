@@ -11,6 +11,7 @@ import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { coursesApi } from "@/services/api";
 import type { Course } from "@/types";
+import { useFocusEffect } from "@react-navigation/native";
 import { Clock, Flame, TrendingUp } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -39,6 +40,12 @@ export default function HomeScreen() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadData();
+    }, [loadData]),
+  );
 
   const coursesToShow = useMemo(() => courses.slice(0, 4), [courses]);
 

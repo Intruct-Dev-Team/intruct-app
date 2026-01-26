@@ -35,6 +35,11 @@ export interface Module {
 export interface Lesson {
   id: string;
   title: string;
+  /** Optional ordering value from backend (serial_number) */
+  serialNumber?: number;
+  /** Optional timestamps from backend */
+  createdAt?: string;
+  updatedAt?: string;
   materials?: LessonMaterial[];
   questions?: TestQuestion[];
 }
