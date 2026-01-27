@@ -2,9 +2,8 @@ import LessonMaterialView from "@/components/lesson/LessonMaterialView";
 import TestView from "@/components/lesson/TestView";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { mockCourses } from "@/mockdata/courses";
 import { ApiError, lessonProgressApi, lessonsApi } from "@/services/api";
-import type { Course, Lesson } from "@/types";
+import type { Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -59,47 +58,35 @@ export default function LessonScreen() {
 
       const numericId = Number(id);
 
-      if (token && Number.isFinite(numericId)) {
-        try {
-          const lessonFromApi = await lessonsApi.getLessonById(
-            numericId,
-            token,
-          );
-          if (cancelled) return;
-          setLesson(lessonFromApi);
-          setCourseTitle("");
-          return;
-        } catch (err) {
-          if (cancelled) return;
-          const message =
-            err instanceof ApiError
+      if (!token) {
+        setLesson(null);
+        setCourseTitle("");
+        setError("Token is required");
+        return;
+      }
+
+      if (!Number.isFinite(numericId)) {
+        setLesson(null);
+        setCourseTitle("");
+        setError("Invalid lesson id");
+        return;
+      }
+
+      try {
+        const lessonFromApi = await lessonsApi.getLessonById(numericId, token);
+        if (cancelled) return;
+        setLesson(lessonFromApi);
+        setCourseTitle("");
+      } catch (err) {
+        if (cancelled) return;
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
               ? err.message
-              : err instanceof Error
-                ? err.message
-                : "Failed to load lesson";
-          setError(message);
-        }
+              : "Failed to load lesson";
+        setError(message);
       }
-
-      // Mock fallback
-      let foundLesson: Lesson | undefined;
-      let foundCourse: Course | undefined;
-
-      for (const course of mockCourses) {
-        for (const module of course.modules || []) {
-          const lessonCandidate = module.lessons.find((l) => l.id === id);
-          if (lessonCandidate) {
-            foundLesson = lessonCandidate;
-            foundCourse = course;
-            break;
-          }
-        }
-        if (foundLesson) break;
-      }
-
-      if (cancelled) return;
-      setLesson(foundLesson ?? null);
-      setCourseTitle(foundCourse?.title ?? "");
     };
 
     void load().finally(() => {
@@ -236,10 +223,18 @@ export default function LessonScreen() {
 
     void (async () => {
       try {
-        const lessonIdNumber = Number(lesson.id);
-        if (token && Number.isFinite(lessonIdNumber)) {
-          await lessonsApi.finishLesson(lessonIdNumber, token);
+        if (!token) {
+          setError("Token is required");
+          return;
         }
+
+        const lessonIdNumber = Number(lesson.id);
+        if (!Number.isFinite(lessonIdNumber)) {
+          setError("Invalid lesson id");
+          return;
+        }
+
+        await lessonsApi.finishLesson(lessonIdNumber, token);
 
         if (courseKey) {
           await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);
@@ -272,9 +267,17 @@ export default function LessonScreen() {
 
     void (async () => {
       try {
-        if (token && Number.isFinite(lessonIdNumber)) {
-          await lessonsApi.finishLesson(lessonIdNumber, token);
+        if (!token) {
+          setError("Token is required");
+          return;
         }
+
+        if (!Number.isFinite(lessonIdNumber)) {
+          setError("Invalid lesson id");
+          return;
+        }
+
+        await lessonsApi.finishLesson(lessonIdNumber, token);
 
         if (courseKey) {
           await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);

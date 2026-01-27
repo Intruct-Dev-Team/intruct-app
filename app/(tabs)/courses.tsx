@@ -2,7 +2,7 @@ import { CourseCard, CourseCardSkeleton } from "@/components/cards";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { coursesApi, lessonProgressApi } from "@/services/api";
+import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
 import { Plus } from "@tamagui/lucide-icons";
@@ -17,6 +17,7 @@ export default function CoursesScreen() {
   const { localCourses, openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState<string | null>(null);
 
   const courseCreatedAtValue = (course: Course): number => {
     const raw = course.createdAt;
@@ -39,6 +40,7 @@ export default function CoursesScreen() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setCoursesError(null);
     try {
       const token = session?.access_token;
       if (!token) {
@@ -50,6 +52,11 @@ export default function CoursesScreen() {
       setCourses(c);
     } catch (err) {
       console.error(err);
+      if (err instanceof ApiError) {
+        setCoursesError(err.message);
+      } else {
+        setCoursesError("Failed to load courses.");
+      }
     } finally {
       setLoading(false);
     }
@@ -140,6 +147,31 @@ export default function CoursesScreen() {
     return courseCreatedAtValue(b) - courseCreatedAtValue(a);
   });
 
+  if (coursesError && allCourses.length === 0) {
+    return (
+      <YStack flex={1}>
+        {header}
+        <ScrollView backgroundColor={colors.background} flex={1}>
+          <YStack padding="$4" gap="$4" paddingBottom="$8">
+            <YStack
+              gap="$3"
+              padding="$4"
+              backgroundColor={colors.cardBackground}
+            >
+              <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
+                Couldn’t load courses
+              </Text>
+              <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
+                {coursesError}
+              </Text>
+            </YStack>
+          </YStack>
+        </ScrollView>
+        {createCourseFab}
+      </YStack>
+    );
+  }
+
   if (!allCourses || allCourses.length === 0) {
     return (
       <YStack flex={1}>
@@ -156,7 +188,7 @@ export default function CoursesScreen() {
         <ScrollView backgroundColor={colors.background} flex={1}>
           <YStack padding="$4" gap="$4" paddingBottom="$8">
             <YStack gap="$3">
-              <Text color="$color">You have no courses yet.</Text>
+              <Text color={colors.textSecondary}>You have no courses yet.</Text>
             </YStack>
           </YStack>
         </ScrollView>
@@ -170,6 +202,15 @@ export default function CoursesScreen() {
       {header}
       <ScrollView backgroundColor={colors.background} flex={1}>
         <YStack padding="$4" gap="$4" paddingBottom="$8">
+          {coursesError ? (
+            <YStack
+              padding="$4"
+              borderRadius="$4"
+              backgroundColor={colors.cardBackground}
+            >
+              <Text color={colors.textSecondary}>{coursesError}</Text>
+            </YStack>
+          ) : null}
           <YStack gap="$3">
             {allCourses.map((course) => {
               return (

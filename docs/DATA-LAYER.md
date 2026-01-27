@@ -2,141 +2,67 @@
 
 ## Обзор
 
-Приложение использует слоистую архитектуру для работы с данными, что позволяет легко переключаться между mock данными и реальным API.
+В приложении есть единый слой данных в `services/api.ts`. UI-компоненты не должны вызывать `fetch()` напрямую — только `profileApi`, `coursesApi`, `lessonProgressApi` и другие экспортируемые API.
+
+В проекте есть `mockdata/`, но для пользовательских (auth) эндпоинтов мы не используем «тихие» моки: если нет токена или не настроен backend, это считается ошибкой и должно быть видно.
 
 ## Структура
 
-```
-├── types/              # TypeScript типы
-│   └── index.ts
-├── mockdata/           # Тестовые данные
+```text
+├── types/              # TypeScript типы (разбиты по доменам)
+│   ├── index.ts        # barrel export: import type { Course } from "@/types"
+│   ├── course.ts
+│   ├── lesson.ts
 │   ├── user.ts
-│   ├── courses.ts
-│   └── settings.ts
-└── services/           # API слой
-    └── api.ts
+│   ├── settings.ts
+│   └── api.ts          # swagger/request/response shapes
+├── mockdata/           # Данные для UI/каталога/заглушек
+└── services/
+    └── api.ts          # Единая точка доступа к данным
 ```
 
-## Типы (`types/index.ts`)
+## Типы (`types/`)
 
-Все типы данных определены централизованно:
+Импорты остаются прежними:
 
-```typescript
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  lessons: number;
-  progress?: number;
-  createdAt: string;
-  updatedAt: string;
-}
+```ts
+import type { Course, UserProfile } from "@/types";
 ```
 
-## Mock данные (`mockdata/`)
-
-Тестовые данные для разработки:
-
-- `user.ts` - данные пользователя и статистика
-- `courses.ts` - список курсов
-- `settings.ts` - настройки и опции
+Но внутри `types/` типы разнесены по смыслу (курс/урок/пользователь/настройки/Swagger).
 
 ## API слой (`services/api.ts`)
 
-Единая точка доступа к данным:
+Ключевые объекты:
 
-```typescript
-// Получить текущего пользователя
-const user = await userApi.getCurrentUser();
+- `profileApi.getProfile(token)` — профиль пользователя из backend
+- `coursesApi.getMyCourses(token)` — «Мои курсы» (требует токен + `EXPO_PUBLIC_API_BASE_URL`)
+- `coursesApi.getCourseById(id, token)` — детальная карточка курса
+- `lessonProgressApi.*` — локальный кэш прохождения уроков (AsyncStorage), чтобы прогресс обновлялся мгновенно
 
-// Получить статистику
-const stats = await userApi.getUserStats();
+Пример использования:
 
-// Получить курсы
-const courses = await coursesApi.getMyCourses();
-```
+```ts
+import { coursesApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
-### Преимущества
+const { session } = useAuth();
+const token = session?.access_token;
 
-1. **Единый интерфейс** - компоненты не знают, откуда приходят данные
-2. **Легкая замена** - достаточно изменить реализацию в `api.ts`
-3. **Симуляция задержек** - mock API имитирует реальные задержки сети
-4. **Типобезопасность** - все данные типизированы
-
-## Использование в компонентах
-
-```typescript
-import { userApi } from "@/services/api";
-import type { User } from "@/types";
-import { useEffect, useState } from "react";
-import { Text } from "react-native";
-
-function MyComponent() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadData = async () => {
-      const userData = await userApi.getCurrentUser();
-      if (cancelled) return;
-      setUser(userData);
-    };
-
-    loadData().catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return <Text>{user?.name}</Text>;
+if (token) {
+  const courses = await coursesApi.getMyCourses(token);
 }
 ```
 
-## Миграция на реальный API
-
-Когда backend будет готов, нужно изменить только `services/api.ts`:
-
-```typescript
-// Было (mock):
-export const userApi = {
-  async getCurrentUser(): Promise<User> {
-    await delay(300);
-    return mockUser;
-  },
-};
-
-// Станет (real API):
-export const userApi = {
-  async getCurrentUser(): Promise<User> {
-    const response = await fetch("https://api.intruct.com/user/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.json();
-  },
-};
-```
-
-Компоненты останутся без изменений!
-
 ## Best Practices
 
-1. **Всегда используйте типы** - `import type { User } from '@/types'`
-2. **Обрабатывайте ошибки** - добавляйте try/catch
-3. **Показывайте loading** - пока данные загружаются
-4. **Кэшируйте данные** - используйте React Query или SWR в будущем
+1. Используй `services/api.ts` вместо прямого `fetch()` в UI.
+2. Для авторизованных вызовов всегда пробрасывай `session?.access_token`.
+3. Ошибки авторизации/не-настроенного backend не маскируй моками — показывай пользователю error/empty state.
+4. Типы импортируй как `import type { ... } from "@/types"`.
 
-## Будущие улучшения
+## Потенциальные улучшения (следующий этап)
 
-- [ ] Добавить React Query для кэширования
-- [ ] Добавить оптимистичные обновления
-- [ ] Добавить offline-first подход
-- [ ] Добавить автоматическую ретрай логику
+- Добавить единый слой кеширования (например, React Query) для курсов/уроков.
+- Ввести строгие runtime-схемы (zod) для ответов backend, чтобы ловить несовпадения контракта.
+- Явно разделить «catalog API» (может иметь моки) и «my courses API» (только backend).

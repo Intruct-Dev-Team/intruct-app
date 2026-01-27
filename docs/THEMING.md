@@ -22,6 +22,19 @@ function MyComponent() {
 }
 ```
 
+## Когда нужен «сырой» цвет (не token)
+
+Иногда библиотека/компонент ожидает **реальную строку цвета** (например, `#RRGGBB`), а не Tamagui token (`$blue9`).
+
+В таких местах используй `resolveThemeColor()`:
+
+```tsx
+import { resolveThemeColor, useThemeColors } from "@/hooks/use-theme-colors";
+
+const colors = useThemeColors();
+const iconColor = resolveThemeColor(colors.textSecondary);
+```
+
 ### Неправильно ❌
 
 ```tsx

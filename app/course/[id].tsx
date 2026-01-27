@@ -2,7 +2,7 @@ import { AppSheetModal } from "@/components/modals";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { coursesApi, lessonProgressApi } from "@/services/api";
+import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
 import {
@@ -27,6 +27,7 @@ export default function CourseDetailPage() {
   const id = params.id;
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [courseError, setCourseError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -37,14 +38,24 @@ export default function CourseDetailPage() {
   const loadCourse = useCallback(
     async (courseId: string) => {
       setLoading(true);
+      setCourseError(null);
       try {
-        const c = await coursesApi.getCourseById(
-          courseId,
-          session?.access_token,
-        );
+        const token = session?.access_token;
+        if (!token) {
+          setCourse(null);
+          setCourseError("Sign in to view this course.");
+          return;
+        }
+
+        const c = await coursesApi.getCourseById(courseId, token);
         setCourse(c);
       } catch (err) {
         console.error(err);
+        if (err instanceof ApiError) {
+          setCourseError(err.message);
+        } else {
+          setCourseError("Failed to load course.");
+        }
       } finally {
         setLoading(false);
       }
@@ -121,11 +132,57 @@ export default function CourseDetailPage() {
     setSettingsOpen(false);
   };
 
-  if (loading || !course) {
+  if (loading) {
     return (
       <YStack flex={1} padding="$4" justifyContent="center" alignItems="center">
         <Stack.Screen options={{ headerShown: false }} />
         <Text color={colors.textSecondary}>Loading course...</Text>
+      </YStack>
+    );
+  }
+
+  if (courseError) {
+    return (
+      <YStack
+        flex={1}
+        padding="$4"
+        justifyContent="center"
+        alignItems="center"
+        gap="$3"
+      >
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
+          Couldn’t load course
+        </Text>
+        <Text color={colors.textSecondary} textAlign="center">
+          {courseError}
+        </Text>
+        <XStack gap="$3" marginTop="$2">
+          <Button onPress={() => (id ? loadCourse(id) : undefined)}>
+            Retry
+          </Button>
+          <Button chromeless onPress={() => router.back()}>
+            Go back
+          </Button>
+        </XStack>
+      </YStack>
+    );
+  }
+
+  if (!course) {
+    return (
+      <YStack
+        flex={1}
+        padding="$4"
+        justifyContent="center"
+        alignItems="center"
+        gap="$3"
+      >
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text color={colors.textSecondary}>Course not found.</Text>
+        <Button chromeless onPress={() => router.back()}>
+          Go back
+        </Button>
       </YStack>
     );
   }

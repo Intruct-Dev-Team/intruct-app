@@ -4,12 +4,12 @@ import {
 } from "@/components/cards";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { courseCategories } from "@/mockdata/courses";
-import { catalogApi } from "@/services/api";
+import { ApiError, catalogApi } from "@/services/api";
 import type { Course, SortOption } from "@/types";
 import { ChevronDown, Filter, Search } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
-import { H1, Input, ScrollView, Text, XStack, YStack } from "tamagui";
+import { Button, H1, Input, ScrollView, Text, XStack, YStack } from "tamagui";
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: "popular", label: "Popular" },
@@ -25,6 +25,7 @@ export default function CatalogScreen() {
   const [sortBy, setSortBy] = useState<SortOption>("popular");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState<string | null>(null);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function CatalogScreen() {
 
   const loadCourses = async () => {
     setLoading(true);
+    setCoursesError(null);
     try {
       const results = await catalogApi.searchCourses({
         query: searchQuery,
@@ -43,6 +45,13 @@ export default function CatalogScreen() {
       setCourses(results);
     } catch (error) {
       console.error("Failed to load courses:", error);
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Failed to load courses.";
+      setCoursesError(message);
     } finally {
       setLoading(false);
     }
@@ -156,7 +165,7 @@ export default function CatalogScreen() {
                 <Pressable
                   onPress={() => {
                     const currentIndex = sortOptions.findIndex(
-                      (opt) => opt.value === sortBy
+                      (opt) => opt.value === sortBy,
                     );
                     const nextIndex = (currentIndex + 1) % sortOptions.length;
                     setSortBy(sortOptions[nextIndex].value);
@@ -188,6 +197,21 @@ export default function CatalogScreen() {
           <Text fontSize="$3" color={colors.textSecondary}>
             {courses.length} courses found
           </Text>
+
+          {coursesError ? (
+            <YStack
+              padding="$4"
+              borderRadius="$4"
+              backgroundColor={colors.cardBackground}
+              gap="$3"
+            >
+              <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
+                Couldn’t load catalog
+              </Text>
+              <Text color={colors.textSecondary}>{coursesError}</Text>
+              <Button onPress={loadCourses}>Retry</Button>
+            </YStack>
+          ) : null}
 
           {/* Course List */}
           <YStack gap="$3">
