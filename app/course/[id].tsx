@@ -31,6 +31,7 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [courseError, setCourseError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(
@@ -125,13 +126,31 @@ export default function CourseDetailPage() {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    if (!course || deleting) return;
     if (!canDelete) return;
-    notify({
-      type: "error",
-      message: "Course deletion isn’t supported yet.",
-    });
-    setSettingsOpen(false);
+
+    const token = session?.access_token;
+    const courseId = course.backendId;
+
+    if (!token || !courseId) {
+      notify({ type: "error", message: "Couldn’t delete course." });
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await coursesApi.deleteCourse(token, courseId);
+      notify({ type: "success", message: "Course deleted." });
+      setSettingsOpen(false);
+      router.replace("/courses" as any);
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : "Couldn’t delete course.";
+      notify({ type: "error", message });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -662,8 +681,8 @@ export default function CourseDetailPage() {
             color="white"
             borderRadius="$6"
             fontWeight="700"
-            disabled={!canDelete}
-            opacity={!canDelete ? 0.7 : 1}
+            disabled={!canDelete || deleting}
+            opacity={!canDelete || deleting ? 0.7 : 1}
             icon={<Trash2 size={16} color="white" />}
             onPress={handleDelete}
           >

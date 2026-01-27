@@ -2,6 +2,8 @@ import type { Lesson } from "./lesson";
 
 export type CourseStatus = "generating" | "ready" | "failed";
 
+export type CourseState = "creation" | "failed" | "created" | "published";
+
 export interface Course {
   id: string;
   backendId?: number;
@@ -19,6 +21,7 @@ export interface Course {
   isPublic?: boolean;
   isMine?: boolean;
   status?: CourseStatus;
+  state?: CourseState;
 }
 
 export interface Module {

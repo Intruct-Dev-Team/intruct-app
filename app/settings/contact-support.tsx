@@ -1,6 +1,7 @@
+import { ExternalLink } from "@/components/common/external-link";
 import { ScreenContainer } from "@/components/layout";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { ChevronLeft, Mail, MessageCircle } from "@tamagui/lucide-icons";
+import { ChevronLeft, Linkedin, Mail, Send } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
 import { Button, Card, Text, XStack, YStack } from "tamagui";
 
@@ -28,45 +29,83 @@ export default function ContactSupportScreen() {
           Choose a way to reach us.
         </Text>
 
-        <Card
-          padding="$4"
-          backgroundColor={colors.cardBackground}
-          borderRadius="$6"
-          borderWidth={1}
-          borderColor="$gray5"
-        >
-          <XStack gap="$3" alignItems="center">
-            <MessageCircle size={18} color={colors.textSecondary} />
-            <YStack flex={1} gap="$1">
-              <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
-                In-app support
-              </Text>
-              <Text fontSize="$4" color={colors.textSecondary}>
-                Coming soon.
-              </Text>
-            </YStack>
-          </XStack>
-        </Card>
+        <ExternalLink href="mailto:ijusseen@gmail.com" asChild>
+          <Card
+            padding="$4"
+            backgroundColor={colors.cardBackground}
+            borderRadius="$6"
+            borderWidth={1}
+            borderColor="$gray5"
+            pressStyle={{ opacity: 0.85 }}
+            hoverStyle={{ opacity: 0.9 }}
+            cursor="pointer"
+            accessibilityRole="link"
+          >
+            <XStack gap="$3" alignItems="center">
+              <Mail size={18} color={colors.textSecondary} />
+              <YStack flex={1} gap="$1">
+                <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
+                  Email
+                </Text>
+                <Text fontSize="$4" color={colors.textSecondary}>
+                  ijusseen@gmail.com
+                </Text>
+              </YStack>
+            </XStack>
+          </Card>
+        </ExternalLink>
 
-        <Card
-          padding="$4"
-          backgroundColor={colors.cardBackground}
-          borderRadius="$6"
-          borderWidth={1}
-          borderColor="$gray5"
-        >
-          <XStack gap="$3" alignItems="center">
-            <Mail size={18} color={colors.textSecondary} />
-            <YStack flex={1} gap="$1">
-              <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
-                Email
-              </Text>
-              <Text fontSize="$4" color={colors.textSecondary}>
-                Coming soon.
-              </Text>
-            </YStack>
-          </XStack>
-        </Card>
+        <ExternalLink href="https://www.linkedin.com/company/intruct/" asChild>
+          <Card
+            padding="$4"
+            backgroundColor={colors.cardBackground}
+            borderRadius="$6"
+            borderWidth={1}
+            borderColor="$gray5"
+            pressStyle={{ opacity: 0.85 }}
+            hoverStyle={{ opacity: 0.9 }}
+            cursor="pointer"
+            accessibilityRole="link"
+          >
+            <XStack gap="$3" alignItems="center">
+              <Linkedin size={18} color={colors.textSecondary} />
+              <YStack flex={1} gap="$1">
+                <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
+                  LinkedIn
+                </Text>
+                <Text fontSize="$4" color={colors.textSecondary}>
+                  https://www.linkedin.com/company/intruct/
+                </Text>
+              </YStack>
+            </XStack>
+          </Card>
+        </ExternalLink>
+
+        <ExternalLink href="https://t.me/andr_ewtf" asChild>
+          <Card
+            padding="$4"
+            backgroundColor={colors.cardBackground}
+            borderRadius="$6"
+            borderWidth={1}
+            borderColor="$gray5"
+            pressStyle={{ opacity: 0.85 }}
+            hoverStyle={{ opacity: 0.9 }}
+            cursor="pointer"
+            accessibilityRole="link"
+          >
+            <XStack gap="$3" alignItems="center">
+              <Send size={18} color={colors.textSecondary} />
+              <YStack flex={1} gap="$1">
+                <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
+                  Telegram
+                </Text>
+                <Text fontSize="$4" color={colors.textSecondary}>
+                  @andr_ewtf
+                </Text>
+              </YStack>
+            </XStack>
+          </Card>
+        </ExternalLink>
       </YStack>
     </ScreenContainer>
   );

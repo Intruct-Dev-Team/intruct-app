@@ -1,6 +1,6 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { ChevronRight } from "@tamagui/lucide-icons";
-import { Card, Progress, Text, XStack, YStack } from "tamagui";
+import { ChevronRight, Trash2 } from "@tamagui/lucide-icons";
+import { Button, Card, Progress, Text, XStack, YStack } from "tamagui";
 
 interface CourseCardProps {
   title: string;
@@ -9,6 +9,7 @@ interface CourseCardProps {
   progress?: number;
   status?: "generating" | "ready" | "failed";
   onPress?: () => void;
+  onDelete?: () => void;
 }
 
 export function CourseCard({
@@ -18,6 +19,7 @@ export function CourseCard({
   progress,
   status,
   onPress,
+  onDelete,
 }: CourseCardProps) {
   const colors = useThemeColors();
 
@@ -150,6 +152,28 @@ export function CourseCard({
             pointerEvents="none"
           >
             <ChevronRight size={18} color={colors.textTertiary} />
+          </YStack>
+        )}
+
+        {isFailed && onDelete && (
+          <YStack
+            width={44}
+            flexShrink={0}
+            alignSelf="stretch"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button
+              chromeless
+              padding={0}
+              width={44}
+              height={44}
+              icon={<Trash2 size={18} color="$red9" />}
+              onPress={(event) => {
+                (event as any)?.stopPropagation?.();
+                onDelete();
+              }}
+            />
           </YStack>
         )}
       </XStack>

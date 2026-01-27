@@ -1,5 +1,6 @@
 import type {
   Course,
+  CourseState,
   CreateCourseResponse,
   UploadCourseContentRequest,
 } from "@/types";
@@ -42,6 +43,51 @@ type BackendCourseItem = {
   finished_lessons?: number;
   is_public?: boolean;
   is_mine?: boolean;
+  state?: unknown;
+};
+
+const normalizeCourseState = (value: unknown): CourseState | undefined => {
+  if (typeof value === "string") {
+    if (
+      value === "creation" ||
+      value === "failed" ||
+      value === "created" ||
+      value === "published"
+    ) {
+      return value;
+    }
+    return undefined;
+  }
+
+  // Backwards/alternate encodings (as described by the user)
+  if (typeof value === "number") {
+    switch (value) {
+      case 1:
+        return "creation";
+      case 2:
+        return "failed";
+      case 3:
+        return "created";
+      case 4:
+        return "published";
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
+};
+
+const mapStateToStatus = (
+  state: CourseState | undefined,
+  lessons: number,
+): Course["status"] => {
+  if (state === "creation") return "generating";
+  if (state === "failed") return "failed";
+  if (state === "created" || state === "published") return "ready";
+
+  // Fallback for older backend payloads
+  return lessons === 0 ? "generating" : "ready";
 };
 
 const mapBackendCourseItemToCourse = (item: BackendCourseItem): Course => {
@@ -52,6 +98,8 @@ const mapBackendCourseItemToCourse = (item: BackendCourseItem): Course => {
     typeof item.lessons_number === "number" ? item.lessons_number : 0;
   const progress =
     typeof item.finished_lessons === "number" ? item.finished_lessons : 0;
+
+  const state = normalizeCourseState(item.state);
 
   const course: Course = {
     id: String(backendId ?? `course_${Date.now()}`),
@@ -64,7 +112,8 @@ const mapBackendCourseItemToCourse = (item: BackendCourseItem): Course => {
     updatedAt: item.updated_at || item.created_at || now,
     isPublic: item.is_public,
     isMine: item.is_mine,
-    status: lessons === 0 ? "generating" : "ready",
+    state,
+    status: mapStateToStatus(state, lessons),
   };
 
   const key = backendId ? `backend:${backendId}` : `id:${course.id}`;
@@ -271,6 +320,7 @@ export const coursesApi = {
           finished_lessons?: number;
           is_public?: boolean;
           is_mine?: boolean;
+          state?: unknown;
           modules?: BackendModuleItem[];
         };
 
@@ -288,6 +338,8 @@ export const coursesApi = {
         const progress =
           typeof json.finished_lessons === "number" ? json.finished_lessons : 0;
 
+        const state = normalizeCourseState(json.state);
+
         const course: Course = {
           id: String(json.id),
           backendId: json.id,
@@ -299,7 +351,8 @@ export const coursesApi = {
           updatedAt: json.updated_at || json.created_at || now,
           isPublic: json.is_public,
           isMine: json.is_mine,
-          status: lessons === 0 ? "generating" : "ready",
+          state,
+          status: mapStateToStatus(state, lessons),
           modules: Array.isArray(json.modules)
             ? json.modules.map((m) => ({
                 id: String(m.id ?? `module_${Date.now()}`),
@@ -399,6 +452,71 @@ export const coursesApi = {
         "network",
         "Backend not configured - publishCourse requires API",
       );
+    }
+  },
+
+  async deleteCourse(token: string, courseId: number): Promise<void> {
+    await delay(DELAYS.courses);
+
+    if (!token) {
+      throw new ApiError(401, "unauthorized", "Token is required");
+    }
+
+    if (!courseId) {
+      throw new ApiError(400, "validation", "Course ID is required");
+    }
+
+    const baseUrl = getApiBaseUrl();
+    if (!baseUrl) {
+      emitServerUnavailable();
+      throw new ApiError(
+        0,
+        "network",
+        "Backend not configured - deleteCourse requires API",
+      );
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/courses/${courseId}/delete`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (res.status === 401) {
+        throw new ApiError(401, "unauthorized", "Unauthorized");
+      }
+
+      if (res.status === 403) {
+        throw new ApiError(403, "unknown", "Not the owner of this course");
+      }
+
+      if (res.status === 404) {
+        throw new ApiError(404, "unknown", "Course not found");
+      }
+
+      if (!res.ok) {
+        const payload = await readErrorPayload(res);
+        const messageFromJson =
+          (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+          (isRecord(payload.json) && typeof payload.json.error === "string"
+            ? payload.json.error
+            : undefined) ||
+          (payload.json as { message?: string } | null)?.message ||
+          (payload.json as { detail?: string } | null)?.detail;
+        const message = messageFromJson || payload.text || "Failed to delete";
+        throw new ApiError(res.status, "unknown", message);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      if (err instanceof Error) {
+        emitServerUnavailable();
+        throw new ApiError(0, "network", err.message);
+      }
+      emitServerUnavailable();
+      throw new ApiError(0, "network", "Network error");
     }
   },
 

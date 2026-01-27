@@ -1,6 +1,7 @@
 import { CourseCard, CourseCardSkeleton } from "@/components/cards";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
+import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course } from "@/types";
@@ -14,6 +15,7 @@ export default function CoursesScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const { session } = useAuth();
+  const { notify } = useNotifications();
   const { localCourses, openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,29 @@ export default function CoursesScreen() {
       setLoading(false);
     }
   }, [session?.access_token]);
+
+  const handleDeleteCourse = useCallback(
+    async (course: Course) => {
+      const token = session?.access_token;
+      const courseId = course.backendId;
+
+      if (!token || !courseId) {
+        notify({ type: "error", message: "Couldn’t delete course." });
+        return;
+      }
+
+      try {
+        await coursesApi.deleteCourse(token, courseId);
+        notify({ type: "success", message: "Course deleted." });
+        await loadData();
+      } catch (err) {
+        const message =
+          err instanceof ApiError ? err.message : "Couldn’t delete course.";
+        notify({ type: "error", message });
+      }
+    },
+    [loadData, notify, session?.access_token],
+  );
 
   useEffect(() => {
     void loadData();
@@ -221,6 +246,11 @@ export default function CoursesScreen() {
                   status={course.status}
                   lessons={course.lessons}
                   progress={course.progress}
+                  onDelete={
+                    course.status === "failed"
+                      ? () => void handleDeleteCourse(course)
+                      : undefined
+                  }
                   onPress={() =>
                     course.status === "generating" || course.status === "failed"
                       ? openCreatingModal(course.id)
