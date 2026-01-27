@@ -5,6 +5,7 @@ import { CourseDetailsStep } from "@/components/create-course/course-details-ste
 import { ReviewStep } from "@/components/create-course/review-step";
 import { LanguageModal } from "@/components/modals";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
+import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { settingsApi } from "@/services/api";
 import { ArrowLeft } from "@tamagui/lucide-icons";
@@ -19,6 +20,7 @@ export default function CreateCourseScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { startCourseGeneration } = useCourseGeneration();
+  const { notify } = useNotifications();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
@@ -50,7 +52,22 @@ export default function CreateCourseScreen() {
     };
   }, []);
 
+  const hasAttachedFile = formData.files.length > 0;
+
   const handleNext = () => {
+    if (!hasAttachedFile) {
+      notify({
+        type: "error",
+        title: "Нужен файл",
+        message: "Прикрепите файл (PDF или TXT), чтобы продолжить.",
+      });
+
+      if (currentStep !== 1) {
+        setCurrentStep(1);
+      }
+      return;
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {

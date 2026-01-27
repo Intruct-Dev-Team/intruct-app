@@ -18,6 +18,12 @@ export default function CoursesScreen() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const courseCreatedAtValue = (course: Course): number => {
+    const raw = course.createdAt;
+    const value = typeof raw === "string" ? Date.parse(raw) : NaN;
+    return Number.isFinite(value) ? value : 0;
+  };
+
   const header = (
     <YStack backgroundColor={colors.cardBackground}>
       <YStack padding="$4" paddingTop="$6" gap="$1">
@@ -34,8 +40,13 @@ export default function CoursesScreen() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const c = await coursesApi.getMyCourses(session?.access_token);
-      console.log("[CoursesScreen] Loaded courses", c);
+      const token = session?.access_token;
+      if (!token) {
+        setCourses([]);
+        return;
+      }
+
+      const c = await coursesApi.getMyCourses(token);
       setCourses(c);
     } catch (err) {
       console.error(err);
@@ -125,7 +136,9 @@ export default function CoursesScreen() {
       const id = c.backendId;
       return !(typeof id === "number" && localBackendIds.has(id));
     }),
-  ];
+  ].sort((a, b) => {
+    return courseCreatedAtValue(b) - courseCreatedAtValue(a);
+  });
 
   if (!allCourses || allCourses.length === 0) {
     return (

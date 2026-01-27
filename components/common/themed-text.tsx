@@ -1,6 +1,7 @@
 import { StyleSheet, Text, type TextProps } from "react-native";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
+import { useTheme } from "@/contexts/theme-context";
+import { resolveThemeColor, useThemeColors } from "@/hooks/use-theme-colors";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -15,10 +16,12 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    type === "link" ? "tint" : "text"
-  );
+  const { activeTheme } = useTheme();
+  const colors = useThemeColors();
+
+  const override = activeTheme === "dark" ? darkColor : lightColor;
+  const base = type === "link" ? colors.primary : colors.textPrimary;
+  const color = resolveThemeColor(override ?? base);
 
   return (
     <Text

@@ -628,15 +628,9 @@ export const coursesApi = {
 
     const baseUrl = getApiBaseUrl();
 
-    // Courses endpoints require auth per swagger; if we don't have a token yet,
-    // keep behavior non-blocking and fall back to mock data.
+    // Courses endpoints require auth per swagger.
     if (!token) {
-      return mockCourses.map((c) => {
-        const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
-        const localProgress = getCompletedCountForCourse(key);
-        const progress = Math.max(c.progress ?? 0, localProgress);
-        return { ...c, progress };
-      });
+      throw new ApiError(401, "unauthorized", "Token is required");
     }
 
     if (baseUrl) {
@@ -727,13 +721,11 @@ export const coursesApi = {
       }
     }
 
-    // Mock fallback
-    return mockCourses.map((c) => {
-      const key = c.backendId ? `backend:${c.backendId}` : `id:${c.id}`;
-      const localProgress = getCompletedCountForCourse(key);
-      const progress = Math.max(c.progress ?? 0, localProgress);
-      return { ...c, progress };
-    });
+    throw new ApiError(
+      0,
+      "network",
+      "Backend not configured - getMyCourses requires API",
+    );
   },
 
   async getFeaturedCourses(token?: string): Promise<Course[]> {

@@ -25,10 +25,22 @@ export default function HomeScreen() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const courseCreatedAtValue = (course: Course): number => {
+    const raw = course.createdAt;
+    const value = typeof raw === "string" ? Date.parse(raw) : NaN;
+    return Number.isFinite(value) ? value : 0;
+  };
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const coursesData = await coursesApi.getMyCourses(session?.access_token);
+      const token = session?.access_token;
+      if (!token) {
+        setCourses([]);
+        return;
+      }
+
+      const coursesData = await coursesApi.getMyCourses(token);
       setCourses(coursesData);
     } catch (error) {
       console.error("Failed to load courses:", error);
@@ -72,7 +84,13 @@ export default function HomeScreen() {
     }, [courses]),
   );
 
-  const coursesToShow = useMemo(() => courses.slice(0, 4), [courses]);
+  const coursesToShow = useMemo(() => {
+    const sorted = [...courses].sort((a, b) => {
+      return courseCreatedAtValue(b) - courseCreatedAtValue(a);
+    });
+
+    return sorted.slice(0, 4);
+  }, [courses]);
 
   if (loading || !profile) {
     return (
@@ -135,7 +153,7 @@ export default function HomeScreen() {
 
       <YStack gap="$3.5" marginTop="$3">
         <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-          My Courses
+          Recent courses
         </H2>
 
         {coursesToShow.map((course) => (
