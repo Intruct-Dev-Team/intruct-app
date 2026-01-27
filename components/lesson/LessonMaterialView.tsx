@@ -31,7 +31,7 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
   const showHeader = props.showHeader ?? true;
 
   const visibleMaterials = materials.filter(
-    (m) => (m.content ?? "").trim().length > 0
+    (m) => (m.content ?? "").trim().length > 0,
   );
 
   const markdownStyles: any = {};
@@ -133,7 +133,7 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
         borderRadius="$6"
       >
         <Markdown style={markdownStyles}>{material.content}</Markdown>
-      </YStack>
+      </YStack>,
     );
   }
 

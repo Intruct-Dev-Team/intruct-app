@@ -329,7 +329,10 @@ export default function CourseDetailPage() {
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 + bottomInset }}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 100 + bottomInset,
+        }}
       >
         <YStack gap="$3" marginTop="$2">
           <Text fontWeight="700" fontSize="$5" color={colors.textPrimary}>
@@ -418,14 +421,22 @@ export default function CourseDetailPage() {
                               paddingHorizontal="$3"
                               paddingVertical="$1"
                               borderRadius="$4"
-                              backgroundColor={colors.stats.completed.background}
+                              backgroundColor={
+                                colors.stats.completed.background
+                              }
                               alignItems="center"
                               gap="$2"
                             >
-                              <Text color={colors.stats.completed.icon} fontSize="$2">
+                              <Text
+                                color={colors.stats.completed.icon}
+                                fontSize="$2"
+                              >
                                 Completed
                               </Text>
-                              <Play size={12} color={colors.stats.completed.icon} />
+                              <Play
+                                size={12}
+                                color={colors.stats.completed.icon}
+                              />
                             </XStack>
                           )}
                         </XStack>
@@ -556,14 +567,22 @@ export default function CourseDetailPage() {
                                     paddingHorizontal="$3"
                                     paddingVertical="$1"
                                     borderRadius="$4"
-                                    backgroundColor={colors.stats.completed.background}
+                                    backgroundColor={
+                                      colors.stats.completed.background
+                                    }
                                     alignItems="center"
                                     gap="$2"
                                   >
-                                    <Text color={colors.stats.completed.icon} fontSize="$2">
+                                    <Text
+                                      color={colors.stats.completed.icon}
+                                      fontSize="$2"
+                                    >
                                       Completed
                                     </Text>
-                                    <Play size={12} color={colors.stats.completed.icon} />
+                                    <Play
+                                      size={12}
+                                      color={colors.stats.completed.icon}
+                                    />
                                   </XStack>
                                 )}
                               </XStack>
