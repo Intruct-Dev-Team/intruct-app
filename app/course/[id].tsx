@@ -16,11 +16,13 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 
 export default function CourseDetailPage() {
   const colors = useThemeColors();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { notify } = useNotifications();
   const { session } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
@@ -254,6 +256,9 @@ export default function CourseDetailPage() {
       ? Math.round((effectiveProgress / course.lessons) * 100)
       : 0;
 
+  const bottomInset = insets.bottom ?? 0;
+  const footerPaddingBottom = bottomInset + 16;
+
   return (
     <>
       <Stack.Screen
@@ -324,7 +329,7 @@ export default function CourseDetailPage() {
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 + bottomInset }}
       >
         <YStack gap="$3" marginTop="$2">
           <Text fontWeight="700" fontSize="$5" color={colors.textPrimary}>
@@ -409,21 +414,19 @@ export default function CourseDetailPage() {
                           </Text>
 
                           {isLessonCompleted && (
-                            <YStack
+                            <XStack
                               paddingHorizontal="$3"
                               paddingVertical="$1"
                               borderRadius="$4"
-                              backgroundColor={
-                                colors.stats.completed.background
-                              }
+                              backgroundColor={colors.stats.completed.background}
+                              alignItems="center"
+                              gap="$2"
                             >
-                              <Text
-                                color={colors.stats.completed.icon}
-                                fontSize="$2"
-                              >
+                              <Text color={colors.stats.completed.icon} fontSize="$2">
                                 Completed
                               </Text>
-                            </YStack>
+                              <Play size={12} color={colors.stats.completed.icon} />
+                            </XStack>
                           )}
                         </XStack>
 
@@ -549,21 +552,19 @@ export default function CourseDetailPage() {
                                   Lesson {lesson.serialNumber ?? lidx + 1}
                                 </Text>
                                 {isLessonCompleted && (
-                                  <YStack
+                                  <XStack
                                     paddingHorizontal="$3"
                                     paddingVertical="$1"
                                     borderRadius="$4"
-                                    backgroundColor={
-                                      colors.stats.completed.background
-                                    }
+                                    backgroundColor={colors.stats.completed.background}
+                                    alignItems="center"
+                                    gap="$2"
                                   >
-                                    <Text
-                                      color={colors.stats.completed.icon}
-                                      fontSize="$2"
-                                    >
+                                    <Text color={colors.stats.completed.icon} fontSize="$2">
                                       Completed
                                     </Text>
-                                  </YStack>
+                                    <Play size={12} color={colors.stats.completed.icon} />
+                                  </XStack>
                                 )}
                               </XStack>
 
@@ -712,7 +713,7 @@ export default function CourseDetailPage() {
           right={0}
           bottom={0}
           padding="$4"
-          paddingBottom="$6"
+          paddingBottom={footerPaddingBottom}
           borderTopLeftRadius="$6"
           borderTopRightRadius="$6"
           backgroundColor={colors.cardBackground}

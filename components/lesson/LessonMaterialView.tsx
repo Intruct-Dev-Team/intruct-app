@@ -131,8 +131,6 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
         backgroundColor={colors.cardBackground}
         padding="$4"
         borderRadius="$6"
-        borderWidth={1}
-        borderColor={colors.background}
       >
         <Markdown style={markdownStyles}>{material.content}</Markdown>
       </YStack>
