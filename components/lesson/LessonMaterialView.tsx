@@ -97,6 +97,20 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
   fence.color = materialTextColor;
   markdownStyles.fence = fence;
 
+  const blockquote: any = {};
+  blockquote.borderLeftWidth = 4;
+  blockquote.borderLeftColor = colors.primary;
+  blockquote.backgroundColor = colors.background;
+  blockquote.borderRadius = 8;
+  blockquote.paddingHorizontal = 12;
+  blockquote.paddingVertical = 8;
+  blockquote.marginVertical = 10;
+  markdownStyles.blockquote = blockquote;
+
+  const blockquoteText: any = {};
+  blockquoteText.color = materialTextColor;
+  markdownStyles.blockquote_text = blockquoteText;
+
   const strong: any = {};
   strong.color = materialTextColor;
   strong.fontWeight = "700";

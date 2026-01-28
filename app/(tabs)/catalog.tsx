@@ -4,21 +4,21 @@ import {
 } from "@/components/cards";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
-import { courseCategories } from "@/mockdata/courses";
 import { ApiError, catalogApi } from "@/services/api";
 import type { Course, SortOption } from "@/types";
-import { ChevronDown, Filter, Search } from "@tamagui/lucide-icons";
+import { ArrowDown, ArrowUp, Filter, Search } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable } from "react-native";
+import { RefreshControl } from "react-native";
 import { Button, H1, Input, ScrollView, Text, XStack, YStack } from "tamagui";
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: "popular", label: "Popular" },
+  { value: "rating", label: "Rating" },
   { value: "newest", label: "Newest" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "students", label: "Most Students" },
 ];
+
+type SortDirection = "asc" | "desc";
 
 export default function CatalogScreen() {
   const colors = useThemeColors();
@@ -26,20 +26,26 @@ export default function CatalogScreen() {
   const { session } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState<SortOption>("popular");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [coursesError, setCoursesError] = useState<string | null>(null);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+
+  const sortLabel =
+    sortOptions.find((opt) => opt.value === sortBy)?.label || "Popular";
 
   useEffect(() => {
     void loadCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedCategory, sortBy, session?.access_token]);
+  }, [searchQuery, sortBy, sortDirection, session?.access_token]);
 
-  const loadCourses = async () => {
-    setLoading(true);
+  const loadCourses = async (opts?: { showLoading?: boolean }) => {
+    const showLoading = opts?.showLoading ?? true;
+    if (showLoading) setLoading(true);
+
     setCoursesError(null);
     try {
       const token = session?.access_token;
@@ -51,8 +57,8 @@ export default function CatalogScreen() {
 
       const results = await catalogApi.searchCourses(token, {
         query: searchQuery,
-        category: selectedCategory,
         sortBy,
+        sortDirection,
       });
       setCourses(results);
     } catch (error) {
@@ -65,18 +71,27 @@ export default function CatalogScreen() {
             : "Failed to load courses.";
       setCoursesError(message);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
-  const getSortLabel = () => {
-    return sortOptions.find((opt) => opt.value === sortBy)?.label || "Popular";
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await loadCourses({ showLoading: false });
+    } finally {
+      setRefreshing(false);
+    }
   };
+
+  const refreshControl = (
+    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+  );
 
   return (
     <YStack flex={1} backgroundColor={colors.background}>
       <YStack backgroundColor={colors.cardBackground}>
-        <YStack padding="$4" paddingTop="$6" gap="$0">
+        <YStack padding="$4" paddingTop="$5" gap="$0">
           <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
             Catalog
           </H1>
@@ -104,99 +119,88 @@ export default function CatalogScreen() {
                 <Search size={20} color={colors.textTertiary} />
               </YStack>
             </YStack>
-            <Pressable onPress={() => setFiltersExpanded(!filtersExpanded)}>
-              <YStack
-                width={48}
-                height={48}
-                alignItems="center"
-                justifyContent="center"
-                backgroundColor={filtersExpanded ? "$blue9" : colors.background}
-                borderRadius="$4"
-              >
+
+            <Button
+              width={48}
+              height={48}
+              padding={0}
+              backgroundColor={
+                filtersExpanded ? colors.primary : colors.background
+              }
+              borderRadius="$4"
+              icon={
                 <Filter
                   size={20}
-                  color={filtersExpanded ? "white" : colors.textTertiary}
+                  color={
+                    filtersExpanded ? colors.primaryText : colors.textTertiary
+                  }
                 />
-              </YStack>
-            </Pressable>
+              }
+              onPress={() => setFiltersExpanded(!filtersExpanded)}
+            />
           </XStack>
 
           {filtersExpanded && (
             <YStack gap="$4" animation="quick">
-              <YStack gap="$2">
-                <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-                  Category
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <XStack gap="$2">
-                    {courseCategories.map((category) => (
-                      <Pressable
-                        key={category.id}
-                        onPress={() => setSelectedCategory(category.slug)}
-                      >
-                        <YStack
-                          paddingHorizontal="$4"
-                          paddingVertical="$2.5"
-                          backgroundColor={
-                            selectedCategory === category.slug
-                              ? colors.primary
-                              : colors.background
-                          }
-                          borderRadius="$10"
-                        >
-                          <Text
-                            fontSize="$4"
-                            fontWeight={
-                              selectedCategory === category.slug ? "600" : "400"
-                            }
-                            color={
-                              selectedCategory === category.slug
-                                ? "white"
-                                : colors.textPrimary
-                            }
-                          >
-                            {category.name}
-                          </Text>
-                        </YStack>
-                      </Pressable>
-                    ))}
-                  </XStack>
-                </ScrollView>
-              </YStack>
-
-              <YStack gap="$2">
+              <YStack gap="$2" marginTop="$2">
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   Sort by
                 </Text>
-                <Pressable
-                  onPress={() => {
-                    const currentIndex = sortOptions.findIndex(
-                      (opt) => opt.value === sortBy,
-                    );
-                    const nextIndex = (currentIndex + 1) % sortOptions.length;
-                    setSortBy(sortOptions[nextIndex].value);
-                  }}
-                >
-                  <XStack
-                    padding="$4"
-                    backgroundColor={colors.background}
+
+                <XStack gap="$2" alignItems="stretch">
+                  <Button
+                    width={120}
+                    height={40}
+                    backgroundColor={colors.cardBackground}
                     borderRadius="$4"
-                    justifyContent="space-between"
-                    alignItems="center"
+                    borderWidth={1}
+                    borderColor="$gray5"
+                    color={colors.textPrimary}
+                    fontSize="$3"
+                    fontWeight="700"
+                    justifyContent="flex-start"
+                    pressStyle={{ opacity: 0.8 }}
+                    onPress={() => {
+                      const currentIndex = sortOptions.findIndex(
+                        (opt) => opt.value === sortBy,
+                      );
+                      const nextIndex = (currentIndex + 1) % sortOptions.length;
+                      setSortBy(sortOptions[nextIndex].value);
+                    }}
                   >
-                    <Text fontSize="$4" color={colors.textPrimary}>
-                      {getSortLabel()}
-                    </Text>
-                    <ChevronDown size={20} color={colors.textTertiary} />
-                  </XStack>
-                </Pressable>
+                    {sortLabel}
+                  </Button>
+
+                  <Button
+                    width={48}
+                    height={40}
+                    padding={0}
+                    backgroundColor={colors.cardBackground}
+                    borderRadius="$4"
+                    borderWidth={1}
+                    borderColor="$gray5"
+                    pressStyle={{ opacity: 0.8 }}
+                    icon={
+                      sortDirection === "desc" ? (
+                        <ArrowDown size={18} color={colors.textPrimary} />
+                      ) : (
+                        <ArrowUp size={18} color={colors.textPrimary} />
+                      )
+                    }
+                    onPress={() =>
+                      setSortDirection((prev) =>
+                        prev === "desc" ? "asc" : "desc",
+                      )
+                    }
+                  />
+                </XStack>
               </YStack>
             </YStack>
           )}
         </YStack>
       </YStack>
 
-      <ScrollView>
+      <ScrollView refreshControl={refreshControl}>
         <YStack padding="$4" gap="$4" paddingBottom="$8">
           <Text fontSize="$3" color={colors.textSecondary}>
             {courses.length} courses found
@@ -213,7 +217,9 @@ export default function CatalogScreen() {
                 Couldn’t load catalog
               </Text>
               <Text color={colors.textSecondary}>{coursesError}</Text>
-              <Button onPress={loadCourses}>Retry</Button>
+              <Button onPress={() => void loadCourses({ showLoading: true })}>
+                Retry
+              </Button>
             </YStack>
           ) : null}
 

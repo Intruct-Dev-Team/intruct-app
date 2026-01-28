@@ -1,5 +1,8 @@
 import { useCourseGeneration } from "@/contexts/course-generation-context";
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { AlertTriangle, Check } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet } from "react-native";
@@ -7,6 +10,8 @@ import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
 export function CreatingCourseModal() {
   const colors = useThemeColors();
+  const errorIconColor = useResolvedThemeColor("$red10");
+  const successIconColor = useResolvedThemeColor("$green10");
   const {
     creatingModalOpen,
     activeCourseId,
@@ -60,9 +65,9 @@ export function CreatingCourseModal() {
               {isGenerating ? (
                 <Spinner size="large" color="$blue10" />
               ) : isFailed ? (
-                <AlertTriangle size={40} color="$red10" />
+                <AlertTriangle size={40} color={errorIconColor} />
               ) : (
-                <Check size={40} color="$green10" />
+                <Check size={40} color={successIconColor} />
               )}
             </YStack>
 

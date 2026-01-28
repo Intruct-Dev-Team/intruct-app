@@ -3,7 +3,10 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 
 import { ThemedText, ThemedView } from "@/components/common";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { resolveThemeColor, useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 
 export function Collapsible({
   children,
@@ -11,7 +14,7 @@ export function Collapsible({
 }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const colors = useThemeColors();
-  const iconColor = resolveThemeColor(colors.textSecondary);
+  const iconColor = useResolvedThemeColor(colors.textSecondary);
 
   return (
     <ThemedView>

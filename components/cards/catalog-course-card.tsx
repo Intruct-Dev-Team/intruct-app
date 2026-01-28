@@ -24,6 +24,11 @@ export function CatalogCourseCard({
     typeof course.rating === "number" && Number.isFinite(course.rating)
       ? course.rating
       : null;
+  const ratingsCountValue =
+    typeof course.ratingsCount === "number" &&
+    Number.isFinite(course.ratingsCount)
+      ? course.ratingsCount
+      : null;
   const studentsValue =
     typeof course.students === "number" && Number.isFinite(course.students)
       ? course.students
@@ -90,6 +95,9 @@ export function CatalogCourseCard({
               <Star size={14} color="#FF9800" fill="#FF9800" />
               <Text fontSize="$2" fontWeight="600" color={colors.textPrimary}>
                 {formattedRating}
+                {ratingsCountValue !== null
+                  ? ` (${ratingsCountValue.toLocaleString()})`
+                  : ""}
               </Text>
             </XStack>
           ) : null}

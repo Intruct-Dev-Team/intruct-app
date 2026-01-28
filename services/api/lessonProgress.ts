@@ -17,10 +17,10 @@ let inMemoryLessonCompletion: LessonCompletionStorage = {
 
 export const loadLessonCompletionFromStorage = async (): Promise<void> => {
   if (didLoadLessonCompletionFromStorage) return;
-  didLoadLessonCompletionFromStorage = true;
 
   try {
     const raw = await AsyncStorage.getItem(LESSON_COMPLETION_STORAGE_KEY);
+    didLoadLessonCompletionFromStorage = true;
     if (!raw) return;
 
     const parsed = JSON.parse(raw) as Partial<LessonCompletionStorage> | null;
@@ -36,7 +36,8 @@ export const loadLessonCompletionFromStorage = async (): Promise<void> => {
       };
     }
   } catch {
-    // Silent
+    // Silent, but allow retry next time (avoid overwriting existing data)
+    didLoadLessonCompletionFromStorage = false;
   }
 };
 

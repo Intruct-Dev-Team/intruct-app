@@ -1,4 +1,7 @@
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { languageOptions } from "@/mockdata/settings";
 import { Globe, Lightbulb, Paperclip } from "@tamagui/lucide-icons";
 import { Card, Text, XStack, YStack } from "tamagui";
@@ -17,6 +20,8 @@ export function ReviewStep({
   contentLanguage,
 }: ReviewStepProps) {
   const colors = useThemeColors();
+  const tertiaryIconColor = useResolvedThemeColor(colors.textTertiary);
+  const tipIconColor = useResolvedThemeColor("$blue10");
   const selectedLanguage =
     languageOptions.find((l) => l.code === contentLanguage) ||
     languageOptions[0];
@@ -47,13 +52,13 @@ export function ReviewStep({
           </Text>
           <XStack gap="$4" marginTop="$2">
             <XStack gap="$2" alignItems="center">
-              <Paperclip size={16} color={colors.textTertiary} />
+              <Paperclip size={16} color={tertiaryIconColor} />
               <Text fontSize="$3" color={colors.textTertiary}>
                 {filesCount} files attached
               </Text>
             </XStack>
             <XStack gap="$2" alignItems="center">
-              <Globe size={16} color={colors.textTertiary} />
+              <Globe size={16} color={tertiaryIconColor} />
               <Text fontSize="$3" color={colors.textTertiary}>
                 {selectedLanguage.label}
               </Text>
@@ -69,7 +74,7 @@ export function ReviewStep({
         borderWidth={0}
       >
         <XStack gap="$3" alignItems="flex-start">
-          <Lightbulb size={20} color="$blue10" />
+          <Lightbulb size={20} color={tipIconColor} />
           <Text fontSize="$3" color="$blue11" lineHeight="$2">
             Our AI will analyze your materials and create a structured course
             with lessons and tests. This usually takes a couple of minutes.

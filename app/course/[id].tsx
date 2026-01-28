@@ -1,7 +1,10 @@
 import { AppSheetModal } from "@/components/modals";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
@@ -21,6 +24,8 @@ import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 
 export default function CourseDetailPage() {
   const colors = useThemeColors();
+  const completedIconColor = useResolvedThemeColor(colors.stats.completed.icon);
+  const whiteIconColor = useResolvedThemeColor("$white1");
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { notify } = useNotifications();
@@ -83,24 +88,26 @@ export default function CourseDetailPage() {
     return course.backendId ? `backend:${course.backendId}` : `id:${course.id}`;
   }, [course]);
 
-  useEffect(() => {
+  const refreshCompletedLessonIds = useCallback(async () => {
     if (!courseKey) return;
 
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const ids = await lessonProgressApi.getCompletedLessonIds(courseKey);
-        if (!cancelled) setCompletedLessonIds(ids);
-      } catch {
-        if (!cancelled) setCompletedLessonIds(new Set());
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const ids = await lessonProgressApi.getCompletedLessonIds(courseKey);
+      setCompletedLessonIds(ids);
+    } catch {
+      setCompletedLessonIds(new Set());
+    }
   }, [courseKey]);
+
+  useEffect(() => {
+    void refreshCompletedLessonIds();
+  }, [refreshCompletedLessonIds]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshCompletedLessonIds();
+    }, [refreshCompletedLessonIds]),
+  );
 
   const handlePublish = async () => {
     if (!course || publishing) return;
@@ -460,10 +467,7 @@ export default function CourseDetailPage() {
                               >
                                 Completed
                               </Text>
-                              <Play
-                                size={12}
-                                color={colors.stats.completed.icon}
-                              />
+                              <Play size={12} color={completedIconColor} />
                             </XStack>
                           )}
                         </XStack>
@@ -485,7 +489,7 @@ export default function CourseDetailPage() {
                             borderRadius="$6"
                             fontWeight="600"
                             fontSize="$3"
-                            icon={<Play size={16} color="$white1" />}
+                            icon={<Play size={16} color={whiteIconColor} />}
                             onPress={() => {
                               router.push({
                                 pathname: "/course/lesson/[id]",
@@ -608,7 +612,7 @@ export default function CourseDetailPage() {
                                     </Text>
                                     <Play
                                       size={12}
-                                      color={colors.stats.completed.icon}
+                                      color={completedIconColor}
                                     />
                                   </XStack>
                                 )}
@@ -631,7 +635,9 @@ export default function CourseDetailPage() {
                                   borderRadius="$6"
                                   fontWeight="600"
                                   fontSize="$3"
-                                  icon={<Play size={16} color="$white1" />}
+                                  icon={
+                                    <Play size={16} color={whiteIconColor} />
+                                  }
                                   onPress={() => {
                                     router.push({
                                       pathname: "/course/lesson/[id]",

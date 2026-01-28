@@ -1,13 +1,16 @@
 import LessonMaterialView from "@/components/lesson/LessonMaterialView";
 import TestView from "@/components/lesson/TestView";
 import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { ApiError, lessonProgressApi, lessonsApi } from "@/services/api";
 import type { Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, Text, YStack, getTokenValue } from "tamagui";
+import { Button, Text, YStack } from "tamagui";
 
 type LessonPhase = "material" | "test";
 
@@ -23,6 +26,9 @@ export default function LessonScreen() {
   }>();
   const router = useRouter();
   const colors = useThemeColors();
+  const resolvedBackground = useResolvedThemeColor(colors.background);
+  const resolvedTextPrimary = useResolvedThemeColor(colors.textPrimary);
+  const resolvedPrimary = useResolvedThemeColor(colors.primary);
   const { session } = useAuth();
   const token = session?.access_token;
 
@@ -40,12 +46,6 @@ export default function LessonScreen() {
   const [currentPhaseProgress, setCurrentPhaseProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const resolveThemeColor = (color: string): string => {
-    return color.startsWith("$")
-      ? (getTokenValue(color as never) as string)
-      : color;
-  };
 
   useEffect(() => {
     if (typeof id !== "string") return;
@@ -126,7 +126,7 @@ export default function LessonScreen() {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: resolveThemeColor(colors.background),
+          backgroundColor: resolvedBackground,
         }}
         edges={["bottom"]}
       >
@@ -143,7 +143,7 @@ export default function LessonScreen() {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: resolveThemeColor(colors.background),
+          backgroundColor: resolvedBackground,
         }}
         edges={["bottom"]}
       >
@@ -185,7 +185,7 @@ export default function LessonScreen() {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: resolveThemeColor(colors.background),
+          backgroundColor: resolvedBackground,
         }}
         edges={["bottom"]}
       >
@@ -324,7 +324,7 @@ export default function LessonScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: resolveThemeColor(colors.background) }}
+      style={{ flex: 1, backgroundColor: resolvedBackground }}
       edges={["bottom"]}
     >
       <Stack.Screen
@@ -352,12 +352,12 @@ export default function LessonScreen() {
           ),
           headerBackTitle: "Back",
           headerStyle: {
-            backgroundColor: resolveThemeColor(colors.background),
+            backgroundColor: resolvedBackground,
           },
           headerTitleStyle: {
-            color: resolveThemeColor(colors.textPrimary),
+            color: resolvedTextPrimary,
           },
-          headerTintColor: resolveThemeColor(colors.primary),
+          headerTintColor: resolvedPrimary,
           headerShadowVisible: false,
         }}
       />

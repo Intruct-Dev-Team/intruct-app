@@ -1,11 +1,34 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import NetInfo from "@react-native-community/netinfo";
 import { WifiOff } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { Button, Text, YStack } from "tamagui";
 
 export default function NoInternetScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const [checking, setChecking] = useState(false);
+
+  const handleTryAgain = useCallback(async () => {
+    try {
+      setChecking(true);
+      const state = await NetInfo.fetch();
+
+      const isOffline =
+        state.isConnected === false || state.isInternetReachable === false;
+      if (isOffline) return;
+
+      if (router.canGoBack()) {
+        router.back();
+        return;
+      }
+
+      router.replace("/");
+    } finally {
+      setChecking(false);
+    }
+  }, [router]);
 
   return (
     <>
@@ -41,14 +64,8 @@ export default function NoInternetScreen() {
           size="$5"
           backgroundColor={colors.primary}
           color={colors.primaryText}
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-              return;
-            }
-
-            router.replace("/");
-          }}
+          disabled={checking}
+          onPress={() => void handleTryAgain()}
         >
           Try again
         </Button>

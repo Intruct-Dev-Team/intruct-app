@@ -1,4 +1,7 @@
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { ChevronRight, Trash2 } from "@tamagui/lucide-icons";
 import { Button, Card, Progress, Text, XStack, YStack } from "tamagui";
 
@@ -22,6 +25,8 @@ export function CourseCard({
   onDelete,
 }: CourseCardProps) {
   const colors = useThemeColors();
+  const chevronColor = useResolvedThemeColor(colors.textTertiary);
+  const trashColor = useResolvedThemeColor("$red9");
 
   const isGenerating = status === "generating";
   const isFailed = status === "failed";
@@ -151,7 +156,7 @@ export function CourseCard({
             alignItems="center"
             pointerEvents="none"
           >
-            <ChevronRight size={18} color={colors.textTertiary} />
+            <ChevronRight size={18} color={chevronColor} />
           </YStack>
         )}
 
@@ -168,7 +173,7 @@ export function CourseCard({
               padding={0}
               width={44}
               height={44}
-              icon={<Trash2 size={18} color="$red9" />}
+              icon={<Trash2 size={18} color={trashColor} />}
               onPress={(event) => {
                 (event as any)?.stopPropagation?.();
                 onDelete();

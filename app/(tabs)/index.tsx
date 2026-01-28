@@ -24,6 +24,7 @@ export default function HomeScreen() {
   const { openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [coursesError, setCoursesError] = useState<string | null>(null);
 
   const courseCreatedAtValue = (course: Course): number => {
@@ -32,32 +33,46 @@ export default function HomeScreen() {
     return Number.isFinite(value) ? value : 0;
   };
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setCoursesError(null);
-    try {
-      const token = session?.access_token;
-      if (!token) {
-        setCourses([]);
-        return;
-      }
+  const loadData = useCallback(
+    async (opts?: { showLoading?: boolean }) => {
+      const showLoading = opts?.showLoading ?? true;
 
-      const coursesData = await coursesApi.getMyCourses(token);
-      setCourses(coursesData);
-    } catch (error) {
-      console.error("Failed to load courses:", error);
-      if (error instanceof ApiError) {
-        setCoursesError(error.message);
-      } else {
-        setCoursesError("Failed to load courses.");
+      if (showLoading) setLoading(true);
+      setCoursesError(null);
+      try {
+        const token = session?.access_token;
+        if (!token) {
+          setCourses([]);
+          return;
+        }
+
+        const coursesData = await coursesApi.getMyCourses(token);
+        setCourses(coursesData);
+      } catch (error) {
+        console.error("Failed to load courses:", error);
+        if (error instanceof ApiError) {
+          setCoursesError(error.message);
+        } else {
+          setCoursesError("Failed to load courses.");
+        }
+      } finally {
+        if (showLoading) setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.access_token]);
+    },
+    [session?.access_token],
+  );
 
   useEffect(() => {
-    void loadData();
+    void loadData({ showLoading: true });
+  }, [loadData]);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await loadData({ showLoading: false });
+    } finally {
+      setRefreshing(false);
+    }
   }, [loadData]);
 
   useFocusEffect(
@@ -68,11 +83,17 @@ export default function HomeScreen() {
       const syncLocalProgress = async () => {
         if (!courses || courses.length === 0) return;
 
+        const getCourseKey = (course: Course): string => {
+          return course.backendId
+            ? `backend:${course.backendId}`
+            : `id:${course.id}`;
+        };
+
         const updated = await Promise.all(
           courses.map(async (course) => {
             const backendProgress = course.progress ?? 0;
             const localProgress = await lessonProgressApi.getCompletedCount(
-              course.id,
+              getCourseKey(course),
             );
             const effectiveProgress = Math.max(backendProgress, localProgress);
 
@@ -101,7 +122,7 @@ export default function HomeScreen() {
 
   if (loading || !profile) {
     return (
-      <ScreenContainer>
+      <ScreenContainer refreshing={refreshing} onRefresh={handleRefresh}>
         <PageHeader
           title="Welcome back!"
           subtitle="Continue your learning journey"
@@ -129,7 +150,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={refreshing} onRefresh={handleRefresh}>
       <PageHeader
         title="Welcome back!"
         subtitle="Continue your learning journey"

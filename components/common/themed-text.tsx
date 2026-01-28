@@ -1,7 +1,10 @@
 import { StyleSheet, Text, type TextProps } from "react-native";
 
 import { useTheme } from "@/contexts/theme-context";
-import { resolveThemeColor, useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -21,12 +24,12 @@ export function ThemedText({
 
   const override = activeTheme === "dark" ? darkColor : lightColor;
   const base = type === "link" ? colors.primary : colors.textPrimary;
-  const color = resolveThemeColor(override ?? base);
+  const resolvedColor = useResolvedThemeColor(override ?? base);
 
   return (
     <Text
       style={[
-        { color },
+        resolvedColor ? { color: resolvedColor } : null,
         type === "default" ? styles.default : undefined,
         type === "title" ? styles.title : undefined,
         type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,

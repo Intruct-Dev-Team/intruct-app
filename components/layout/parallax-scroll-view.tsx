@@ -9,7 +9,10 @@ import Animated, {
 
 import { ThemedView } from "@/components/common";
 import { useTheme } from "@/contexts/theme-context";
-import { resolveThemeColor, useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 
 const HEADER_HEIGHT = 250;
 
@@ -25,11 +28,12 @@ export default function ParallaxScrollView({
 }: Props) {
   const { activeTheme } = useTheme();
   const colors = useThemeColors();
-  const backgroundColor = resolveThemeColor(colors.background);
+  const backgroundColor = useResolvedThemeColor(colors.background);
   const headerBg =
     activeTheme === "dark"
       ? headerBackgroundColor.dark
       : headerBackgroundColor.light;
+  const resolvedHeaderBg = useResolvedThemeColor(headerBg);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
   const headerAnimatedStyle = useAnimatedStyle(() => {
@@ -56,13 +60,13 @@ export default function ParallaxScrollView({
   return (
     <Animated.ScrollView
       ref={scrollRef}
-      style={{ backgroundColor, flex: 1 }}
+      style={[{ flex: 1 }, backgroundColor ? { backgroundColor } : null]}
       scrollEventThrottle={16}
     >
       <Animated.View
         style={[
           styles.header,
-          { backgroundColor: resolveThemeColor(headerBg) },
+          resolvedHeaderBg ? { backgroundColor: resolvedHeaderBg } : null,
           headerAnimatedStyle,
         ]}
       >

@@ -9,6 +9,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefreshControl } from "react-native";
 import { Button, H1, ScrollView, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
@@ -24,6 +25,7 @@ export default function CoursesScreen() {
   } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [coursesError, setCoursesError] = useState<string | null>(null);
 
   const coursesRef = useRef<Course[]>([]);
@@ -45,7 +47,7 @@ export default function CoursesScreen() {
 
   const header = (
     <YStack backgroundColor={colors.cardBackground}>
-      <YStack padding="$4" paddingTop="$6" gap="$1">
+      <YStack padding="$4" paddingTop="$5" gap="$1">
         <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
           My Courses
         </H1>
@@ -56,29 +58,34 @@ export default function CoursesScreen() {
     </YStack>
   );
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setCoursesError(null);
-    try {
-      const token = session?.access_token;
-      if (!token) {
-        setCourses([]);
-        return;
-      }
+  const loadData = useCallback(
+    async (opts?: { showLoading?: boolean }) => {
+      const showLoading = opts?.showLoading ?? true;
+      if (showLoading) setLoading(true);
 
-      const c = await coursesApi.getMyCourses(token);
-      setCourses(c);
-    } catch (err) {
-      console.error(err);
-      if (err instanceof ApiError) {
-        setCoursesError(err.message);
-      } else {
-        setCoursesError("Failed to load courses.");
+      setCoursesError(null);
+      try {
+        const token = session?.access_token;
+        if (!token) {
+          setCourses([]);
+          return;
+        }
+
+        const c = await coursesApi.getMyCourses(token);
+        setCourses(c);
+      } catch (err) {
+        console.error(err);
+        if (err instanceof ApiError) {
+          setCoursesError(err.message);
+        } else {
+          setCoursesError("Failed to load courses.");
+        }
+      } finally {
+        if (showLoading) setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.access_token]);
+    },
+    [session?.access_token],
+  );
 
   const handleDeleteCourse = useCallback(
     async (course: Course) => {
@@ -98,8 +105,21 @@ export default function CoursesScreen() {
   );
 
   useEffect(() => {
-    void loadData();
+    void loadData({ showLoading: true });
   }, [loadData]);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await loadData({ showLoading: false });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadData]);
+
+  const refreshControl = (
+    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+  );
 
   const localBackendIds = useMemo(() => {
     return new Set(
@@ -242,11 +262,17 @@ export default function CoursesScreen() {
       const syncLocalProgress = async () => {
         if (!courses || courses.length === 0) return;
 
+        const getCourseKey = (course: Course): string => {
+          return course.backendId
+            ? `backend:${course.backendId}`
+            : `id:${course.id}`;
+        };
+
         const updated = await Promise.all(
           courses.map(async (course) => {
             const backendProgress = course.progress ?? 0;
             const localProgress = await lessonProgressApi.getCompletedCount(
-              course.id,
+              getCourseKey(course),
             );
             const effectiveProgress = Math.max(backendProgress, localProgress);
 
@@ -283,7 +309,11 @@ export default function CoursesScreen() {
     return (
       <YStack flex={1}>
         {header}
-        <ScrollView backgroundColor={colors.background} flex={1}>
+        <ScrollView
+          backgroundColor={colors.background}
+          flex={1}
+          refreshControl={refreshControl}
+        >
           <YStack padding="$4" gap="$4" paddingBottom="$8">
             <YStack gap="$3">
               <CourseCardSkeleton />
@@ -317,7 +347,11 @@ export default function CoursesScreen() {
     return (
       <YStack flex={1}>
         {header}
-        <ScrollView backgroundColor={colors.background} flex={1}>
+        <ScrollView
+          backgroundColor={colors.background}
+          flex={1}
+          refreshControl={refreshControl}
+        >
           <YStack padding="$4" gap="$4" paddingBottom="$8">
             <YStack
               gap="$3"
@@ -351,7 +385,11 @@ export default function CoursesScreen() {
             </Text>
           </YStack>
         </YStack>
-        <ScrollView backgroundColor={colors.background} flex={1}>
+        <ScrollView
+          backgroundColor={colors.background}
+          flex={1}
+          refreshControl={refreshControl}
+        >
           <YStack padding="$4" gap="$4" paddingBottom="$8">
             <YStack gap="$3">
               <Text color={colors.textSecondary}>You have no courses yet.</Text>
@@ -366,7 +404,11 @@ export default function CoursesScreen() {
   return (
     <YStack flex={1}>
       {header}
-      <ScrollView backgroundColor={colors.background} flex={1}>
+      <ScrollView
+        backgroundColor={colors.background}
+        flex={1}
+        refreshControl={refreshControl}
+      >
         <YStack padding="$4" gap="$4" paddingBottom="$8">
           {coursesError ? (
             <YStack
