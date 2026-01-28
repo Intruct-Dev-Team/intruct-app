@@ -35,19 +35,25 @@ const COURSE_LANGUAGE_CODE_TO_BACKEND: Record<string, string> = {
 
 type BackendCourseItem = {
   id?: number;
+  author_id?: number;
   title?: string;
   description?: string;
   created_at?: string;
   updated_at?: string;
   lessons_number?: number;
   finished_lessons?: number;
+  average_rating?: number;
+  ratings_count?: number;
+  students_count?: number;
   is_public?: boolean;
+  is_in_mine?: boolean;
   is_mine?: boolean;
   state?: unknown;
 };
 
 const normalizeCourseState = (value: unknown): CourseState | undefined => {
   if (typeof value === "string") {
+    if (value === "in creation") return "creation";
     if (
       value === "creation" ||
       value === "failed" ||
@@ -101,16 +107,37 @@ const mapBackendCourseItemToCourse = (item: BackendCourseItem): Course => {
 
   const state = normalizeCourseState(item.state);
 
+  const rating =
+    typeof item.average_rating === "number" &&
+    Number.isFinite(item.average_rating)
+      ? item.average_rating
+      : undefined;
+  const ratingsCount =
+    typeof item.ratings_count === "number" &&
+    Number.isFinite(item.ratings_count)
+      ? item.ratings_count
+      : undefined;
+  const students =
+    typeof item.students_count === "number" &&
+    Number.isFinite(item.students_count)
+      ? item.students_count
+      : undefined;
+
   const course: Course = {
     id: String(backendId ?? `course_${Date.now()}`),
     backendId,
+    authorId: typeof item.author_id === "number" ? item.author_id : undefined,
     title: item.title || "",
     description: item.description || "",
     lessons,
     progress,
     createdAt: item.created_at || now,
     updatedAt: item.updated_at || item.created_at || now,
+    rating,
+    ratingsCount,
+    students,
     isPublic: item.is_public,
+    isInMine: item.is_in_mine,
     isMine: item.is_mine,
     state,
     status: mapStateToStatus(state, lessons),
@@ -312,13 +339,18 @@ export const coursesApi = {
 
         type BackendGetCourseResponse = {
           id?: number;
+          author_id?: number;
           title?: string;
           description?: string;
           created_at?: string;
           updated_at?: string;
           lessons_number?: number;
           finished_lessons?: number;
+          average_rating?: number;
+          ratings_count?: number;
+          students_count?: number;
           is_public?: boolean;
+          is_in_mine?: boolean;
           is_mine?: boolean;
           state?: unknown;
           modules?: BackendModuleItem[];
@@ -340,16 +372,38 @@ export const coursesApi = {
 
         const state = normalizeCourseState(json.state);
 
+        const rating =
+          typeof json.average_rating === "number" &&
+          Number.isFinite(json.average_rating)
+            ? json.average_rating
+            : undefined;
+        const ratingsCount =
+          typeof json.ratings_count === "number" &&
+          Number.isFinite(json.ratings_count)
+            ? json.ratings_count
+            : undefined;
+        const students =
+          typeof json.students_count === "number" &&
+          Number.isFinite(json.students_count)
+            ? json.students_count
+            : undefined;
+
         const course: Course = {
           id: String(json.id),
           backendId: json.id,
+          authorId:
+            typeof json.author_id === "number" ? json.author_id : undefined,
           title: json.title || "",
           description: json.description || "",
           lessons,
           progress,
           createdAt: json.created_at || now,
           updatedAt: json.updated_at || json.created_at || now,
+          rating,
+          ratingsCount,
+          students,
           isPublic: json.is_public,
+          isInMine: json.is_in_mine,
           isMine: json.is_mine,
           state,
           status: mapStateToStatus(state, lessons),
@@ -455,6 +509,94 @@ export const coursesApi = {
     }
   },
 
+  async getCourseState(
+    token: string,
+    courseId: number,
+  ): Promise<{ state: CourseState | undefined; updatedAt?: string }> {
+    await delay(DELAYS.courses);
+
+    if (!token) {
+      throw new ApiError(401, "unauthorized", "Token is required");
+    }
+
+    if (!courseId) {
+      throw new ApiError(400, "validation", "Course ID is required");
+    }
+
+    const baseUrl = getApiBaseUrl();
+
+    if (!baseUrl) {
+      emitServerUnavailable();
+      throw new ApiError(
+        0,
+        "network",
+        "Backend not configured - getCourseState requires API",
+      );
+    }
+
+    try {
+      if (__DEV__) {
+        console.log("[coursesApi.getCourseState] request", {
+          courseId,
+          url: `${baseUrl}/courses/${courseId}/state`,
+        });
+      }
+
+      const res = await fetch(`${baseUrl}/courses/${courseId}/state`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const payload = await readErrorPayload(res);
+        const messageFromJson =
+          (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+          (isRecord(payload.json) && typeof payload.json.error === "string"
+            ? payload.json.error
+            : undefined) ||
+          (payload.json as { message?: string } | null)?.message ||
+          (payload.json as { detail?: string } | null)?.detail;
+        const message =
+          messageFromJson || payload.text || "Failed to load course state";
+        throw new ApiError(res.status, "unknown", message);
+      }
+
+      const json = (await readJsonResponse(res)) as {
+        state?: unknown;
+        updated_at?: unknown;
+      } | null;
+
+      const normalized = normalizeCourseState(json?.state);
+      const updatedAt =
+        typeof json?.updated_at === "string" ? json.updated_at : undefined;
+
+      if (__DEV__) {
+        console.log("[coursesApi.getCourseState] response", {
+          courseId,
+          raw: json,
+          normalizedState: normalized,
+          updatedAt,
+        });
+      }
+
+      return {
+        state: normalized,
+        updatedAt,
+      };
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      if (err instanceof Error) {
+        emitServerUnavailable();
+        throw new ApiError(0, "network", err.message);
+      }
+      emitServerUnavailable();
+      throw new ApiError(0, "network", "Network error");
+    }
+  },
+
   async deleteCourse(token: string, courseId: number): Promise<void> {
     await delay(DELAYS.courses);
 
@@ -535,10 +677,74 @@ export const coursesApi = {
     );
   },
 
+  async rateCourse(
+    token: string,
+    courseId: number,
+    rating: number,
+  ): Promise<void> {
+    await delay(DELAYS.courses);
+
+    if (!token) {
+      throw new ApiError(401, "unauthorized", "Token is required");
+    }
+
+    if (!courseId) {
+      throw new ApiError(400, "validation", "Course ID is required");
+    }
+
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      throw new ApiError(400, "validation", "Rating must be between 1 and 5");
+    }
+
+    const baseUrl = getApiBaseUrl();
+
+    if (!baseUrl) {
+      emitServerUnavailable();
+      throw new ApiError(
+        0,
+        "network",
+        "Backend not configured - rateCourse requires API",
+      );
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/courses/${courseId}/rate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ rating }),
+      });
+
+      if (!res.ok) {
+        const payload = await readErrorPayload(res);
+        const messageFromJson =
+          (payload.json as ApiErrorResponseBody | null)?.error?.message ||
+          (isRecord(payload.json) && typeof payload.json.error === "string"
+            ? payload.json.error
+            : undefined) ||
+          (payload.json as { message?: string } | null)?.message ||
+          (payload.json as { detail?: string } | null)?.detail;
+        const message = messageFromJson || payload.text || "Failed to rate";
+        throw new ApiError(res.status, "unknown", message);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      if (err instanceof Error) {
+        emitServerUnavailable();
+        throw new ApiError(0, "network", err.message);
+      }
+      emitServerUnavailable();
+      throw new ApiError(0, "network", "Network error");
+    }
+  },
+
   async leaveReview(courseId: string, reviewGrade: number): Promise<void> {
     await delay(DELAYS.courses);
 
-    // Stub: real backend will validate auth, ownership, and store review
+    // Deprecated - use rateCourse(token, courseId, rating)
     if (!courseId || reviewGrade < 1 || reviewGrade > 5) return;
   },
 

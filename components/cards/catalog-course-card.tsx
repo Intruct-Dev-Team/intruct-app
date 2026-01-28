@@ -1,7 +1,8 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { Course } from "@/types";
+import { normalizeAvatarUri } from "@/utils/avatar";
 import { BookOpen, Star, Users } from "@tamagui/lucide-icons";
-import { Button, Card, Text, XStack, YStack } from "tamagui";
+import { Avatar, Button, Card, Text, XStack, YStack } from "tamagui";
 
 interface CatalogCourseCardProps {
   course: Course;
@@ -13,6 +14,27 @@ export function CatalogCourseCard({
   onEnroll,
 }: CatalogCourseCardProps) {
   const colors = useThemeColors();
+
+  const authorName = course.author?.trim();
+  const authorAvatarSrc = normalizeAvatarUri(
+    course.authorAvatarUrl || undefined,
+  );
+
+  const ratingValue =
+    typeof course.rating === "number" && Number.isFinite(course.rating)
+      ? course.rating
+      : null;
+  const studentsValue =
+    typeof course.students === "number" && Number.isFinite(course.students)
+      ? course.students
+      : null;
+
+  const formattedRating =
+    ratingValue === null
+      ? null
+      : Number.isInteger(ratingValue)
+        ? String(ratingValue)
+        : ratingValue.toFixed(1);
 
   return (
     <Card
@@ -39,44 +61,47 @@ export function CatalogCourseCard({
           {course.description}
         </Text>
 
-        {course.author && (
+        {authorName ? (
           <XStack gap="$2" alignItems="center">
-            <YStack
-              width={24}
-              height={24}
-              alignItems="center"
-              justifyContent="center"
-              backgroundColor={colors.primary}
-              borderRadius="$10"
-            >
-              <Text fontSize="$2" fontWeight="600" color="white">
-                {course.author.charAt(0)}
-              </Text>
-            </YStack>
+            <Avatar circular size={24}>
+              <Avatar.Image
+                src={authorAvatarSrc}
+                source={authorAvatarSrc ? { uri: authorAvatarSrc } : undefined}
+              />
+              <Avatar.Fallback
+                backgroundColor={colors.primary}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Text fontSize="$2" fontWeight="600" color={colors.primaryText}>
+                  {authorName.charAt(0)}
+                </Text>
+              </Avatar.Fallback>
+            </Avatar>
             <Text fontSize="$2" color={colors.textTertiary}>
-              by {course.author}
+              by {authorName}
             </Text>
           </XStack>
-        )}
+        ) : null}
 
         <XStack gap="$4" alignItems="center">
-          {course.rating && (
+          {ratingValue !== null ? (
             <XStack gap="$1" alignItems="center">
               <Star size={14} color="#FF9800" fill="#FF9800" />
               <Text fontSize="$2" fontWeight="600" color={colors.textPrimary}>
-                {course.rating}
+                {formattedRating}
               </Text>
             </XStack>
-          )}
+          ) : null}
 
-          {course.students && (
+          {studentsValue !== null ? (
             <XStack gap="$1" alignItems="center">
               <Users size={14} color={colors.textTertiary} />
               <Text fontSize="$2" color={colors.textTertiary}>
-                {course.students.toLocaleString()}
+                {studentsValue.toLocaleString()}
               </Text>
             </XStack>
-          )}
+          ) : null}
 
           <XStack gap="$1" alignItems="center">
             <BookOpen size={14} color={colors.textTertiary} />
@@ -100,7 +125,7 @@ export function CatalogCourseCard({
           }}
           onPress={onEnroll}
         >
-          Enroll Now
+          Start Course
         </Button>
       </YStack>
     </Card>

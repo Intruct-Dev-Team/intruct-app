@@ -209,15 +209,23 @@ export default function CourseDetailPage() {
   }
 
   const isMine = !!course.isMine;
-  const canRate = !!course.isPublic && !isMine;
+  const canRate = !isMine && (course.isInMine ?? !!course.isPublic);
   const canPublish = !course.isPublic && isMine;
   const canDelete = isMine;
 
   const handleRate = async (reviewGrade: number) => {
     if (!canRate) return;
 
+    const token = session?.access_token;
+    const courseId = course.backendId;
+
+    if (!token || !courseId) {
+      notify({ type: "error", message: "Couldn’t submit review." });
+      return;
+    }
+
     try {
-      await coursesApi.leaveReview(course.id, reviewGrade);
+      await coursesApi.rateCourse(token, courseId, reviewGrade);
       notify({ type: "success", message: "Thanks for your review." });
       setRateOpen(false);
     } catch {
@@ -699,7 +707,7 @@ export default function CourseDetailPage() {
               borderColor="$gray5"
               disabled={!canRate}
               opacity={!canRate ? 0.7 : 1}
-              icon={<Star size={16} color={colors.textSecondary} />}
+              icon={<Star size={16} color="#FF9800" />}
               onPress={() => {
                 if (!canRate) return;
                 setSettingsOpen(false);
@@ -733,7 +741,7 @@ export default function CourseDetailPage() {
               backgroundColor={colors.cardBackground}
               borderWidth={1}
               borderColor="$gray5"
-              icon={<Star size={16} color={colors.textSecondary} />}
+              icon={<Star size={16} color="#FF9800" />}
               onPress={() => handleRate(value)}
             >
               <Text color={colors.textPrimary} fontWeight="700">

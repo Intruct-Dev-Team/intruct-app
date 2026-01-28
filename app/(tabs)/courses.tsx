@@ -8,7 +8,7 @@ import type { Course } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
 import { Plus } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, H1, ScrollView, Text, YStack } from "tamagui";
 
 export default function CoursesScreen() {
@@ -16,16 +16,32 @@ export default function CoursesScreen() {
   const colors = useThemeColors();
   const { session } = useAuth();
   const { notify } = useNotifications();
-  const { localCourses, openCreatingModal } = useCourseGeneration();
+  const {
+    localCourses,
+    openCreatingModal,
+    deletedBackendIds,
+    deleteCourseByBackendId,
+  } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [coursesError, setCoursesError] = useState<string | null>(null);
+
+  const coursesRef = useRef<Course[]>([]);
+
+  useEffect(() => {
+    coursesRef.current = courses;
+  }, [courses]);
 
   const courseCreatedAtValue = (course: Course): number => {
     const raw = course.createdAt;
     const value = typeof raw === "string" ? Date.parse(raw) : NaN;
     return Number.isFinite(value) ? value : 0;
   };
+
+  const deletedBackendIdsSet = useMemo(
+    () => new Set(deletedBackendIds),
+    [deletedBackendIds],
+  );
 
   const header = (
     <YStack backgroundColor={colors.cardBackground}>
@@ -74,22 +90,149 @@ export default function CoursesScreen() {
         return;
       }
 
-      try {
-        await coursesApi.deleteCourse(token, courseId);
-        notify({ type: "success", message: "Course deleted." });
-        await loadData();
-      } catch (err) {
-        const message =
-          err instanceof ApiError ? err.message : "Couldn’t delete course.";
-        notify({ type: "error", message });
-      }
+      await deleteCourseByBackendId(courseId);
+      // Collapse in-place (no full refetch)
+      setCourses((prev) => prev.filter((c) => c.backendId !== courseId));
     },
-    [loadData, notify, session?.access_token],
+    [deleteCourseByBackendId, notify, session?.access_token],
   );
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  const localBackendIds = useMemo(() => {
+    return new Set(
+      localCourses
+        .map((c) => c.backendId)
+        .filter((id): id is number => typeof id === "number"),
+    );
+  }, [localCourses]);
+
+  const pollingBackendIdsKey = useMemo(() => {
+    const ids = courses
+      .filter((c) => {
+        const id = c.backendId;
+        if (typeof id !== "number") return false;
+        if (deletedBackendIdsSet.has(id)) return false;
+        if (localBackendIds.has(id)) return false;
+        return c.state === "creation" || c.status === "generating";
+      })
+      .map((c) => c.backendId as number)
+      .sort((a, b) => a - b);
+
+    return ids.length ? ids.join(",") : "";
+  }, [courses, deletedBackendIdsSet, localBackendIds]);
+
+  useEffect(() => {
+    const token = session?.access_token;
+    if (!token) return;
+    if (!pollingBackendIdsKey) return;
+
+    let cancelled = false;
+    let inFlight = false;
+
+    const tick = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const backendIds = pollingBackendIdsKey
+          .split(",")
+          .map((v) => Number(v))
+          .filter((v) => Number.isFinite(v) && v > 0);
+
+        for (const backendId of backendIds) {
+          if (cancelled) return;
+
+          try {
+            const stateRes = await coursesApi.getCourseState(token, backendId);
+            const state = stateRes.state;
+
+            if (state === "creation") {
+              const local = coursesRef.current.find(
+                (c) => c.backendId === backendId,
+              );
+              const createdAtMs = local?.createdAt
+                ? Date.parse(local.createdAt)
+                : NaN;
+              const isCreatedAtValid = Number.isFinite(createdAtMs);
+              const ageMs = isCreatedAtValid ? Date.now() - createdAtMs : 0;
+              const maxAgeMs = 24 * 60 * 60 * 1000;
+
+              if (isCreatedAtValid && ageMs >= maxAgeMs) {
+                setCourses((prev) =>
+                  prev.map((c) =>
+                    c.backendId === backendId
+                      ? {
+                          ...c,
+                          state: "failed",
+                          status: "failed",
+                          updatedAt: new Date().toISOString(),
+                        }
+                      : c,
+                  ),
+                );
+              }
+
+              continue;
+            }
+
+            if (state === "failed") {
+              setCourses((prev) =>
+                prev.map((c) =>
+                  c.backendId === backendId
+                    ? {
+                        ...c,
+                        state,
+                        status: "failed",
+                        updatedAt: new Date().toISOString(),
+                      }
+                    : c,
+                ),
+              );
+              continue;
+            }
+
+            if (state === "created" || state === "published") {
+              const full = await coursesApi.getCourseById(
+                String(backendId),
+                token,
+              );
+              if (!full) continue;
+
+              setCourses((prev) =>
+                prev.map((c) =>
+                  c.backendId === backendId
+                    ? {
+                        ...c,
+                        ...full,
+                        backendId,
+                        state,
+                        status: "ready",
+                      }
+                    : c,
+                ),
+              );
+            }
+          } catch (err) {
+            console.error("[CoursesScreen] state poll failed", backendId, err);
+          }
+        }
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    void tick();
+    const interval = setInterval(() => {
+      void tick();
+    }, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [pollingBackendIdsKey, session?.access_token]);
 
   useFocusEffect(
     useCallback(() => {
@@ -153,19 +296,17 @@ export default function CoursesScreen() {
     );
   }
 
-  const localBackendIds = new Set(
-    localCourses
-      .map((c) => c.backendId)
-      .filter((id): id is number => typeof id === "number"),
-  );
-
   // When a course is being generated we create a local placeholder.
   // The backend may also return the same course immediately (often with 0 lessons).
   // Prefer the local placeholder entry and hide the duplicate backend entry.
   const allCourses = [
-    ...localCourses,
+    ...localCourses.filter((c) => {
+      const id = c.backendId;
+      return !(typeof id === "number" && deletedBackendIdsSet.has(id));
+    }),
     ...courses.filter((c) => {
       const id = c.backendId;
+      if (typeof id === "number" && deletedBackendIdsSet.has(id)) return false;
       return !(typeof id === "number" && localBackendIds.has(id));
     }),
   ].sort((a, b) => {
@@ -253,8 +394,14 @@ export default function CoursesScreen() {
                   }
                   onPress={() =>
                     course.status === "generating" || course.status === "failed"
-                      ? openCreatingModal(course.id)
-                      : router.push(`/course/${course.id}` as any)
+                      ? openCreatingModal(course.id, course)
+                      : router.push(
+                          `/course/${
+                            typeof course.backendId === "number"
+                              ? String(course.backendId)
+                              : course.id
+                          }` as any,
+                        )
                   }
                 />
               );

@@ -2,11 +2,13 @@ import {
   CatalogCourseCard,
   CatalogCourseCardSkeleton,
 } from "@/components/cards";
+import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { courseCategories } from "@/mockdata/courses";
 import { ApiError, catalogApi } from "@/services/api";
 import type { Course, SortOption } from "@/types";
 import { ChevronDown, Filter, Search } from "@tamagui/lucide-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, H1, Input, ScrollView, Text, XStack, YStack } from "tamagui";
@@ -20,6 +22,9 @@ const sortOptions: { value: SortOption; label: string }[] = [
 
 export default function CatalogScreen() {
   const colors = useThemeColors();
+  const router = useRouter();
+  const { session } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState<SortOption>("popular");
@@ -29,15 +34,22 @@ export default function CatalogScreen() {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   useEffect(() => {
-    loadCourses();
+    void loadCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy, session?.access_token]);
 
   const loadCourses = async () => {
     setLoading(true);
     setCoursesError(null);
     try {
-      const results = await catalogApi.searchCourses({
+      const token = session?.access_token;
+      if (!token) {
+        setCourses([]);
+        setCoursesError("Sign in to browse the catalog.");
+        return;
+      }
+
+      const results = await catalogApi.searchCourses(token, {
         query: searchQuery,
         category: selectedCategory,
         sortBy,
@@ -63,15 +75,12 @@ export default function CatalogScreen() {
 
   return (
     <YStack flex={1} backgroundColor={colors.background}>
-      {/* Header with white background */}
       <YStack backgroundColor={colors.cardBackground}>
         <YStack padding="$4" paddingTop="$6" gap="$0">
-          {/* Title */}
           <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
             Catalog
           </H1>
 
-          {/* Search Bar */}
           <XStack gap="$2" alignItems="center">
             <YStack flex={1} position="relative">
               <Input
@@ -112,10 +121,8 @@ export default function CatalogScreen() {
             </Pressable>
           </XStack>
 
-          {/* Expandable Filters */}
           {filtersExpanded && (
             <YStack gap="$4" animation="quick">
-              {/* Category Filter */}
               <YStack gap="$2">
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   Category
@@ -157,7 +164,6 @@ export default function CatalogScreen() {
                 </ScrollView>
               </YStack>
 
-              {/* Sort By */}
               <YStack gap="$2">
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   Sort by
@@ -190,10 +196,8 @@ export default function CatalogScreen() {
         </YStack>
       </YStack>
 
-      {/* Content */}
       <ScrollView>
         <YStack padding="$4" gap="$4" paddingBottom="$8">
-          {/* Results Count */}
           <Text fontSize="$3" color={colors.textSecondary}>
             {courses.length} courses found
           </Text>
@@ -213,7 +217,6 @@ export default function CatalogScreen() {
             </YStack>
           ) : null}
 
-          {/* Course List */}
           <YStack gap="$3">
             {loading ? (
               <>
@@ -226,13 +229,19 @@ export default function CatalogScreen() {
                 <Text color={colors.textSecondary}>No courses found</Text>
               </YStack>
             ) : (
-              courses.map((course) => (
-                <CatalogCourseCard
-                  key={course.id}
-                  course={course}
-                  onEnroll={() => console.log("Enroll in:", course.title)}
-                />
-              ))
+              courses.map((course) => {
+                const courseId =
+                  typeof course.backendId === "number"
+                    ? String(course.backendId)
+                    : course.id;
+                return (
+                  <CatalogCourseCard
+                    key={course.id}
+                    course={course}
+                    onEnroll={() => router.push(`/course/${courseId}` as any)}
+                  />
+                );
+              })
             )}
           </YStack>
         </YStack>

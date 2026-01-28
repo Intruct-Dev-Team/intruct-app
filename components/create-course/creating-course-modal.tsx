@@ -1,6 +1,7 @@
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { AlertTriangle, Check } from "@tamagui/lucide-icons";
+import { useState } from "react";
 import { Modal, Pressable, StyleSheet } from "react-native";
 import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
@@ -9,11 +10,18 @@ export function CreatingCourseModal() {
   const {
     creatingModalOpen,
     activeCourseId,
+    activeCourseSnapshot,
     closeCreatingModal,
     getCourseById,
+    deleteCourseByBackendId,
   } = useCourseGeneration();
 
-  const course = activeCourseId ? getCourseById(activeCourseId) : undefined;
+  const [deleting, setDeleting] = useState(false);
+
+  const localCourse = activeCourseId
+    ? getCourseById(activeCourseId)
+    : undefined;
+  const course = localCourse ?? activeCourseSnapshot ?? undefined;
   const status = course?.status ?? "generating";
   const isGenerating = status === "generating";
   const isFailed = status === "failed";
@@ -78,6 +86,29 @@ export function CreatingCourseModal() {
                     : "You can close this window and open the course from the list."}
               </Text>
             </YStack>
+
+            {isFailed && typeof course?.backendId === "number" ? (
+              <Button
+                size="$5"
+                backgroundColor="$red9"
+                color={colors.primaryText}
+                borderRadius="$6"
+                fontWeight="700"
+                disabled={deleting}
+                opacity={deleting ? 0.7 : 1}
+                onPress={async () => {
+                  if (!course?.backendId) return;
+                  try {
+                    setDeleting(true);
+                    await deleteCourseByBackendId(course.backendId);
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+              >
+                Delete course
+              </Button>
+            ) : null}
           </YStack>
         </Pressable>
       </Pressable>

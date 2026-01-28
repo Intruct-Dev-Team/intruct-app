@@ -196,7 +196,7 @@ export default function HomeScreen() {
               progress={course.progress}
               onPress={() =>
                 course.status === "generating" || course.status === "failed"
-                  ? openCreatingModal(course.id)
+                  ? openCreatingModal(course.id, course)
                   : router.push(`/course/${course.id}` as any)
               }
             />

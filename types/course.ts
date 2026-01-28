@@ -15,11 +15,15 @@ export interface Course {
   createdAt: string;
   updatedAt: string;
   category?: string;
+  authorId?: number | null;
   author?: string;
+  authorAvatarUrl?: string | null;
   rating?: number | null;
+  ratingsCount?: number | null;
   students?: number | null;
   isPublic?: boolean;
   isMine?: boolean;
+  isInMine?: boolean;
   status?: CourseStatus;
   state?: CourseState;
 }
