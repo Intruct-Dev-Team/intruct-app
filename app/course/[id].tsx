@@ -5,6 +5,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course, Module as CourseModule } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
@@ -53,7 +54,7 @@ export default function CourseDetailPage() {
         const token = session?.access_token;
         if (!token) {
           setCourse(null);
-          setCourseError("Sign in to view this course.");
+          setCourseError(t("Sign in to view this course."));
           return;
         }
 
@@ -64,7 +65,7 @@ export default function CourseDetailPage() {
         if (err instanceof ApiError) {
           setCourseError(err.message);
         } else {
-          setCourseError("Failed to load course.");
+          setCourseError(t("Failed to load course."));
         }
       } finally {
         setLoading(false);
@@ -118,7 +119,7 @@ export default function CourseDetailPage() {
     const courseId = course.backendId;
 
     if (!token || !courseId) {
-      notify({ type: "error", message: "Couldn’t publish course." });
+      notify({ type: "error", message: t("Couldn’t publish course.") });
       return;
     }
 
@@ -126,10 +127,10 @@ export default function CourseDetailPage() {
     try {
       await coursesApi.publishCourse(token, courseId);
       setCourse({ ...course, isPublic: true });
-      notify({ type: "success", message: "Course published." });
+      notify({ type: "success", message: t("Course published.") });
       setSettingsOpen(false);
     } catch {
-      notify({ type: "error", message: "Couldn’t publish course." });
+      notify({ type: "error", message: t("Couldn’t publish course.") });
     } finally {
       setPublishing(false);
     }
@@ -143,19 +144,19 @@ export default function CourseDetailPage() {
     const courseId = course.backendId;
 
     if (!token || !courseId) {
-      notify({ type: "error", message: "Couldn’t delete course." });
+      notify({ type: "error", message: t("Couldn’t delete course.") });
       return;
     }
 
     setDeleting(true);
     try {
       await coursesApi.deleteCourse(token, courseId);
-      notify({ type: "success", message: "Course deleted." });
+      notify({ type: "success", message: t("Course deleted.") });
       setSettingsOpen(false);
       router.replace("/courses" as any);
     } catch (err) {
       const message =
-        err instanceof ApiError ? err.message : "Couldn’t delete course.";
+        err instanceof ApiError ? err.message : t("Couldn’t delete course.");
       notify({ type: "error", message });
     } finally {
       setDeleting(false);
@@ -166,7 +167,7 @@ export default function CourseDetailPage() {
     return (
       <YStack flex={1} padding="$4" justifyContent="center" alignItems="center">
         <Stack.Screen options={{ headerShown: false }} />
-        <Text color={colors.textSecondary}>Loading course...</Text>
+        <Text color={colors.textSecondary}>{t("Loading course...")}</Text>
       </YStack>
     );
   }
@@ -182,17 +183,17 @@ export default function CourseDetailPage() {
       >
         <Stack.Screen options={{ headerShown: false }} />
         <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
-          Couldn’t load course
+          {t("Couldn’t load course")}
         </Text>
         <Text color={colors.textSecondary} textAlign="center">
           {courseError}
         </Text>
         <XStack gap="$3" marginTop="$2">
           <Button onPress={() => (id ? loadCourse(id) : undefined)}>
-            Retry
+            {t("Retry")}
           </Button>
           <Button chromeless onPress={() => router.back()}>
-            Go back
+            {t("Go back")}
           </Button>
         </XStack>
       </YStack>
@@ -209,9 +210,9 @@ export default function CourseDetailPage() {
         gap="$3"
       >
         <Stack.Screen options={{ headerShown: false }} />
-        <Text color={colors.textSecondary}>Course not found.</Text>
+        <Text color={colors.textSecondary}>{t("Course not found.")}</Text>
         <Button chromeless onPress={() => router.back()}>
-          Go back
+          {t("Go back")}
         </Button>
       </YStack>
     );
@@ -230,16 +231,16 @@ export default function CourseDetailPage() {
     const courseId = course.backendId;
 
     if (!token || !courseId) {
-      notify({ type: "error", message: "Couldn’t submit review." });
+      notify({ type: "error", message: t("Couldn’t submit review.") });
       return;
     }
 
     try {
       await coursesApi.rateCourse(token, courseId, reviewGrade);
-      notify({ type: "success", message: "Thanks for your review." });
+      notify({ type: "success", message: t("Thanks for your review.") });
       setRateOpen(false);
     } catch {
-      notify({ type: "error", message: "Couldn’t submit review." });
+      notify({ type: "error", message: t("Couldn’t submit review.") });
     }
   };
 
@@ -331,7 +332,7 @@ export default function CourseDetailPage() {
                       setRateOpen(true);
                     }}
                   >
-                    Rate course
+                    {t("Rate course")}
                   </Button>
                 ) : (
                   <Button
@@ -358,9 +359,14 @@ export default function CourseDetailPage() {
               {typeof effectiveProgress === "number" && (
                 <YStack paddingTop="$2" space="$2">
                   <XStack justifyContent="space-between" alignItems="center">
-                    <Text color={colors.textTertiary}>Course Progress</Text>
+                    <Text color={colors.textTertiary}>
+                      {t("Course Progress")}
+                    </Text>
                     <Text color={colors.primary} fontWeight="600">
-                      {effectiveProgress}/{course.lessons} lessons
+                      {t("{{completed}}/{{total}} lessons", {
+                        completed: effectiveProgress,
+                        total: course.lessons,
+                      })}
                     </Text>
                   </XStack>
 
@@ -390,7 +396,7 @@ export default function CourseDetailPage() {
       >
         <YStack gap="$3" marginTop="$2">
           <Text fontWeight="700" fontSize="$5" color={colors.textPrimary}>
-            Course Content
+            {t("Course Content")}
           </Text>
 
           {isSingleModule
@@ -467,7 +473,9 @@ export default function CourseDetailPage() {
                           justifyContent="space-between"
                         >
                           <Text color={colors.textTertiary} fontSize="$2">
-                            Lesson {lesson.serialNumber ?? idx + 1}
+                            {t("Lesson {{number}}", {
+                              number: lesson.serialNumber ?? idx + 1,
+                            })}
                           </Text>
 
                           {isLessonCompleted && (
@@ -485,7 +493,7 @@ export default function CourseDetailPage() {
                                 color={colors.stats.completed.icon}
                                 fontSize="$2"
                               >
-                                Completed
+                                {t("Completed")}
                               </Text>
                               <Play size={12} color={completedIconColor} />
                             </XStack>
@@ -521,7 +529,7 @@ export default function CourseDetailPage() {
                             }}
                             marginTop="$3"
                           >
-                            Start Lesson
+                            {t("Start Lesson")}
                           </Button>
                         )}
                       </YStack>
@@ -533,7 +541,7 @@ export default function CourseDetailPage() {
                 return (
                   <YStack key={mod.id} gap="$2">
                     <Text fontWeight="700" color={colors.textPrimary}>
-                      Module {idx + 1}
+                      {t("Module {{number}}", { number: idx + 1 })}
                     </Text>
                     {sortLessons(mod.lessons).map((lesson, lidx) => {
                       const isLessonCompleted = completionSet.has(lesson.id);
@@ -611,7 +619,9 @@ export default function CourseDetailPage() {
                                 justifyContent="space-between"
                               >
                                 <Text color={colors.textTertiary} fontSize="$2">
-                                  Lesson {lesson.serialNumber ?? lidx + 1}
+                                  {t("Lesson {{number}}", {
+                                    number: lesson.serialNumber ?? lidx + 1,
+                                  })}
                                 </Text>
                                 {isLessonCompleted && (
                                   <XStack
@@ -628,7 +638,7 @@ export default function CourseDetailPage() {
                                       color={colors.stats.completed.icon}
                                       fontSize="$2"
                                     >
-                                      Completed
+                                      {t("Completed")}
                                     </Text>
                                     <Play
                                       size={12}
@@ -669,7 +679,7 @@ export default function CourseDetailPage() {
                                   }}
                                   marginTop="$3"
                                 >
-                                  Start Lesson
+                                  {t("Start Lesson")}
                                 </Button>
                               )}
                             </YStack>
@@ -687,10 +697,10 @@ export default function CourseDetailPage() {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         snapPoints={[45]}
-        title="Settings"
+        title={t("Settings")}
         headerRight={
           <Button size="$3" chromeless onPress={() => setSettingsOpen(false)}>
-            Close
+            {t("Close")}
           </Button>
         }
       >
@@ -708,7 +718,7 @@ export default function CourseDetailPage() {
                 icon={<Globe size={16} color={colors.primaryText} />}
                 onPress={handlePublish}
               >
-                Publish course
+                {t("Publish course")}
               </Button>
 
               <Button
@@ -726,7 +736,7 @@ export default function CourseDetailPage() {
                   setDeleteConfirmOpen(true);
                 }}
               >
-                Delete course
+                {t("Delete course")}
               </Button>
             </>
           )}
@@ -748,7 +758,7 @@ export default function CourseDetailPage() {
                 setRateOpen(true);
               }}
             >
-              Rate course
+              {t("Rate course")}
             </Button>
           ) : null}
         </YStack>
@@ -758,11 +768,11 @@ export default function CourseDetailPage() {
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         snapPoints={[30]}
-        title="Delete course?"
+        title={t("Delete course?")}
       >
         <YStack gap="$3">
           <Text color={colors.textSecondary} fontSize="$4">
-            This action can’t be undone.
+            {t("This action can’t be undone.")}
           </Text>
 
           <Button
@@ -780,7 +790,7 @@ export default function CourseDetailPage() {
               setDeleteConfirmOpen(false);
             }}
           >
-            Delete course
+            {t("Delete course")}
           </Button>
 
           <Button
@@ -790,7 +800,7 @@ export default function CourseDetailPage() {
             fontWeight="700"
             onPress={() => setDeleteConfirmOpen(false)}
           >
-            Cancel
+            {t("Cancel")}
           </Button>
         </YStack>
       </AppSheetModal>
@@ -799,11 +809,11 @@ export default function CourseDetailPage() {
         open={rateOpen}
         onOpenChange={setRateOpen}
         snapPoints={[40]}
-        title="Rate this course"
+        title={t("Rate this course")}
       >
         <YStack gap="$2">
           <Text color={colors.textSecondary} fontSize="$4">
-            Select a rating from 1 to 5.
+            {t("Select a rating from 1 to 5.")}
           </Text>
         </YStack>
 
@@ -841,7 +851,7 @@ export default function CourseDetailPage() {
           elevation={4}
         >
           <Text color={colors.stats.completed.icon} fontWeight="700">
-            Completed
+            {t("Completed")}
           </Text>
         </YStack>
       )}

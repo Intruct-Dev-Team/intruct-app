@@ -7,7 +7,7 @@ export function SettingsFooter() {
   return (
     <YStack gap="$2" alignItems="center" paddingVertical="$6">
       <Text fontSize="$3" color={colors.textSecondary}>
-        Instruct v1.0.0
+        Intruct v1.0.0
       </Text>
       <Text fontSize="$2" color={colors.textTertiary}>
         © 2025 Instruct. All rights reserved.

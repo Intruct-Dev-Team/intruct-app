@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { AlertTriangle } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
 import { Button, Text, YStack } from "tamagui";
@@ -25,7 +26,7 @@ export default function ServerUnavailableScreen() {
         <YStack alignItems="center" justifyContent="center" gap="$3">
           <AlertTriangle size={44} color={colors.textSecondary} />
           <Text fontSize="$8" fontWeight="700" color={colors.textPrimary}>
-            Server temporarily unavailable
+            {t("Server temporarily unavailable")}
           </Text>
           <Text
             fontSize="$4"
@@ -33,8 +34,9 @@ export default function ServerUnavailableScreen() {
             textAlign="center"
             lineHeight="$2"
           >
-            The server is not responding right now. Please try again in a
-            moment.
+            {t(
+              "The server is not responding right now. Please try again in a moment.",
+            )}
           </Text>
         </YStack>
 
@@ -51,7 +53,7 @@ export default function ServerUnavailableScreen() {
             router.replace("/");
           }}
         >
-          Try again
+          {t("Try again")}
         </Button>
       </YStack>
     </>

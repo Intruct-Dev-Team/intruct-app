@@ -1,5 +1,6 @@
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import type { TestQuestion } from "@/types";
 import React, { useMemo, useState } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
@@ -84,9 +85,12 @@ export default function TestView({
   return (
     <YStack flex={1} padding="$4">
       <YStack marginBottom="$4">
-        <H3 color={colors.textPrimary}>Test Your Knowledge</H3>
+        <H3 color={colors.textPrimary}>{t("Test Your Knowledge")}</H3>
         <Text color={colors.textSecondary}>
-          Question {currentIndex + 1} of {questions.length}
+          {t("Question {{current}} of {{total}}", {
+            current: currentIndex + 1,
+            total: questions.length,
+          })}
         </Text>
       </YStack>
 
@@ -137,8 +141,8 @@ export default function TestView({
                       isAnswered && index === currentQuestion.correctAnswer
                         ? "$green11"
                         : isAnswered && selectedOption === index
-                        ? "$red11"
-                        : colors.textPrimary
+                          ? "$red11"
+                          : colors.textPrimary
                     }
                     fontSize="$4"
                   >
@@ -189,13 +193,13 @@ export default function TestView({
                 marginBottom="$1"
               >
                 {selectedOption === currentQuestion.correctAnswer
-                  ? "Correct!"
-                  : "Incorrect"}
+                  ? t("Correct!")
+                  : t("Incorrect")}
               </Text>
               <Text color={colors.textPrimary}>
                 {selectedOption !== currentQuestion.correctAnswer
-                  ? "The correct answer is highlighted above."
-                  : "Great job!"}
+                  ? t("The correct answer is highlighted above.")
+                  : t("Great job!")}
               </Text>
             </YStack>
           )}
@@ -213,7 +217,7 @@ export default function TestView({
             size="$4"
             borderRadius="$4"
           >
-            Check Answer
+            {t("Check Answer")}
           </Button>
         ) : (
           <Button
@@ -224,8 +228,8 @@ export default function TestView({
             borderRadius="$4"
           >
             {currentIndex === questions.length - 1
-              ? "Finish Lesson"
-              : "Next Question"}
+              ? t("Finish Lesson")
+              : t("Next Question")}
           </Button>
         )}
       </YStack>

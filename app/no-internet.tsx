@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import NetInfo from "@react-native-community/netinfo";
 import { WifiOff } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
@@ -48,7 +49,7 @@ export default function NoInternetScreen() {
         <YStack alignItems="center" justifyContent="center" gap="$3">
           <WifiOff size={44} color={colors.textSecondary} />
           <Text fontSize="$8" fontWeight="700" color={colors.textPrimary}>
-            No internet connection
+            {t("No internet connection")}
           </Text>
           <Text
             fontSize="$4"
@@ -56,7 +57,7 @@ export default function NoInternetScreen() {
             textAlign="center"
             lineHeight="$2"
           >
-            Please check your connection and try again.
+            {t("Please check your connection and try again.")}
           </Text>
         </YStack>
 
@@ -67,7 +68,7 @@ export default function NoInternetScreen() {
           disabled={checking}
           onPress={() => void handleTryAgain()}
         >
-          Try again
+          {t("Try again")}
         </Button>
       </YStack>
     </>

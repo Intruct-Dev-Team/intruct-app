@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
@@ -49,10 +50,10 @@ export default function CoursesScreen() {
     <YStack backgroundColor={colors.cardBackground}>
       <YStack padding="$4" paddingTop="$5" gap="$1">
         <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
-          My Courses
+          {t("My Courses")}
         </H1>
         <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
-          All courses you are currently taking
+          {t("All courses you are currently taking")}
         </Text>
       </YStack>
     </YStack>
@@ -78,7 +79,7 @@ export default function CoursesScreen() {
         if (err instanceof ApiError) {
           setCoursesError(err.message);
         } else {
-          setCoursesError("Failed to load courses.");
+          setCoursesError(t("Failed to load courses."));
         }
       } finally {
         if (showLoading) setLoading(false);
@@ -93,7 +94,7 @@ export default function CoursesScreen() {
       const courseId = course.backendId;
 
       if (!token || !courseId) {
-        notify({ type: "error", message: "Couldn’t delete course." });
+        notify({ type: "error", message: t("Couldn’t delete course.") });
         return;
       }
 
@@ -359,7 +360,7 @@ export default function CoursesScreen() {
               backgroundColor={colors.cardBackground}
             >
               <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
-                Couldn’t load courses
+                {t("Couldn’t load courses")}
               </Text>
               <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
                 {coursesError}
@@ -378,10 +379,10 @@ export default function CoursesScreen() {
         <YStack backgroundColor={colors.cardBackground}>
           <YStack padding="$4" paddingTop="$6" gap="$1">
             <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
-              My Courses
+              {t("My Courses")}
             </H1>
             <Text color={colors.textSecondary} fontSize="$4" fontWeight="400">
-              Your enrolled courses will appear here
+              {t("Your enrolled courses will appear here")}
             </Text>
           </YStack>
         </YStack>
@@ -392,7 +393,9 @@ export default function CoursesScreen() {
         >
           <YStack padding="$4" gap="$4" paddingBottom="$8">
             <YStack gap="$3">
-              <Text color={colors.textSecondary}>You have no courses yet.</Text>
+              <Text color={colors.textSecondary}>
+                {t("You have no courses yet.")}
+              </Text>
             </YStack>
           </YStack>
         </ScrollView>

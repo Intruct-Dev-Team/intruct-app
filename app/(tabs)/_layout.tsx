@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HapticTab } from "@/components/common";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { t } from "@/localization/i18n";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -27,28 +28,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("Home"),
           tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="courses"
         options={{
-          title: "Courses",
+          title: t("Courses"),
           tabBarIcon: ({ color }) => <BookOpen size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="catalog"
         options={{
-          title: "Catalog",
+          title: t("Catalog"),
           tabBarIcon: ({ color }) => <ShoppingBag size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: t("Settings"),
           tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
         }}
       />

@@ -2,6 +2,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { languageOptions } from "@/mockdata/settings";
 import { Globe, Lightbulb, Paperclip } from "@tamagui/lucide-icons";
 import { Card, Text, XStack, YStack } from "tamagui";
@@ -30,10 +31,10 @@ export function ReviewStep({
     <YStack gap="$4">
       <YStack gap="$2">
         <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-          Review & Create
+          {t("Review & Create")}
         </Text>
         <Text fontSize="$4" color={colors.textSecondary}>
-          Review your course details before creating
+          {t("Review your course details before creating")}
         </Text>
       </YStack>
 
@@ -45,16 +46,16 @@ export function ReviewStep({
       >
         <YStack gap="$3">
           <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-            {title || "name"}
+            {title || t("name")}
           </Text>
           <Text fontSize="$4" color={colors.textSecondary}>
-            {description || "course description"}
+            {description || t("course description")}
           </Text>
           <XStack gap="$4" marginTop="$2">
             <XStack gap="$2" alignItems="center">
               <Paperclip size={16} color={tertiaryIconColor} />
               <Text fontSize="$3" color={colors.textTertiary}>
-                {filesCount} files attached
+                {t("{{count}} files attached", { count: filesCount })}
               </Text>
             </XStack>
             <XStack gap="$2" alignItems="center">
@@ -76,8 +77,9 @@ export function ReviewStep({
         <XStack gap="$3" alignItems="flex-start">
           <Lightbulb size={20} color={tipIconColor} />
           <Text fontSize="$3" color="$blue11" lineHeight="$2">
-            Our AI will analyze your materials and create a structured course
-            with lessons and tests. This usually takes a couple of minutes.
+            {t(
+              "Our AI will analyze your materials and create a structured course with lessons and tests. This usually takes a couple of minutes.",
+            )}
           </Text>
         </XStack>
       </Card>

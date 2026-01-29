@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Course } from "@/types";
 import { normalizeAvatarUri } from "@/utils/avatar";
 import { BookOpen, Star, Users } from "@tamagui/lucide-icons";
@@ -84,7 +85,7 @@ export function CatalogCourseCard({
               </Avatar.Fallback>
             </Avatar>
             <Text fontSize="$2" color={colors.textTertiary}>
-              by {authorName}
+              {t("by {{author}}", { author: authorName })}
             </Text>
           </XStack>
         ) : null}
@@ -114,7 +115,7 @@ export function CatalogCourseCard({
           <XStack gap="$1" alignItems="center">
             <BookOpen size={14} color={colors.textTertiary} />
             <Text fontSize="$2" color={colors.textTertiary}>
-              {course.lessons} lessons
+              {t("{{count}} lessons", { count: course.lessons })}
             </Text>
           </XStack>
         </XStack>
@@ -133,7 +134,7 @@ export function CatalogCourseCard({
           }}
           onPress={onEnroll}
         >
-          Start Course
+          {t("Start Course")}
         </Button>
       </YStack>
     </Card>

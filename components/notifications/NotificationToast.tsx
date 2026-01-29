@@ -6,6 +6,7 @@ import type {
   NotificationType,
 } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 
 type NotificationToastProps = {
   type: NotificationType;
@@ -18,7 +19,7 @@ type NotificationToastProps = {
 
 function getTypeStyles(
   type: NotificationType,
-  colors: ReturnType<typeof useThemeColors>
+  colors: ReturnType<typeof useThemeColors>,
 ) {
   switch (type) {
     case "success":
@@ -94,7 +95,7 @@ export function NotificationToast({
             chromeless
             icon={X}
             onPress={onDismiss}
-            accessibilityLabel="Dismiss notification"
+            accessibilityLabel={t("Dismiss notification")}
             alignSelf="center"
           />
         ) : null}

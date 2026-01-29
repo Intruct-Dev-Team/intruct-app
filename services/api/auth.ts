@@ -1,3 +1,4 @@
+import { t } from "@/localization/i18n";
 import type { CompleteRegistrationRequest, UserProfile } from "@/types";
 
 import {
@@ -40,11 +41,11 @@ export const authApi = {
     await delay(DELAYS.auth);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!payload.name) {
-      throw new ApiError(422, "validation", "Name is required");
+      throw new ApiError(422, "validation", t("Name is required"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -95,14 +96,14 @@ export const authApi = {
         });
 
         if (res.status === 401) {
-          throw new ApiError(401, "unauthorized", "Unauthorized");
+          throw new ApiError(401, "unauthorized", t("Unauthorized"));
         }
 
         if (res.status === 422) {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Validation error";
+          const message = body?.error?.message || t("Validation error");
           throw new ApiError(422, "validation", message);
         }
 
@@ -111,7 +112,7 @@ export const authApi = {
             res,
           )) as ApiErrorResponseBody | null;
           const message =
-            body?.error?.message || "Failed to complete registration";
+            body?.error?.message || t("Failed to complete registration");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -123,7 +124,7 @@ export const authApi = {
           throw new ApiError(
             500,
             "unknown",
-            "Invalid complete-registration response",
+            t("Invalid complete-registration response"),
           );
         }
 
@@ -135,7 +136,7 @@ export const authApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
@@ -143,7 +144,7 @@ export const authApi = {
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - completeRegistration requires API",
+      t("Backend not configured - completeRegistration requires API"),
     );
   },
 };

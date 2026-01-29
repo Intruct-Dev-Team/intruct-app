@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Plus } from "@tamagui/lucide-icons";
 import { Button, Card, Text, YStack } from "tamagui";
 
@@ -24,7 +25,7 @@ export function CreateCourseCard({ onPress }: CreateCourseCardProps) {
           fontWeight="600"
           letterSpacing={-0.3}
         >
-          Create with AI
+          {t("Create with AI")}
         </Text>
         <Text
           color={colors.primaryText}
@@ -32,7 +33,7 @@ export function CreateCourseCard({ onPress }: CreateCourseCardProps) {
           opacity={0.95}
           lineHeight="$2"
         >
-          Attach materials to create a new course
+          {t("Attach materials to create a new course")}
         </Text>
         <Button
           backgroundColor={colors.cardBackground}
@@ -48,7 +49,7 @@ export function CreateCourseCard({ onPress }: CreateCourseCardProps) {
           icon={<Plus size={20} />}
           onPress={onPress}
         >
-          Create Course
+          {t("Create Course")}
         </Button>
       </YStack>
     </Card>

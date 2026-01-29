@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Text, XStack, YStack } from "tamagui";
 
 interface StepIndicatorProps {
@@ -23,7 +24,10 @@ export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
         ))}
       </XStack>
       <Text fontSize="$3" color={colors.textSecondary}>
-        Step {currentStep} of {totalSteps}
+        {t("Step {{current}} of {{total}}", {
+          current: currentStep,
+          total: totalSteps,
+        })}
       </Text>
     </YStack>
   );

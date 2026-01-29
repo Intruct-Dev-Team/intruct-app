@@ -9,6 +9,7 @@ import { PageHeader, ScreenContainer } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, coursesApi, lessonProgressApi } from "@/services/api";
 import type { Course } from "@/types";
 import { useFocusEffect } from "@react-navigation/native";
@@ -53,7 +54,7 @@ export default function HomeScreen() {
         if (error instanceof ApiError) {
           setCoursesError(error.message);
         } else {
-          setCoursesError("Failed to load courses.");
+          setCoursesError(t("Failed to load courses."));
         }
       } finally {
         if (showLoading) setLoading(false);
@@ -124,8 +125,8 @@ export default function HomeScreen() {
     return (
       <ScreenContainer refreshing={refreshing} onRefresh={handleRefresh}>
         <PageHeader
-          title="Welcome back!"
-          subtitle="Continue your learning journey"
+          title={t("Welcome back!")}
+          subtitle={t("Continue your learning journey")}
         />
 
         <XStack gap="$3" justifyContent="space-between">
@@ -138,7 +139,7 @@ export default function HomeScreen() {
 
         <YStack gap="$3.5" marginTop="$3">
           <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-            My Courses
+            {t("My Courses")}
           </H2>
           <CourseCardSkeleton />
           <CourseCardSkeleton />
@@ -152,8 +153,8 @@ export default function HomeScreen() {
   return (
     <ScreenContainer refreshing={refreshing} onRefresh={handleRefresh}>
       <PageHeader
-        title="Welcome back!"
-        subtitle="Continue your learning journey"
+        title={t("Welcome back!")}
+        subtitle={t("Continue your learning journey")}
       />
 
       <XStack gap="$3" justifyContent="space-between">
@@ -161,19 +162,19 @@ export default function HomeScreen() {
           icon={TrendingUp}
           type="completed"
           value={profile.completedCourses}
-          label="Completed"
+          label={t("Completed")}
         />
         <StatsCard
           icon={Clock}
           type="inProgress"
           value={profile.inProgressCourses}
-          label="Courses in Progress"
+          label={t("Courses in Progress")}
         />
         <StatsCard
           icon={Flame}
           type="streak"
           value={profile.streak}
-          label="Day Streak"
+          label={t("Day Streak")}
           isActive={profile.isStreakActiveToday}
         />
       </XStack>
@@ -182,13 +183,13 @@ export default function HomeScreen() {
 
       <YStack gap="$3.5" marginTop="$3">
         <H2 fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-          Recent courses
+          {t("Recent courses")}
         </H2>
 
         {coursesError ? (
           <YStack padding="$4" backgroundColor={colors.cardBackground}>
             <H2 fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-              Couldn’t load courses
+              {t("Couldn’t load courses")}
             </H2>
             <YStack marginTop="$2">
               <H2 fontSize="$3" fontWeight="400" color={colors.textSecondary}>
@@ -199,11 +200,11 @@ export default function HomeScreen() {
         ) : coursesToShow.length === 0 ? (
           <YStack padding="$4" backgroundColor={colors.cardBackground}>
             <H2 fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-              No courses yet
+              {t("No courses yet")}
             </H2>
             <YStack marginTop="$2">
               <H2 fontSize="$3" fontWeight="400" color={colors.textSecondary}>
-                Create a course to get started.
+                {t("Create a course to get started.")}
               </H2>
             </YStack>
           </YStack>

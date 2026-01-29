@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { normalizeAvatarUri } from "@/utils/avatar";
 import { ChevronLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
@@ -15,7 +16,7 @@ export default function ProfileScreen() {
   const fullName =
     (profile?.name && profile?.surname
       ? `${profile.name} ${profile.surname}`.trim()
-      : profile?.name || profile?.surname) || "User";
+      : profile?.name || profile?.surname) || t("User");
 
   const email = profile?.email || "";
 
@@ -29,6 +30,8 @@ export default function ProfileScreen() {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const fallbackInitial = t("User").slice(0, 1).toUpperCase();
 
   return (
     <>
@@ -44,11 +47,11 @@ export default function ProfileScreen() {
                 onPress={() => router.back()}
               />
               <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
-                Personal Information
+                {t("Personal Information")}
               </Text>
             </XStack>
             <Text color={colors.textSecondary} fontSize="$4">
-              Manage your account details
+              {t("Manage your account details")}
             </Text>
           </YStack>
 
@@ -71,7 +74,7 @@ export default function ProfileScreen() {
                   alignItems="center"
                 >
                   <Text fontSize="$6" fontWeight="700" color="white">
-                    {initials || "U"}
+                    {initials || fallbackInitial}
                   </Text>
                 </Avatar.Fallback>
               </Avatar>
@@ -96,7 +99,7 @@ export default function ProfileScreen() {
             <YStack gap="$3">
               <YStack gap="$1">
                 <Text fontSize="$3" color={colors.textSecondary}>
-                  Full Name
+                  {t("Full Name")}
                 </Text>
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   {fullName}
@@ -107,7 +110,7 @@ export default function ProfileScreen() {
 
               <YStack gap="$1">
                 <Text fontSize="$3" color={colors.textSecondary}>
-                  Email
+                  {t("Email")}
                 </Text>
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
                   {email}
@@ -120,7 +123,7 @@ export default function ProfileScreen() {
 
                   <YStack gap="$1">
                     <Text fontSize="$3" color={colors.textSecondary}>
-                      Date of Birth
+                      {t("Date of Birth")}
                     </Text>
                     <Text
                       fontSize="$5"
@@ -151,7 +154,7 @@ export default function ProfileScreen() {
             onPress={signOut}
             pressStyle={{ opacity: 0.85 }}
           >
-            Sign Out
+            {t("Sign Out")}
           </Button>
         </XStack>
       </YStack>

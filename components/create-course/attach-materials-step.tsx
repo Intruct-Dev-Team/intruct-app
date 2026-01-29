@@ -1,5 +1,6 @@
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Paperclip, X } from "@tamagui/lucide-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { Pressable } from "react-native";
@@ -49,7 +50,7 @@ export function AttachMaterialsStep({
       if (!isAllowedAsset(asset)) {
         notify({
           type: "error",
-          message: "Please choose a PDF or TXT file.",
+          message: t("Please choose a PDF or TXT file."),
         });
         return;
       }
@@ -64,7 +65,7 @@ export function AttachMaterialsStep({
     } catch {
       notify({
         type: "error",
-        message: "Couldn’t open file picker.",
+        message: t("Couldn’t open file picker."),
       });
     }
   };
@@ -77,16 +78,16 @@ export function AttachMaterialsStep({
     <YStack gap="$4" flex={1}>
       <YStack gap="$2">
         <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-          Attach Materials
+          {t("Attach Materials")}
         </Text>
         <Text fontSize="$4" color={colors.textSecondary}>
-          Upload files to create your course content
+          {t("Upload files to create your course content")}
         </Text>
       </YStack>
 
       <YStack gap="$3">
         <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-          Files
+          {t("Files")}
         </Text>
         <Pressable onPress={handleAttachFiles}>
           <Card
@@ -109,10 +110,10 @@ export function AttachMaterialsStep({
                 <Paperclip size={28} color={colors.textSecondary} />
               </YStack>
               <Text fontSize="$4" fontWeight="500" color={colors.textPrimary}>
-                Tap to attach files
+                {t("Tap to attach files")}
               </Text>
               <Text fontSize="$3" color={colors.textSecondary}>
-                PDF or TXT
+                {t("PDF or TXT")}
               </Text>
             </YStack>
           </Card>

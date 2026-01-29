@@ -5,6 +5,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, lessonProgressApi, lessonsApi } from "@/services/api";
 import type { Lesson } from "@/types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -61,14 +62,14 @@ export default function LessonScreen() {
       if (!token) {
         setLesson(null);
         setCourseTitle("");
-        setError("Token is required");
+        setError(t("Token is required"));
         return;
       }
 
       if (!Number.isFinite(numericId)) {
         setLesson(null);
         setCourseTitle("");
-        setError("Invalid lesson id");
+        setError(t("Invalid lesson id"));
         return;
       }
 
@@ -84,7 +85,7 @@ export default function LessonScreen() {
             ? err.message
             : err instanceof Error
               ? err.message
-              : "Failed to load lesson";
+              : t("Failed to load lesson");
         setError(message);
       }
     };
@@ -130,9 +131,9 @@ export default function LessonScreen() {
         }}
         edges={["bottom"]}
       >
-        <Stack.Screen options={{ title: "Loading..." }} />
+        <Stack.Screen options={{ title: t("Loading...") }} />
         <YStack flex={1} justifyContent="center" alignItems="center" gap="$3">
-          <Text color={colors.textSecondary}>Loading lesson...</Text>
+          <Text color={colors.textSecondary}>{t("Loading lesson...")}</Text>
         </YStack>
       </SafeAreaView>
     );
@@ -156,7 +157,7 @@ export default function LessonScreen() {
           padding="$6"
         >
           <Text color={colors.textPrimary} fontWeight="700">
-            Couldn’t load lesson
+            {t("Couldn’t load lesson")}
           </Text>
           <Text color={colors.textSecondary} textAlign="center">
             {error}
@@ -173,7 +174,7 @@ export default function LessonScreen() {
               } as any);
             }}
           >
-            Retry
+            {t("Retry")}
           </Button>
         </YStack>
       </SafeAreaView>
@@ -198,9 +199,9 @@ export default function LessonScreen() {
           padding="$6"
         >
           <Text color={colors.textPrimary} fontWeight="700">
-            Lesson not found
+            {t("Lesson not found")}
           </Text>
-          <Button onPress={() => router.back()}>Go back</Button>
+          <Button onPress={() => router.back()}>{t("Go back")}</Button>
         </YStack>
       </SafeAreaView>
     );
@@ -224,13 +225,13 @@ export default function LessonScreen() {
     void (async () => {
       try {
         if (!token) {
-          setError("Token is required");
+          setError(t("Token is required"));
           return;
         }
 
         const lessonIdNumber = Number(lesson.id);
         if (!Number.isFinite(lessonIdNumber)) {
-          setError("Invalid lesson id");
+          setError(t("Invalid lesson id"));
           return;
         }
 
@@ -247,7 +248,7 @@ export default function LessonScreen() {
             ? err.message
             : err instanceof Error
               ? err.message
-              : "Failed to finish lesson";
+              : t("Failed to finish lesson");
         setError(message);
       }
     })();
@@ -268,12 +269,12 @@ export default function LessonScreen() {
     void (async () => {
       try {
         if (!token) {
-          setError("Token is required");
+          setError(t("Token is required"));
           return;
         }
 
         if (!Number.isFinite(lessonIdNumber)) {
-          setError("Invalid lesson id");
+          setError(t("Invalid lesson id"));
           return;
         }
 
@@ -290,7 +291,7 @@ export default function LessonScreen() {
             ? err.message
             : err instanceof Error
               ? err.message
-              : "Failed to finish lesson";
+              : t("Failed to finish lesson");
         setError(message);
       }
     })();
@@ -306,7 +307,7 @@ export default function LessonScreen() {
             materials={lesson.materials || []}
             onComplete={handleMaterialComplete}
             showHeader={false}
-            nextLabel="Next"
+            nextLabel={t("Next")}
           />
         );
       case "test":
@@ -350,7 +351,7 @@ export default function LessonScreen() {
               ) : null}
             </YStack>
           ),
-          headerBackTitle: "Back",
+          headerBackTitle: t("Back"),
           headerStyle: {
             backgroundColor: resolvedBackground,
           },

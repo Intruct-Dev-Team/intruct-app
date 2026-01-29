@@ -1,3 +1,4 @@
+import { t } from "@/localization/i18n";
 import type {
   GetLessonResponse,
   Lesson,
@@ -22,16 +23,16 @@ export const lessonsApi = {
     await delay(DELAYS.lessons);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!Number.isFinite(lessonId)) {
-      throw new ApiError(400, "validation", "Lesson ID is required");
+      throw new ApiError(400, "validation", t("Lesson ID is required"));
     }
 
     const baseUrl = getApiBaseUrl();
     if (!baseUrl) {
-      throw new ApiError(500, "unknown", "API base URL is not configured");
+      throw new ApiError(500, "unknown", t("API base URL is not configured"));
     }
 
     try {
@@ -53,13 +54,13 @@ export const lessonsApi = {
           (payload.json as { message?: string } | null)?.message ||
           (payload.json as { detail?: string } | null)?.detail;
         const message =
-          messageFromJson || payload.text || "Failed to load lesson";
+          messageFromJson || payload.text || t("Failed to load lesson");
         throw new ApiError(res.status, "unknown", message);
       }
 
       const json = (await readJsonResponse(res)) as GetLessonResponse | null;
       if (!json || typeof json.id !== "number") {
-        throw new ApiError(500, "unknown", "Invalid lesson response");
+        throw new ApiError(500, "unknown", t("Invalid lesson response"));
       }
 
       const lessonContent =
@@ -68,7 +69,7 @@ export const lessonsApi = {
         lessonContent.trim().length > 0
           ? {
               id: `lesson_${json.id}_content`,
-              title: "Lesson",
+              title: t("Lesson"),
               content: lessonContent,
             }
           : null;
@@ -107,7 +108,7 @@ export const lessonsApi = {
         throw new ApiError(0, "network", err.message);
       }
       emitServerUnavailable();
-      throw new ApiError(0, "network", "Network error");
+      throw new ApiError(0, "network", t("Network error"));
     }
   },
 
@@ -115,16 +116,16 @@ export const lessonsApi = {
     await delay(DELAYS.lessons);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!Number.isFinite(lessonId)) {
-      throw new ApiError(400, "validation", "Lesson ID is required");
+      throw new ApiError(400, "validation", t("Lesson ID is required"));
     }
 
     const baseUrl = getApiBaseUrl();
     if (!baseUrl) {
-      throw new ApiError(500, "unknown", "API base URL is not configured");
+      throw new ApiError(500, "unknown", t("API base URL is not configured"));
     }
 
     try {
@@ -146,7 +147,7 @@ export const lessonsApi = {
           (payload.json as { message?: string } | null)?.message ||
           (payload.json as { detail?: string } | null)?.detail;
         const message =
-          messageFromJson || payload.text || "Failed to finish lesson";
+          messageFromJson || payload.text || t("Failed to finish lesson");
         throw new ApiError(res.status, "unknown", message);
       }
     } catch (err) {
@@ -156,7 +157,7 @@ export const lessonsApi = {
         throw new ApiError(0, "network", err.message);
       }
       emitServerUnavailable();
-      throw new ApiError(0, "network", "Network error");
+      throw new ApiError(0, "network", t("Network error"));
     }
   },
 };

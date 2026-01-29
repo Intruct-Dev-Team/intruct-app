@@ -4,6 +4,7 @@ import { SocialButton } from "@/components/auth/SocialButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Link, Stack } from "expo-router";
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Platform } from "react-native";
@@ -22,8 +23,8 @@ export default function RegisterScreen() {
     if (!email || !password || !name) {
       notify({
         type: "error",
-        title: "Missing information",
-        message: "Please fill in all fields.",
+        title: t("Missing information"),
+        message: t("Please fill in all fields."),
       });
       return;
     }
@@ -38,11 +39,11 @@ export default function RegisterScreen() {
 
       notify({
         type: "error",
-        title: "Registration failed",
+        title: t("Registration failed"),
         message:
           typeof message === "string" && message.trim().length > 0
             ? message
-            : "Something went wrong. Please try again.",
+            : t("Something went wrong. Please try again."),
       });
     }
   };
@@ -69,7 +70,7 @@ export default function RegisterScreen() {
                   source={require("../../assets/images/icons/splash-icon.png")}
                   style={{ width: 84, height: 84 }}
                   resizeMode="contain"
-                  accessibilityLabel="Intruct"
+                  accessibilityLabel={t("Intruct")}
                 />
               </YStack>
 
@@ -80,14 +81,14 @@ export default function RegisterScreen() {
                   color={colors.textPrimary}
                   textAlign="center"
                 >
-                  Create Account
+                  {t("Create Account")}
                 </Text>
                 <Text
                   fontSize="$5"
                   color={colors.textSecondary}
                   textAlign="center"
                 >
-                  Sign up to start learning
+                  {t("Sign up to start learning")}
                 </Text>
               </YStack>
             </YStack>
@@ -95,23 +96,23 @@ export default function RegisterScreen() {
             {/* Form Section */}
             <YStack gap="$4">
               <AuthInput
-                label="Name"
-                placeholder="Enter your full name"
+                label={t("Name")}
+                placeholder={t("Enter your full name")}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
               />
               <AuthInput
-                label="Email"
-                placeholder="Enter your email"
+                label={t("Email")}
+                placeholder={t("Enter your email")}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
               <AuthInput
-                label="Password"
-                placeholder="Enter your password"
+                label={t("Password")}
+                placeholder={t("Enter your password")}
                 value={password}
                 onChangeText={setPassword}
                 isPassword
@@ -121,7 +122,7 @@ export default function RegisterScreen() {
             {/* Actions Section */}
             <YStack gap="$5">
               <AuthButton
-                title="Sign Up"
+                title={t("Sign Up")}
                 onPress={handleRegister}
                 loading={loading}
               />
@@ -129,23 +130,23 @@ export default function RegisterScreen() {
               <XStack alignItems="center" gap="$3">
                 <View height={1} flex={1} backgroundColor="$gray5" />
                 <Text color="$gray9" fontSize="$3">
-                  OR
+                  {t("OR")}
                 </Text>
                 <View height={1} flex={1} backgroundColor="$gray5" />
               </XStack>
 
               <SocialButton
-                title="Continue with Google"
+                title={t("Continue with Google")}
                 onPress={() => signInWithGoogle()}
               />
 
               <XStack justifyContent="center" gap="$2" marginTop="$2">
                 <Text color={colors.textSecondary} fontSize="$4">
-                  Already have an account?
+                  {t("Already have an account?")}
                 </Text>
                 <Link href="/(auth)/login" asChild>
                   <Text color="$blue9" fontSize="$4" fontWeight="600">
-                    Sign In
+                    {t("Sign In")}
                   </Text>
                 </Link>
               </XStack>

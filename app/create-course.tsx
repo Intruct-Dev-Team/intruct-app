@@ -7,6 +7,7 @@ import { LanguageModal } from "@/components/modals";
 import { useCourseGeneration } from "@/contexts/course-generation-context";
 import { useNotifications } from "@/contexts/NotificationsContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { settingsApi } from "@/services/api";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
@@ -58,8 +59,8 @@ export default function CreateCourseScreen() {
     if (!hasAttachedFile) {
       notify({
         type: "error",
-        title: "Нужен файл",
-        message: "Прикрепите файл (PDF или TXT), чтобы продолжить.",
+        title: t("File required"),
+        message: t("Attach a file (PDF or TXT) to continue."),
       });
 
       if (currentStep !== 1) {
@@ -95,7 +96,7 @@ export default function CreateCourseScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          headerTitle: "Create Course",
+          headerTitle: t("Create Course"),
           headerLeft: () => (
             <Button
               size="$3"
@@ -175,7 +176,7 @@ export default function CreateCourseScreen() {
             color={colors.textPrimary}
             onPress={handleBack}
           >
-            Back
+            {t("Back")}
           </Button>
           <Button
             flex={1}
@@ -184,7 +185,7 @@ export default function CreateCourseScreen() {
             color="white"
             onPress={handleNext}
           >
-            {currentStep === 3 ? "Create Course" : "Next"}
+            {currentStep === 3 ? t("Create Course") : t("Next")}
           </Button>
         </XStack>
       </YStack>
@@ -196,7 +197,7 @@ export default function CreateCourseScreen() {
         onValueChange={(contentLanguage) =>
           setFormData({ ...formData, contentLanguage })
         }
-        title="Content Language"
+        title={t("Content Language")}
       />
     </>
   );

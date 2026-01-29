@@ -3,6 +3,7 @@ import { AuthInput } from "@/components/auth/AuthInput";
 import { SocialButton } from "@/components/auth/SocialButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Link, Stack } from "expo-router";
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Platform } from "react-native";
@@ -45,7 +46,7 @@ export default function LoginScreen() {
                   source={require("../../assets/images/icons/splash-icon.png")}
                   style={{ width: 84, height: 84 }}
                   resizeMode="contain"
-                  accessibilityLabel="Intruct"
+                  accessibilityLabel={t("Intruct")}
                 />
               </YStack>
 
@@ -56,14 +57,14 @@ export default function LoginScreen() {
                   color={colors.textPrimary}
                   textAlign="center"
                 >
-                  Welcome Back
+                  {t("Welcome Back")}
                 </Text>
                 <Text
                   fontSize="$5"
                   color={colors.textSecondary}
                   textAlign="center"
                 >
-                  Sign in to continue learning
+                  {t("Sign in to continue learning")}
                 </Text>
               </YStack>
             </YStack>
@@ -71,34 +72,26 @@ export default function LoginScreen() {
             {/* Form Section */}
             <YStack gap="$4">
               <AuthInput
-                label="Email"
-                placeholder="Enter your email"
+                label={t("Email")}
+                placeholder={t("Enter your email")}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
               <AuthInput
-                label="Password"
-                placeholder="Enter your password"
+                label={t("Password")}
+                placeholder={t("Enter your password")}
                 value={password}
                 onChangeText={setPassword}
                 isPassword
               />
-
-              <XStack justifyContent="flex-end">
-                <Link href="/(auth)/forgot-password" asChild>
-                  <Text color="$blue9" fontSize="$3" fontWeight="600">
-                    Forgot Password?
-                  </Text>
-                </Link>
-              </XStack>
             </YStack>
 
             {/* Actions Section */}
             <YStack gap="$5">
               <AuthButton
-                title="Sign In"
+                title={t("Sign In")}
                 onPress={handleLogin}
                 loading={loading}
               />
@@ -106,23 +99,23 @@ export default function LoginScreen() {
               <XStack alignItems="center" gap="$3">
                 <View height={1} flex={1} backgroundColor="$gray5" />
                 <Text color="$gray9" fontSize="$3">
-                  OR
+                  {t("OR")}
                 </Text>
                 <View height={1} flex={1} backgroundColor="$gray5" />
               </XStack>
 
               <SocialButton
-                title="Continue with Google"
+                title={t("Continue with Google")}
                 onPress={() => signInWithGoogle()}
               />
 
               <XStack justifyContent="center" gap="$2" marginTop="$2">
                 <Text color={colors.textSecondary} fontSize="$4">
-                  Don&apos;t have an account?
+                  {t("Don't have an account?")}
                 </Text>
                 <Link href="/(auth)/register" asChild>
                   <Text color="$blue9" fontSize="$4" fontWeight="600">
-                    Sign Up
+                    {t("Sign Up")}
                   </Text>
                 </Link>
               </XStack>

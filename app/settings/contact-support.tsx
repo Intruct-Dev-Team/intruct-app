@@ -1,6 +1,7 @@
 import { ExternalLink } from "@/components/common/external-link";
 import { ScreenContainer } from "@/components/layout";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ChevronLeft, Linkedin, Mail, Send } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
 import { Button, Card, Text, XStack, YStack } from "tamagui";
@@ -20,13 +21,13 @@ export default function ContactSupportScreen() {
           onPress={() => router.back()}
         />
         <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
-          Contact Support
+          {t("Contact Support")}
         </Text>
       </XStack>
 
       <YStack gap="$3" marginTop="$4">
         <Text color={colors.textSecondary} fontSize="$4">
-          Choose a way to reach us.
+          {t("Choose a way to reach us.")}
         </Text>
 
         <ExternalLink href="mailto:ijusseen@gmail.com" asChild>
@@ -45,7 +46,7 @@ export default function ContactSupportScreen() {
               <Mail size={18} color={colors.textSecondary} />
               <YStack flex={1} gap="$1">
                 <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
-                  Email
+                  {t("Email")}
                 </Text>
                 <Text fontSize="$4" color={colors.textSecondary}>
                   ijusseen@gmail.com
@@ -71,7 +72,7 @@ export default function ContactSupportScreen() {
               <Linkedin size={18} color={colors.textSecondary} />
               <YStack flex={1} gap="$1">
                 <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
-                  LinkedIn
+                  {t("LinkedIn")}
                 </Text>
                 <Text fontSize="$4" color={colors.textSecondary}>
                   https://www.linkedin.com/company/intruct/
@@ -97,7 +98,7 @@ export default function ContactSupportScreen() {
               <Send size={18} color={colors.textSecondary} />
               <YStack flex={1} gap="$1">
                 <Text fontSize="$4" fontWeight="700" color={colors.textPrimary}>
-                  Telegram
+                  {t("Telegram")}
                 </Text>
                 <Text fontSize="$4" color={colors.textSecondary}>
                   @andr_ewtf

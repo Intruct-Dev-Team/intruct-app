@@ -3,6 +3,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { AlertTriangle, Check } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet } from "react-native";
@@ -48,7 +49,7 @@ export function CreatingCourseModal() {
           >
             <XStack width="100%" justifyContent="flex-end">
               <Button size="$3" chromeless onPress={closeCreatingModal}>
-                Close
+                {t("Close")}
               </Button>
             </XStack>
 
@@ -74,10 +75,10 @@ export function CreatingCourseModal() {
             <YStack gap="$2" alignItems="center">
               <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
                 {isGenerating
-                  ? "Creating course"
+                  ? t("Creating course")
                   : isFailed
-                    ? "Creation failed"
-                    : "Course is ready"}
+                    ? t("Creation failed")
+                    : t("Course is ready")}
               </Text>
               <Text
                 fontSize="$4"
@@ -85,10 +86,16 @@ export function CreatingCourseModal() {
                 textAlign="center"
               >
                 {isGenerating
-                  ? "Generation is running on the server. The status will update when the course is ready."
+                  ? t(
+                      "Generation is running on the server. The status will update when the course is ready.",
+                    )
                   : isFailed
-                    ? "Couldn’t create the course. Check your file (PDF/TXT) and try again."
-                    : "You can close this window and open the course from the list."}
+                    ? t(
+                        "Couldn’t create the course. Check your file (PDF/TXT) and try again.",
+                      )
+                    : t(
+                        "You can close this window and open the course from the list.",
+                      )}
               </Text>
             </YStack>
 
@@ -111,7 +118,7 @@ export function CreatingCourseModal() {
                   }
                 }}
               >
-                Delete course
+                {t("Delete course")}
               </Button>
             ) : null}
           </YStack>

@@ -14,6 +14,7 @@ import { UserProfileCard } from "@/components/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/language-context";
 import { useTheme as useAppTheme } from "@/contexts/theme-context";
+import { t } from "@/localization/i18n";
 import {
   accountSettingsItems,
   aiSettingsItems,
@@ -141,8 +142,8 @@ export default function SettingsScreen() {
   return (
     <ScreenContainer>
       <PageHeader
-        title="Settings"
-        subtitle="Manage your account and preferences"
+        title={t("Settings")}
+        subtitle={t("Manage your account and preferences")}
       />
 
       <YStack gap="$4">
@@ -153,14 +154,14 @@ export default function SettingsScreen() {
               : profile?.name || profile?.surname) ||
             user?.user_metadata?.full_name ||
             user?.email?.split("@")[0] ||
-            "User"
+            t("User")
           }
           email={profile?.email || user?.email || ""}
           avatarUrl={avatarUrl}
           onPress={() => router.push("/settings/profile")}
         />
 
-        <SectionHeader title="Account Settings" />
+        <SectionHeader title={t("Account Settings")} />
         <SettingsCard>
           {accountSettingsItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -176,8 +177,8 @@ export default function SettingsScreen() {
                     />
                   ) : null
                 }
-                title={item.title}
-                description={item.description}
+                title={t(item.title)}
+                description={item.description ? t(item.description) : ""}
                 rightElement={
                   <ChevronRight
                     key={`chevron-${item.id}-${activeTheme}`}
@@ -192,7 +193,7 @@ export default function SettingsScreen() {
           })}
         </SettingsCard>
 
-        <SectionHeader title="AI Settings" />
+        <SectionHeader title={t("AI Settings")} />
         <SettingsCard>
           {aiSettingsItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -208,11 +209,13 @@ export default function SettingsScreen() {
                     />
                   ) : null
                 }
-                title={item.title}
+                title={t(item.title)}
                 description={
                   item.id === "content-language"
                     ? defaultCourseLanguageLabel
                     : item.description
+                      ? t(item.description)
+                      : ""
                 }
                 rightElement={
                   <ChevronRight
@@ -228,7 +231,7 @@ export default function SettingsScreen() {
           })}
         </SettingsCard>
 
-        <SectionHeader title="App Settings" />
+        <SectionHeader title={t("App Settings")} />
         <SettingsCard>
           <SettingsItem
             icon={
@@ -238,8 +241,8 @@ export default function SettingsScreen() {
                 color={settingsIconColor}
               />
             }
-            title="Dark Mode"
-            description="Enable dark theme"
+            title={t("Dark Mode")}
+            description={t("Enable dark theme")}
             rightElement={<ThemeToggle />}
             showDivider
           />
@@ -251,7 +254,7 @@ export default function SettingsScreen() {
                 color={settingsIconColor}
               />
             }
-            title="Language"
+            title={t("Language")}
             description={uiLanguageLabel}
             rightElement={
               <ChevronRight
@@ -267,7 +270,7 @@ export default function SettingsScreen() {
           />
         </SettingsCard>
 
-        <SectionHeader title="Support" />
+        <SectionHeader title={t("Support")} />
         <SettingsCard>
           {supportItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -283,8 +286,8 @@ export default function SettingsScreen() {
                     />
                   ) : null
                 }
-                title={item.title}
-                description={item.description}
+                title={t(item.title)}
+                description={item.description ? t(item.description) : ""}
                 rightElement={
                   <ChevronRight
                     key={`chevron-${item.id}-${activeTheme}`}
@@ -311,7 +314,9 @@ export default function SettingsScreen() {
         value={modalValue}
         onValueChange={handleModalValueChange}
         title={
-          languageModalTarget === "ui" ? "App Language" : "Content Language"
+          languageModalTarget === "ui"
+            ? t("App Language")
+            : t("Content Language")
         }
       />
     </ScreenContainer>

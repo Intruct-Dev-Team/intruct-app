@@ -17,6 +17,7 @@ import React, {
 } from "react";
 
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { t } from "@/localization/i18n";
 import {
   ApiError,
   lessonProgressApi,
@@ -66,7 +67,7 @@ function getSafeAuthErrorMessage(error: unknown) {
     }
   }
 
-  return "Something went wrong. Please try again.";
+  return t("Something went wrong. Please try again.");
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -155,13 +156,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       notify({
         type: "error",
-        title: "Login failed",
+        title: t("Login failed"),
         message: getSafeAuthErrorMessage(error),
       });
       throw error;
     }
 
-    notify({ type: "success", title: "Welcome", message: "You’re signed in." });
+    notify({
+      type: "success",
+      title: t("Welcome"),
+      message: t("You’re signed in."),
+    });
   };
 
   const signUp = async (email: string, password: string, name: string) => {
@@ -184,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       notify({
         type: "error",
-        title: "Registration failed",
+        title: t("Registration failed"),
         message: getSafeAuthErrorMessage(error),
       });
       throw error;
@@ -193,8 +198,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!newSession) {
       notify({
         type: "info",
-        title: "Check your email",
-        message: "Please confirm your email to finish registration.",
+        title: t("Check your email"),
+        message: t("Please confirm your email to finish registration."),
       });
     }
   };
@@ -218,14 +223,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         notify({
           type: "error",
-          title: "Google sign-in failed",
+          title: t("Google sign-in failed"),
           message: getSafeAuthErrorMessage(error),
         });
       } else {
         notify({
           type: "success",
-          title: "Welcome",
-          message: "You’re signed in.",
+          title: t("Welcome"),
+          message: t("You’re signed in."),
         });
       }
     } catch (error) {
@@ -238,8 +243,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
             notify({
               type: "error",
-              title: "Google sign-in unavailable",
-              message: "Play services are not available on this device.",
+              title: t("Google sign-in unavailable"),
+              message: t("Play services are not available on this device."),
             });
             return;
           default:
@@ -249,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       notify({
         type: "error",
-        title: "Google sign-in failed",
+        title: t("Google sign-in failed"),
         message: getSafeAuthErrorMessage(error),
       });
       console.error("Google sign-in error", error);
@@ -269,14 +274,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.multiRemove(keysToDelete);
       notify({
         type: "success",
-        title: "Signed out",
-        message: "You’re signed out.",
+        title: t("Signed out"),
+        message: t("You’re signed out."),
       });
     } catch (error) {
       notify({
         type: "error",
-        title: "Sign out failed",
-        message: "Couldn’t sign out. Please try again.",
+        title: t("Sign out failed"),
+        message: t("Couldn’t sign out. Please try again."),
       });
       console.error("Error signing out", error);
     }
@@ -316,8 +321,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("[AuthContext] Unauthorized - signing out");
           notify({
             type: "error",
-            title: "Session expired",
-            message: "Please sign in again.",
+            title: t("Session expired"),
+            message: t("Please sign in again."),
           });
           await signOut();
           router.replace("/(auth)/welcome");
@@ -341,7 +346,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("[AuthContext] Other ApiError - showing notification");
         notify({
           type: "error",
-          title: "Couldn't load profile",
+          title: t("Couldn't load profile"),
           message: error.message,
         });
         return;
@@ -351,8 +356,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       notify({
         type: "error",
-        title: "Couldn’t load profile",
-        message: "Please try again.",
+        title: t("Couldn’t load profile"),
+        message: t("Please try again."),
       });
     } finally {
       setProfileLoading(false);
@@ -405,8 +410,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log("[AuthContext] Unauthorized - signing out");
             notify({
               type: "error",
-              title: "Session expired",
-              message: "Please sign in again.",
+              title: t("Session expired"),
+              message: t("Please sign in again."),
             });
             await signOut();
             router.replace("/(auth)/welcome");
@@ -430,7 +435,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("[AuthContext] Other ApiError - showing notification");
           notify({
             type: "error",
-            title: "Couldn't load profile",
+            title: t("Couldn't load profile"),
             message: error.message,
           });
           return;
@@ -440,8 +445,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         notify({
           type: "error",
-          title: "Couldn’t load profile",
-          message: "Please try again.",
+          title: t("Couldn’t load profile"),
+          message: t("Please try again."),
         });
       } finally {
         if (!cancelled) setProfileLoading(false);

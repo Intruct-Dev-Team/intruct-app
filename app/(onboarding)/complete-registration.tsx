@@ -6,6 +6,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, authApi } from "@/services/api";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -32,7 +33,7 @@ const getInitials = (name: string, surname: string): string => {
   if (nameTrimmed) {
     return nameTrimmed.slice(0, 2);
   }
-  return "?";
+  return t("?");
 };
 
 const getDaysInMonth = (year: number, month: number) => {
@@ -91,8 +92,8 @@ export default function CompleteRegistrationScreen() {
       if (!asset?.uri) {
         notify({
           type: "error",
-          title: "Avatar",
-          message: "Couldn’t read selected image.",
+          title: t("Avatar"),
+          message: t("Couldn’t read selected image."),
         });
         return;
       }
@@ -102,8 +103,8 @@ export default function CompleteRegistrationScreen() {
     } catch {
       notify({
         type: "error",
-        title: "Avatar",
-        message: "Couldn’t open image picker.",
+        title: t("Avatar"),
+        message: t("Couldn’t open image picker."),
       });
     }
   };
@@ -158,8 +159,8 @@ export default function CompleteRegistrationScreen() {
     if (!token) {
       notify({
         type: "error",
-        title: "Session expired",
-        message: "Please sign in again.",
+        title: t("Session expired"),
+        message: t("Please sign in again."),
       });
       await signOut();
       router.replace("/(auth)/welcome");
@@ -202,8 +203,8 @@ export default function CompleteRegistrationScreen() {
 
       notify({
         type: "success",
-        title: "All set",
-        message: "Registration completed.",
+        title: t("All set"),
+        message: t("Registration completed."),
       });
 
       const returnToPath = typeof returnTo === "string" ? returnTo : "";
@@ -220,14 +221,14 @@ export default function CompleteRegistrationScreen() {
       if (error instanceof ApiError) {
         notify({
           type: "error",
-          title: "Registration failed",
+          title: t("Registration failed"),
           message: error.message,
         });
       } else {
         notify({
           type: "error",
-          title: "Registration failed",
-          message: "Please try again.",
+          title: t("Registration failed"),
+          message: t("Please try again."),
         });
       }
     } finally {
@@ -256,14 +257,14 @@ export default function CompleteRegistrationScreen() {
                 color={colors.textPrimary}
                 textAlign="center"
               >
-                Complete registration
+                {t("Complete registration")}
               </Text>
               <Text
                 fontSize="$5"
                 color={colors.textSecondary}
                 textAlign="center"
               >
-                Tell us a bit about you
+                {t("Tell us a bit about you")}
               </Text>
             </YStack>
 
@@ -300,13 +301,13 @@ export default function CompleteRegistrationScreen() {
                   fontSize="$4"
                   fontWeight="600"
                 >
-                  Choose image
+                  {t("Choose image")}
                 </Text>
               </YStack>
 
               <AuthInput
-                label="Name"
-                placeholder="Enter your name"
+                label={t("Name")}
+                placeholder={t("Enter your name")}
                 value={name}
                 onChangeText={(value) => {
                   setDidEditName(true);
@@ -315,8 +316,8 @@ export default function CompleteRegistrationScreen() {
                 autoCapitalize="words"
               />
               <AuthInput
-                label="Surname"
-                placeholder="Enter your surname"
+                label={t("Surname")}
+                placeholder={t("Enter your surname")}
                 value={surname}
                 onChangeText={(value) => {
                   setDidEditSurname(true);
@@ -326,7 +327,7 @@ export default function CompleteRegistrationScreen() {
               />
               <YStack gap="$3">
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-                  Birthdate
+                  {t("Birthdate")}
                 </Text>
 
                 <XStack gap="$2">
@@ -345,7 +346,7 @@ export default function CompleteRegistrationScreen() {
                       paddingTop="$2"
                       paddingBottom={0}
                     >
-                      Year
+                      {t("Year")}
                     </Text>
                     <YStack padding="$1" paddingTop={0}>
                       <Picker
@@ -386,7 +387,7 @@ export default function CompleteRegistrationScreen() {
                       paddingTop="$2"
                       paddingBottom={0}
                     >
-                      Month
+                      {t("Month")}
                     </Text>
                     <YStack padding="$1" paddingTop={0}>
                       <Picker
@@ -426,7 +427,7 @@ export default function CompleteRegistrationScreen() {
                       paddingTop="$2"
                       paddingBottom={0}
                     >
-                      Day
+                      {t("Day")}
                     </Text>
                     <YStack padding="$1" paddingTop={0}>
                       <Picker
@@ -455,7 +456,7 @@ export default function CompleteRegistrationScreen() {
             </YStack>
 
             <AuthButton
-              title="Confirm"
+              title={t("Confirm")}
               onPress={handleConfirm}
               loading={isSubmitting}
               disabled={!canSubmit}

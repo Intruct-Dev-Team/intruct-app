@@ -5,6 +5,7 @@ import { CourseGenerationProvider } from "@/contexts/course-generation-context";
 import { LanguageProvider } from "@/contexts/language-context";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
+import { t } from "@/localization/i18n";
 import { setServerUnavailableHandler } from "@/services/api";
 import config from "@/tamagui.config";
 import NetInfo from "@react-native-community/netinfo";
@@ -124,7 +125,7 @@ function RootLayoutContent() {
               />
               <Stack.Screen
                 name="modal"
-                options={{ presentation: "modal", title: "Modal" }}
+                options={{ presentation: "modal", title: t("Modal") }}
               />
               <Stack.Screen
                 name="create-course"

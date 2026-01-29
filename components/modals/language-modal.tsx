@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Check } from "@tamagui/lucide-icons";
 import { ScrollView, Text, YStack } from "tamagui";
 import { languageOptions } from "../../mockdata/settings";
@@ -18,7 +19,7 @@ export function LanguageModal({
   onOpenChange,
   value,
   onValueChange,
-  title = "Select Language",
+  title = t("Select Language"),
 }: LanguageModalProps) {
   const colors = useThemeColors();
 

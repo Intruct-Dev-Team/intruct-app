@@ -1,5 +1,6 @@
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Image } from "react-native";
@@ -51,7 +52,7 @@ export default function WelcomeScreen() {
                 source={require("../../assets/images/icons/splash-icon.png")}
                 style={{ width: 124, height: 124 }}
                 resizeMode="contain"
-                accessibilityLabel="Intruct"
+                accessibilityLabel={t("Intruct")}
               />
             </YStack>
           </Animated.View>
@@ -62,7 +63,7 @@ export default function WelcomeScreen() {
             maxWidth={300}
             marginTop="$5"
           >
-            Master new skills with our interactive learning platform.
+            {t("Master new skills with our interactive learning platform.")}
           </Text>
         </YStack>
 
@@ -74,11 +75,11 @@ export default function WelcomeScreen() {
             textAlign="center"
             marginBottom="$2"
           >
-            Do you have an account?
+            {t("Do you have an account?")}
           </Text>
 
           <AuthButton
-            title="Yes, sign in"
+            title={t("Yes, sign in")}
             onPress={() => router.push("/(auth)/login")}
           />
 
@@ -93,7 +94,7 @@ export default function WelcomeScreen() {
             color={colors.textPrimary}
           >
             <Text color={colors.textPrimary} fontWeight="600" fontSize="$4">
-              No, create account
+              {t("No, create account")}
             </Text>
           </Button>
         </YStack>

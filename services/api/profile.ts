@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { t } from "@/localization/i18n";
 import type { UserProfile } from "@/types";
 
 import {
@@ -23,7 +24,7 @@ export const profileApi = {
     await delay(DELAYS.profile);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -45,18 +46,18 @@ export const profileApi = {
             throw new ApiError(
               401,
               "needs_complete_registration",
-              "Registration not completed",
+              t("Registration not completed"),
             );
           }
 
-          throw new ApiError(401, "unauthorized", rawBody || "Unauthorized");
+          throw new ApiError(401, "unauthorized", rawBody || t("Unauthorized"));
         }
 
         if (!res.ok) {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to load profile";
+          const message = body?.error?.message || t("Failed to load profile");
           throw new ApiError(
             res.status,
             res.status === 400 ? "validation" : "unknown",
@@ -69,7 +70,7 @@ export const profileApi = {
         )) as UserProfileResponse | null;
 
         if (!json) {
-          throw new ApiError(500, "unknown", "Invalid profile response");
+          throw new ApiError(500, "unknown", t("Invalid profile response"));
         }
 
         return mapUserProfile(json);
@@ -80,7 +81,7 @@ export const profileApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
@@ -96,11 +97,11 @@ export const profileApi = {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - getProfile requires API",
+        t("Backend not configured - getProfile requires API"),
       );
     } catch (err) {
       if (err instanceof ApiError) throw err;
-      throw new ApiError(0, "unknown", "Profile storage error");
+      throw new ApiError(0, "unknown", t("Profile storage error"));
     }
   },
 
@@ -117,14 +118,15 @@ export const profileApi = {
         });
 
         if (res.status === 404) {
-          throw new ApiError(404, "unknown", "User not found");
+          throw new ApiError(404, "unknown", t("User not found"));
         }
 
         if (!res.ok) {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to load user profile";
+          const message =
+            body?.error?.message || t("Failed to load user profile");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -133,7 +135,11 @@ export const profileApi = {
         )) as UserProfileResponse | null;
 
         if (!json) {
-          throw new ApiError(500, "unknown", "Invalid user profile response");
+          throw new ApiError(
+            500,
+            "unknown",
+            t("Invalid user profile response"),
+          );
         }
 
         return mapUserProfile(json);
@@ -144,14 +150,14 @@ export const profileApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - getUserById requires API",
+      t("Backend not configured - getUserById requires API"),
     );
   },
 };

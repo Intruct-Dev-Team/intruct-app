@@ -1,6 +1,7 @@
 // FlashcardView
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import Animated, {
@@ -41,7 +42,7 @@ export default function FlashcardView({
       backgroundColor:
         activeTheme === "dark" ? "$gray4" : colors.cardBackground,
     },
-    { resolveValues: "value" }
+    { resolveValues: "value" },
   );
   const cardBackgroundColor =
     typeof resolvedCard.backgroundColor === "string"
@@ -52,7 +53,7 @@ export default function FlashcardView({
     {
       shadowColor: "$black",
     },
-    { resolveValues: "value" }
+    { resolveValues: "value" },
   );
   const shadowColor =
     typeof resolvedShadow.shadowColor === "string"
@@ -109,9 +110,9 @@ export default function FlashcardView({
   return (
     <YStack flex={1} padding="$4">
       <YStack marginBottom="$4">
-        <H3 color={colors.textPrimary}>Review Flashcards</H3>
+        <H3 color={colors.textPrimary}>{t("Review Flashcards")}</H3>
         <Text color={colors.textSecondary}>
-          Tap the card to flip and review key concepts
+          {t("Tap the card to flip and review key concepts")}
         </Text>
       </YStack>
 
@@ -164,7 +165,10 @@ export default function FlashcardView({
 
       <YStack marginTop="auto">
         <Text textAlign="center" marginBottom="$4" color={colors.textTertiary}>
-          Card {currentIndex + 1} of {cards.length}
+          {t("Card {{current}} of {{total}}", {
+            current: currentIndex + 1,
+            total: cards.length,
+          })}
         </Text>
         <XStack gap="$3">
           <Button
@@ -176,7 +180,7 @@ export default function FlashcardView({
             opacity={currentIndex === 0 ? 0.5 : 1}
             color={colors.textPrimary}
           >
-            Previous
+            {t("Previous")}
           </Button>
           <Button
             flex={1}
@@ -184,7 +188,7 @@ export default function FlashcardView({
             color={colors.primaryText}
             onPress={handleNext}
           >
-            {currentIndex === cards.length - 1 ? "Finish" : "Next Card"}
+            {currentIndex === cards.length - 1 ? t("Finish") : t("Next Card")}
           </Button>
         </XStack>
       </YStack>

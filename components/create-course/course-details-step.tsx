@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { languageOptions } from "@/mockdata/settings";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { Button, Input, Text, TextArea, XStack, YStack } from "tamagui";
@@ -29,20 +30,20 @@ export function CourseDetailsStep({
     <YStack gap="$4">
       <YStack gap="$2">
         <Text fontSize="$7" fontWeight="700" color={colors.textPrimary}>
-          Course Details
+          {t("Course Details")}
         </Text>
         <Text fontSize="$4" color={colors.textSecondary}>
-          Give your course a name and description
+          {t("Give your course a name and description")}
         </Text>
       </YStack>
 
       <YStack gap="$3">
         <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-          Course Title
+          {t("Course Title")}
         </Text>
         <Input
           size="$4"
-          placeholder="e.g. Introduction to Machine Learning"
+          placeholder={t("e.g. Introduction to Machine Learning")}
           value={title}
           onChangeText={onTitleChange}
           backgroundColor={colors.cardBackground}
@@ -51,11 +52,11 @@ export function CourseDetailsStep({
 
       <YStack gap="$3">
         <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-          Description
+          {t("Description")}
         </Text>
         <TextArea
           size="$4"
-          placeholder="Describe what students will learn in this course..."
+          placeholder={t("Describe what students will learn in this course")}
           value={description}
           onChangeText={onDescriptionChange}
           backgroundColor={colors.cardBackground}
@@ -69,7 +70,7 @@ export function CourseDetailsStep({
 
       <YStack gap="$3">
         <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-          Content Language
+          {t("Content Language")}
         </Text>
         <Button
           size="$4"

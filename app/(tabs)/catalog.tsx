@@ -4,6 +4,7 @@ import {
 } from "@/components/cards";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ApiError, catalogApi } from "@/services/api";
 import type { Course, SortOption } from "@/types";
 import { ArrowDown, ArrowUp, Filter, Search } from "@tamagui/lucide-icons";
@@ -34,8 +35,9 @@ export default function CatalogScreen() {
   const [coursesError, setCoursesError] = useState<string | null>(null);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
-  const sortLabel =
-    sortOptions.find((opt) => opt.value === sortBy)?.label || "Popular";
+  const sortLabel = t(
+    sortOptions.find((opt) => opt.value === sortBy)?.label || "Popular",
+  );
 
   useEffect(() => {
     void loadCourses();
@@ -51,7 +53,7 @@ export default function CatalogScreen() {
       const token = session?.access_token;
       if (!token) {
         setCourses([]);
-        setCoursesError("Sign in to browse the catalog.");
+        setCoursesError(t("Sign in to browse the catalog."));
         return;
       }
 
@@ -68,7 +70,7 @@ export default function CatalogScreen() {
           ? error.message
           : error instanceof Error
             ? error.message
-            : "Failed to load courses.";
+            : t("Failed to load courses.");
       setCoursesError(message);
     } finally {
       if (showLoading) setLoading(false);
@@ -93,7 +95,7 @@ export default function CatalogScreen() {
       <YStack backgroundColor={colors.cardBackground}>
         <YStack padding="$4" paddingTop="$5" gap="$0">
           <H1 fontSize="$9" fontWeight="700" color={colors.textPrimary}>
-            Catalog
+            {t("Catalog")}
           </H1>
 
           <XStack gap="$2" alignItems="center">
@@ -101,7 +103,7 @@ export default function CatalogScreen() {
               <Input
                 flex={1}
                 size="$4"
-                placeholder="Search courses..."
+                placeholder={t("Search courses...")}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 backgroundColor={colors.background}
@@ -144,7 +146,7 @@ export default function CatalogScreen() {
             <YStack gap="$4" animation="quick">
               <YStack gap="$2" marginTop="$2">
                 <Text fontSize="$5" fontWeight="600" color={colors.textPrimary}>
-                  Sort by
+                  {t("Sort by")}
                 </Text>
 
                 <XStack gap="$2" alignItems="stretch">
@@ -203,7 +205,7 @@ export default function CatalogScreen() {
       <ScrollView refreshControl={refreshControl}>
         <YStack padding="$4" gap="$4" paddingBottom="$8">
           <Text fontSize="$3" color={colors.textSecondary}>
-            {courses.length} courses found
+            {t("{{count}} courses found", { count: courses.length })}
           </Text>
 
           {coursesError ? (
@@ -214,11 +216,11 @@ export default function CatalogScreen() {
               gap="$3"
             >
               <Text color={colors.textPrimary} fontSize="$5" fontWeight="600">
-                Couldn’t load catalog
+                {t("Couldn’t load catalog")}
               </Text>
               <Text color={colors.textSecondary}>{coursesError}</Text>
               <Button onPress={() => void loadCourses({ showLoading: true })}>
-                Retry
+                {t("Retry")}
               </Button>
             </YStack>
           ) : null}
@@ -232,7 +234,9 @@ export default function CatalogScreen() {
               </>
             ) : courses.length === 0 ? (
               <YStack padding="$8" alignItems="center">
-                <Text color={colors.textSecondary}>No courses found</Text>
+                <Text color={colors.textSecondary}>
+                  {t("No courses found")}
+                </Text>
               </YStack>
             ) : (
               courses.map((course) => {

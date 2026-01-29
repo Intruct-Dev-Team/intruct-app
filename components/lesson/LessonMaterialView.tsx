@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import type { LessonMaterial } from "@/types";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -27,7 +28,7 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
   const courseTitle = props.courseTitle;
   const materials = props.materials;
   const onComplete = props.onComplete;
-  const nextLabel = props.nextLabel ?? "Next";
+  const nextLabel = props.nextLabel ?? t("Next");
   const showHeader = props.showHeader ?? true;
 
   const visibleMaterials = materials.filter(

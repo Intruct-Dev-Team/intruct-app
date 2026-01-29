@@ -11,6 +11,7 @@ import React, {
 import type { PickedFile } from "@/components/create-course/attach-materials-step";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { t } from "@/localization/i18n";
 import { ApiError, coursesApi } from "@/services/api";
 import type { Course } from "@/types";
 
@@ -235,7 +236,7 @@ export function CourseGenerationProvider({
     async (backendId: number) => {
       const token = session?.access_token;
       if (!token || !backendId) {
-        notify({ type: "error", message: "Couldn’t delete course." });
+        notify({ type: "error", message: t("Couldn’t delete course.") });
         return;
       }
 
@@ -248,10 +249,10 @@ export function CourseGenerationProvider({
         removeLocalCourseByBackendId(backendId);
         closeCreatingModal();
 
-        notify({ type: "success", message: "Course deleted." });
+        notify({ type: "success", message: t("Course deleted.") });
       } catch (err) {
         const message =
-          err instanceof ApiError ? err.message : "Couldn’t delete course.";
+          err instanceof ApiError ? err.message : t("Couldn’t delete course.");
         notify({ type: "error", message });
       }
     },
@@ -267,14 +268,14 @@ export function CourseGenerationProvider({
     (input: StartCourseGenerationInput) => {
       notify({
         type: "info",
-        title: "Creating course",
-        message: "Course generation started.",
+        title: t("Creating course"),
+        message: t("Course generation started."),
       });
 
       const now = new Date().toISOString();
       const id = `course_${Date.now()}`;
 
-      const title = input.title.trim() || "Untitled Course";
+      const title = input.title.trim() || t("Untitled Course");
       const description = input.description.trim() || "";
 
       const generatingCourse: Course = {
@@ -294,10 +295,14 @@ export function CourseGenerationProvider({
       void (async () => {
         try {
           const accessToken = session?.access_token;
-          if (!accessToken) throw new Error("Authentication token is required");
+          if (!accessToken) {
+            throw new Error(t("Authentication token is required"));
+          }
 
           const firstFile = input.files[0];
-          if (!firstFile) throw new Error("At least one file is required");
+          if (!firstFile) {
+            throw new Error(t("At least one file is required"));
+          }
 
           const nameLower = (firstFile.name || "").toLowerCase();
           const inferredType = nameLower.endsWith(".pdf")
@@ -338,7 +343,7 @@ export function CourseGenerationProvider({
           const errorMessage =
             err instanceof ApiError
               ? err.message
-              : "Something went wrong. Please try again.";
+              : t("Something went wrong. Please try again.");
 
           setLocalCourses((prev) =>
             prev.map((c) =>
@@ -354,7 +359,7 @@ export function CourseGenerationProvider({
 
           notify({
             type: "error",
-            title: "Course creation failed",
+            title: t("Course creation failed"),
             message: errorMessage,
           });
         }

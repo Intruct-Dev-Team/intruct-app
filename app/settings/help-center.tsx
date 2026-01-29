@@ -1,5 +1,6 @@
 import { ScreenContainer } from "@/components/layout";
 import { useThemeColors } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ChevronDown, ChevronLeft } from "@tamagui/lucide-icons";
 import { Stack, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
@@ -36,7 +37,7 @@ export default function HelpCenterScreen() {
           "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.",
       },
     ],
-    []
+    [],
   );
 
   const [openById, setOpenById] = useState<Record<string, boolean>>({});
@@ -56,13 +57,13 @@ export default function HelpCenterScreen() {
           onPress={() => router.back()}
         />
         <Text fontSize="$6" fontWeight="700" color={colors.textPrimary}>
-          Help Center
+          {t("Help Center")}
         </Text>
       </XStack>
 
       <YStack gap="$3" marginTop="$4">
         <Text color={colors.textSecondary} fontSize="$4">
-          Quick answers to common questions.
+          {t("Quick answers to common questions.")}
         </Text>
 
         {faqs.map((item) => {
@@ -79,7 +80,7 @@ export default function HelpCenterScreen() {
               pressStyle={{ opacity: 0.95, scale: 0.99 }}
               onPress={() => toggle(item.id)}
               accessibilityRole="button"
-              accessibilityLabel={item.question}
+              accessibilityLabel={t(item.question)}
             >
               <XStack
                 gap="$3"
@@ -92,7 +93,7 @@ export default function HelpCenterScreen() {
                   color={colors.textPrimary}
                   flex={1}
                 >
-                  {item.question}
+                  {t(item.question)}
                 </Text>
                 <ChevronDown
                   size={18}
@@ -106,7 +107,7 @@ export default function HelpCenterScreen() {
               {isOpen ? (
                 <YStack marginTop="$3">
                   <Text color={colors.textSecondary} fontSize="$4">
-                    {item.answer}
+                    {t(item.answer)}
                   </Text>
                 </YStack>
               ) : null}

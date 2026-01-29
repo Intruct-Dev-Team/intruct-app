@@ -2,6 +2,7 @@ import {
   useResolvedThemeColor,
   useThemeColors,
 } from "@/hooks/use-theme-colors";
+import { t } from "@/localization/i18n";
 import { ChevronRight, Trash2 } from "@tamagui/lucide-icons";
 import { Button, Card, Progress, Text, XStack, YStack } from "tamagui";
 
@@ -87,13 +88,13 @@ export function CourseCard({
           {isGenerating ? (
             <XStack gap="$2" alignItems="center" marginTop="$1">
               <Text color={colors.textTertiary} fontSize="$2" fontWeight="600">
-                Generating
+                {t("Generating")}
               </Text>
             </XStack>
           ) : isFailed ? (
             <XStack gap="$2" alignItems="center" marginTop="$1">
               <Text color={colors.textTertiary} fontSize="$2" fontWeight="600">
-                Creation failed
+                {t("Creation failed")}
               </Text>
             </XStack>
           ) : null}
@@ -108,7 +109,7 @@ export function CourseCard({
                       fontSize="$2"
                       fontWeight="500"
                     >
-                      {lessons} lessons
+                      {t("{{count}} lessons", { count: lessons })}
                     </Text>
                     {progress !== undefined && (
                       <Text color={colors.textTertiary} fontSize="$2">
@@ -123,7 +124,9 @@ export function CourseCard({
                     fontSize="$2"
                     fontWeight="500"
                   >
-                    {percentComplete}% complete
+                    {t("{{percent}}% complete", {
+                      percent: percentComplete,
+                    })}
                   </Text>
                 )}
               </XStack>

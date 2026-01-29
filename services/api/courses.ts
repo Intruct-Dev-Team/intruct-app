@@ -1,3 +1,4 @@
+import { t } from "@/localization/i18n";
 import type {
   Course,
   CourseState,
@@ -158,7 +159,7 @@ export const coursesApi = {
 
     // Courses endpoints require auth per swagger.
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (baseUrl) {
@@ -175,7 +176,7 @@ export const coursesApi = {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to load courses";
+          const message = body?.error?.message || t("Failed to load courses");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -185,7 +186,7 @@ export const coursesApi = {
         } | null;
 
         if (!json || !Array.isArray(json.courses)) {
-          throw new ApiError(500, "unknown", "Invalid courses response");
+          throw new ApiError(500, "unknown", t("Invalid courses response"));
         }
 
         return (json.courses as BackendCourseItem[]).map(
@@ -198,7 +199,7 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
@@ -206,7 +207,7 @@ export const coursesApi = {
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - getMyCourses requires API",
+      t("Backend not configured - getMyCourses requires API"),
     );
   },
 
@@ -218,7 +219,7 @@ export const coursesApi = {
     const baseUrl = getApiBaseUrl();
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (baseUrl) {
@@ -235,7 +236,7 @@ export const coursesApi = {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to load courses";
+          const message = body?.error?.message || t("Failed to load courses");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -244,7 +245,7 @@ export const coursesApi = {
         } | null;
 
         if (!json || !Array.isArray(json.courses)) {
-          throw new ApiError(500, "unknown", "Invalid courses response");
+          throw new ApiError(500, "unknown", t("Invalid courses response"));
         }
 
         return (json.courses as BackendCourseItem[]).map(
@@ -257,7 +258,7 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
@@ -265,7 +266,7 @@ export const coursesApi = {
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - getFeaturedCourses requires API",
+      t("Backend not configured - getFeaturedCourses requires API"),
     );
   },
 
@@ -278,7 +279,7 @@ export const coursesApi = {
     const numericId = Number(id);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!baseUrl) {
@@ -286,12 +287,12 @@ export const coursesApi = {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - getCourseById requires API",
+        t("Backend not configured - getCourseById requires API"),
       );
     }
 
     if (!Number.isFinite(numericId)) {
-      throw new ApiError(400, "validation", "Invalid course id");
+      throw new ApiError(400, "validation", t("Invalid course id"));
     }
 
     {
@@ -314,7 +315,7 @@ export const coursesApi = {
             (payload.json as { message?: string } | null)?.message ||
             (payload.json as { detail?: string } | null)?.detail;
           const message =
-            messageFromJson || payload.text || "Failed to load course";
+            messageFromJson || payload.text || t("Failed to load course");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -360,7 +361,7 @@ export const coursesApi = {
           res,
         )) as BackendGetCourseResponse | null;
         if (!json || typeof json.id !== "number") {
-          throw new ApiError(500, "unknown", "Invalid course response");
+          throw new ApiError(500, "unknown", t("Invalid course response"));
         }
 
         const now = new Date().toISOString();
@@ -440,7 +441,7 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
   },
@@ -449,11 +450,11 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!courseId) {
-      throw new ApiError(400, "validation", "Course ID is required");
+      throw new ApiError(400, "validation", t("Course ID is required"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -469,26 +470,26 @@ export const coursesApi = {
         });
 
         if (res.status === 401) {
-          throw new ApiError(401, "unauthorized", "Unauthorized");
+          throw new ApiError(401, "unauthorized", t("Unauthorized"));
         }
 
         if (res.status === 403) {
-          throw new ApiError(403, "unknown", "Not the owner of this course");
+          throw new ApiError(403, "unknown", t("Not the owner of this course"));
         }
 
         if (res.status === 404) {
-          throw new ApiError(404, "unknown", "Course not found");
+          throw new ApiError(404, "unknown", t("Course not found"));
         }
 
         if (res.status === 409) {
-          throw new ApiError(409, "unknown", "Course already published");
+          throw new ApiError(409, "unknown", t("Course already published"));
         }
 
         if (!res.ok) {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Failed to publish course";
+          const message = body?.error?.message || t("Failed to publish course");
           throw new ApiError(res.status, "unknown", message);
         }
       } catch (err) {
@@ -498,13 +499,13 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     } else {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - publishCourse requires API",
+        t("Backend not configured - publishCourse requires API"),
       );
     }
   },
@@ -516,11 +517,11 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!courseId) {
-      throw new ApiError(400, "validation", "Course ID is required");
+      throw new ApiError(400, "validation", t("Course ID is required"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -530,7 +531,7 @@ export const coursesApi = {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - getCourseState requires API",
+        t("Backend not configured - getCourseState requires API"),
       );
     }
 
@@ -560,7 +561,7 @@ export const coursesApi = {
           (payload.json as { message?: string } | null)?.message ||
           (payload.json as { detail?: string } | null)?.detail;
         const message =
-          messageFromJson || payload.text || "Failed to load course state";
+          messageFromJson || payload.text || t("Failed to load course state");
         throw new ApiError(res.status, "unknown", message);
       }
 
@@ -593,7 +594,7 @@ export const coursesApi = {
         throw new ApiError(0, "network", err.message);
       }
       emitServerUnavailable();
-      throw new ApiError(0, "network", "Network error");
+      throw new ApiError(0, "network", t("Network error"));
     }
   },
 
@@ -601,11 +602,11 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!courseId) {
-      throw new ApiError(400, "validation", "Course ID is required");
+      throw new ApiError(400, "validation", t("Course ID is required"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -614,7 +615,7 @@ export const coursesApi = {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - deleteCourse requires API",
+        t("Backend not configured - deleteCourse requires API"),
       );
     }
 
@@ -628,15 +629,15 @@ export const coursesApi = {
       });
 
       if (res.status === 401) {
-        throw new ApiError(401, "unauthorized", "Unauthorized");
+        throw new ApiError(401, "unauthorized", t("Unauthorized"));
       }
 
       if (res.status === 403) {
-        throw new ApiError(403, "unknown", "Not the owner of this course");
+        throw new ApiError(403, "unknown", t("Not the owner of this course"));
       }
 
       if (res.status === 404) {
-        throw new ApiError(404, "unknown", "Course not found");
+        throw new ApiError(404, "unknown", t("Course not found"));
       }
 
       if (!res.ok) {
@@ -648,7 +649,8 @@ export const coursesApi = {
             : undefined) ||
           (payload.json as { message?: string } | null)?.message ||
           (payload.json as { detail?: string } | null)?.detail;
-        const message = messageFromJson || payload.text || "Failed to delete";
+        const message =
+          messageFromJson || payload.text || t("Failed to delete");
         throw new ApiError(res.status, "unknown", message);
       }
     } catch (err) {
@@ -658,7 +660,7 @@ export const coursesApi = {
         throw new ApiError(0, "network", err.message);
       }
       emitServerUnavailable();
-      throw new ApiError(0, "network", "Network error");
+      throw new ApiError(0, "network", t("Network error"));
     }
   },
 
@@ -673,7 +675,7 @@ export const coursesApi = {
     throw new ApiError(
       0,
       "unknown",
-      "Deprecated - use publishCourse() instead",
+      t("Deprecated - use publishCourse() instead"),
     );
   },
 
@@ -685,15 +687,19 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!courseId) {
-      throw new ApiError(400, "validation", "Course ID is required");
+      throw new ApiError(400, "validation", t("Course ID is required"));
     }
 
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-      throw new ApiError(400, "validation", "Rating must be between 1 and 5");
+      throw new ApiError(
+        400,
+        "validation",
+        t("Rating must be between 1 and 5"),
+      );
     }
 
     const baseUrl = getApiBaseUrl();
@@ -703,7 +709,7 @@ export const coursesApi = {
       throw new ApiError(
         0,
         "network",
-        "Backend not configured - rateCourse requires API",
+        t("Backend not configured - rateCourse requires API"),
       );
     }
 
@@ -727,7 +733,7 @@ export const coursesApi = {
             : undefined) ||
           (payload.json as { message?: string } | null)?.message ||
           (payload.json as { detail?: string } | null)?.detail;
-        const message = messageFromJson || payload.text || "Failed to rate";
+        const message = messageFromJson || payload.text || t("Failed to rate");
         throw new ApiError(res.status, "unknown", message);
       }
     } catch (err) {
@@ -737,7 +743,7 @@ export const coursesApi = {
         throw new ApiError(0, "network", err.message);
       }
       emitServerUnavailable();
-      throw new ApiError(0, "network", "Network error");
+      throw new ApiError(0, "network", t("Network error"));
     }
   },
 
@@ -766,11 +772,11 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!token) {
-      throw new ApiError(401, "unauthorized", "Token is required");
+      throw new ApiError(401, "unauthorized", t("Token is required"));
     }
 
     if (!data.title || !data.file || !data.language) {
-      throw new ApiError(400, "validation", "Missing required fields");
+      throw new ApiError(400, "validation", t("Missing required fields"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -815,7 +821,7 @@ export const coursesApi = {
         });
 
         if (res.status === 401) {
-          throw new ApiError(401, "unauthorized", "Unauthorized");
+          throw new ApiError(401, "unauthorized", t("Unauthorized"));
         }
 
         if (res.status === 400) {
@@ -829,7 +835,8 @@ export const coursesApi = {
             (payload.json as { message?: string } | null)?.message ||
             (payload.json as { detail?: string } | null)?.detail;
 
-          const message = messageFromJson || payload.text || "Validation error";
+          const message =
+            messageFromJson || payload.text || t("Validation error");
           throw new ApiError(400, "validation", message);
         }
 
@@ -843,7 +850,7 @@ export const coursesApi = {
             (payload.json as { message?: string } | null)?.message ||
             (payload.json as { detail?: string } | null)?.detail;
           const message =
-            messageFromJson || payload.text || "Failed to create course";
+            messageFromJson || payload.text || t("Failed to create course");
           throw new ApiError(res.status, "unknown", message);
         }
 
@@ -852,7 +859,11 @@ export const coursesApi = {
         )) as CreateCourseResponse | null;
 
         if (!json || typeof json.course_id !== "number") {
-          throw new ApiError(500, "unknown", "Invalid create course response");
+          throw new ApiError(
+            500,
+            "unknown",
+            t("Invalid create course response"),
+          );
         }
 
         return json.course_id;
@@ -863,14 +874,14 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - createCourse requires API",
+      t("Backend not configured - createCourse requires API"),
     );
   },
 
@@ -881,11 +892,11 @@ export const coursesApi = {
     await delay(DELAYS.courses);
 
     if (!courseId) {
-      throw new ApiError(400, "validation", "Course ID is required");
+      throw new ApiError(400, "validation", t("Course ID is required"));
     }
 
     if (!data.course_title || !data.modules) {
-      throw new ApiError(400, "validation", "Missing required fields");
+      throw new ApiError(400, "validation", t("Missing required fields"));
     }
 
     const baseUrl = getApiBaseUrl();
@@ -909,14 +920,14 @@ export const coursesApi = {
         });
 
         if (res.status === 404) {
-          throw new ApiError(404, "unknown", "Course not found");
+          throw new ApiError(404, "unknown", t("Course not found"));
         }
 
         if (res.status === 400) {
           const body = (await readJsonResponse(
             res,
           )) as ApiErrorResponseBody | null;
-          const message = body?.error?.message || "Validation error";
+          const message = body?.error?.message || t("Validation error");
           throw new ApiError(400, "validation", message);
         }
 
@@ -925,7 +936,7 @@ export const coursesApi = {
             res,
           )) as ApiErrorResponseBody | null;
           const message =
-            body?.error?.message || "Failed to upload course content";
+            body?.error?.message || t("Failed to upload course content");
           throw new ApiError(res.status, "unknown", message);
         }
       } catch (err) {
@@ -935,14 +946,14 @@ export const coursesApi = {
           throw new ApiError(0, "network", err.message);
         }
         emitServerUnavailable();
-        throw new ApiError(0, "network", "Network error");
+        throw new ApiError(0, "network", t("Network error"));
       }
     }
 
     throw new ApiError(
       0,
       "network",
-      "Backend not configured - uploadCourseContent requires API",
+      t("Backend not configured - uploadCourseContent requires API"),
     );
   },
 };
