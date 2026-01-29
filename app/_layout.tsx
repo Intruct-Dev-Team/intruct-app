@@ -2,7 +2,7 @@ import { CreatingCourseModal } from "@/components/create-course/creating-course-
 import { NotificationsHost } from "@/components/notifications/NotificationsHost";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CourseGenerationProvider } from "@/contexts/course-generation-context";
-import { LanguageProvider } from "@/contexts/language-context";
+import { LanguageProvider, useLanguage } from "@/contexts/language-context";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import { t } from "@/localization/i18n";
@@ -32,6 +32,7 @@ export const unstable_settings = {
 
 function RootLayoutContent() {
   const { activeTheme } = useTheme();
+  const { language } = useLanguage();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -117,7 +118,7 @@ function RootLayoutContent() {
           <NavigationThemeProvider
             value={activeTheme === "dark" ? DarkTheme : DefaultTheme}
           >
-            <Stack>
+            <Stack key={language}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen
                 name="(onboarding)"

@@ -35,6 +35,7 @@ import {
 import { useRouter } from "expo-router";
 import type { ComponentType } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { InteractionManager } from "react-native";
 import { YStack, useTheme as useTamaguiTheme } from "tamagui";
 
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
@@ -49,12 +50,35 @@ const iconMap: Record<string, IconComponent> = {
 
 type LanguageModalTarget = "ui" | "content" | null;
 
+type PendingLanguageChange = {
+  target: Exclude<LanguageModalTarget, null>;
+  value: string;
+} | null;
+
 export default function SettingsScreen() {
   const router = useRouter();
   const tamaguiTheme = useTamaguiTheme();
   const { activeTheme } = useAppTheme();
   const { user, profile } = useAuth();
   const { language: uiLanguage, setLanguage } = useLanguage();
+
+  const copy = useMemo(() => {
+    void uiLanguage;
+    return {
+      settingsTitle: t("Settings"),
+      settingsSubtitle: t("Manage your account and preferences"),
+      accountSettings: t("Account Settings"),
+      aiSettings: t("AI Settings"),
+      appSettings: t("App Settings"),
+      support: t("Support"),
+      darkMode: t("Dark Mode"),
+      enableDarkTheme: t("Enable dark theme"),
+      language: t("Language"),
+      appLanguage: t("App Language"),
+      contentLanguage: t("Content Language"),
+      userFallback: t("User"),
+    };
+  }, [uiLanguage]);
 
   const settingsIconColor = tamaguiTheme.colorHover.get();
   const chevronIconColor = tamaguiTheme.colorPress.get();
@@ -65,9 +89,10 @@ export default function SettingsScreen() {
       ? user.user_metadata.avatar_url
       : undefined);
 
-  const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [languageModalTarget, setLanguageModalTarget] =
     useState<LanguageModalTarget>(null);
+  const [pendingLanguageChange, setPendingLanguageChange] =
+    useState<PendingLanguageChange>(null);
 
   const [defaultCourseLanguage, setDefaultCourseLanguage] = useState("en");
 
@@ -86,6 +111,10 @@ export default function SettingsScreen() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    setLanguageModalTarget(null);
+  }, [uiLanguage]);
 
   const uiLanguageLabel = useMemo(() => {
     return (
@@ -117,7 +146,6 @@ export default function SettingsScreen() {
         return;
       case "content-language":
         setLanguageModalTarget("content");
-        setLanguageModalOpen(true);
         return;
       default:
         return;
@@ -126,25 +154,44 @@ export default function SettingsScreen() {
 
   const modalValue =
     languageModalTarget === "ui" ? uiLanguage : defaultCourseLanguage;
+  const isLanguageModalOpen = languageModalTarget !== null;
 
   const handleModalValueChange = (languageCode: string) => {
-    if (languageModalTarget === "ui") {
-      void setLanguage(languageCode);
-      return;
-    }
+    if (!languageModalTarget) return;
 
-    setDefaultCourseLanguage(languageCode);
-    settingsApi
-      .updateSettings({ defaultCourseLanguage: languageCode })
-      .catch(() => {});
+    setPendingLanguageChange({
+      target: languageModalTarget,
+      value: languageCode,
+    });
+    setLanguageModalTarget(null);
   };
+
+  useEffect(() => {
+    if (isLanguageModalOpen || !pendingLanguageChange) return;
+
+    const { target, value } = pendingLanguageChange;
+    const interaction = InteractionManager.runAfterInteractions(() => {
+      setPendingLanguageChange(null);
+
+      if (target === "ui") {
+        void setLanguage(value);
+        return;
+      }
+
+      setDefaultCourseLanguage(value);
+      settingsApi
+        .updateSettings({ defaultCourseLanguage: value })
+        .catch(() => {});
+    });
+
+    return () => {
+      interaction.cancel();
+    };
+  }, [isLanguageModalOpen, pendingLanguageChange, setLanguage]);
 
   return (
     <ScreenContainer>
-      <PageHeader
-        title={t("Settings")}
-        subtitle={t("Manage your account and preferences")}
-      />
+      <PageHeader title={copy.settingsTitle} subtitle={copy.settingsSubtitle} />
 
       <YStack gap="$4">
         <UserProfileCard
@@ -154,14 +201,14 @@ export default function SettingsScreen() {
               : profile?.name || profile?.surname) ||
             user?.user_metadata?.full_name ||
             user?.email?.split("@")[0] ||
-            t("User")
+            copy.userFallback
           }
           email={profile?.email || user?.email || ""}
           avatarUrl={avatarUrl}
           onPress={() => router.push("/settings/profile")}
         />
 
-        <SectionHeader title={t("Account Settings")} />
+        <SectionHeader title={copy.accountSettings} />
         <SettingsCard>
           {accountSettingsItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -193,7 +240,7 @@ export default function SettingsScreen() {
           })}
         </SettingsCard>
 
-        <SectionHeader title={t("AI Settings")} />
+        <SectionHeader title={copy.aiSettings} />
         <SettingsCard>
           {aiSettingsItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -231,7 +278,7 @@ export default function SettingsScreen() {
           })}
         </SettingsCard>
 
-        <SectionHeader title={t("App Settings")} />
+        <SectionHeader title={copy.appSettings} />
         <SettingsCard>
           <SettingsItem
             icon={
@@ -241,8 +288,8 @@ export default function SettingsScreen() {
                 color={settingsIconColor}
               />
             }
-            title={t("Dark Mode")}
-            description={t("Enable dark theme")}
+            title={copy.darkMode}
+            description={copy.enableDarkTheme}
             rightElement={<ThemeToggle />}
             showDivider
           />
@@ -254,7 +301,7 @@ export default function SettingsScreen() {
                 color={settingsIconColor}
               />
             }
-            title={t("Language")}
+            title={copy.language}
             description={uiLanguageLabel}
             rightElement={
               <ChevronRight
@@ -265,12 +312,11 @@ export default function SettingsScreen() {
             }
             onPress={() => {
               setLanguageModalTarget("ui");
-              setLanguageModalOpen(true);
             }}
           />
         </SettingsCard>
 
-        <SectionHeader title={t("Support")} />
+        <SectionHeader title={copy.support} />
         <SettingsCard>
           {supportItems.map((item, index) => {
             const Icon = iconMap[item.icon];
@@ -305,20 +351,22 @@ export default function SettingsScreen() {
         <SettingsFooter />
       </YStack>
 
-      <LanguageModal
-        open={languageModalOpen}
-        onOpenChange={(open) => {
-          setLanguageModalOpen(open);
-          if (!open) setLanguageModalTarget(null);
-        }}
-        value={modalValue}
-        onValueChange={handleModalValueChange}
-        title={
-          languageModalTarget === "ui"
-            ? t("App Language")
-            : t("Content Language")
-        }
-      />
+      {isLanguageModalOpen && (
+        <LanguageModal
+          key={`language-modal-${uiLanguage}`}
+          open
+          onOpenChange={(open) => {
+            if (!open) setLanguageModalTarget(null);
+          }}
+          value={modalValue}
+          onValueChange={handleModalValueChange}
+          title={
+            languageModalTarget === "ui"
+              ? copy.appLanguage
+              : copy.contentLanguage
+          }
+        />
+      )}
     </ScreenContainer>
   );
 }
