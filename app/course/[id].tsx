@@ -25,6 +25,7 @@ import { Button, Card, H2, Progress, Text, XStack, YStack } from "tamagui";
 export default function CourseDetailPage() {
   const colors = useThemeColors();
   const completedIconColor = useResolvedThemeColor(colors.stats.completed.icon);
+  const ratingStarColor = useResolvedThemeColor(colors.stats.streak.icon);
   const whiteIconColor = useResolvedThemeColor("$white1");
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -39,6 +40,7 @@ export default function CourseDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -219,6 +221,7 @@ export default function CourseDetailPage() {
   const canRate = !isMine && (course.isInMine ?? !!course.isPublic);
   const canPublish = !course.isPublic && isMine;
   const canDelete = isMine;
+  const showRateHeaderButton = course.isPublic && !isMine;
 
   const handleRate = async (reviewGrade: number) => {
     if (!canRate) return;
@@ -315,13 +318,30 @@ export default function CourseDetailPage() {
                   onPress={() => router.back()}
                 />
 
-                <Button
-                  marginLeft="auto"
-                  size="$3"
-                  chromeless
-                  icon={<MoreVertical size={18} color={colors.textPrimary} />}
-                  onPress={() => setSettingsOpen(true)}
-                />
+                {showRateHeaderButton ? (
+                  <Button
+                    marginLeft="auto"
+                    size="$3"
+                    chromeless
+                    disabled={!canRate}
+                    opacity={!canRate ? 0.6 : 1}
+                    icon={<Star size={16} color={ratingStarColor} />}
+                    onPress={() => {
+                      if (!canRate) return;
+                      setRateOpen(true);
+                    }}
+                  >
+                    Rate course
+                  </Button>
+                ) : (
+                  <Button
+                    marginLeft="auto"
+                    size="$3"
+                    chromeless
+                    icon={<MoreVertical size={18} color={colors.textPrimary} />}
+                    onPress={() => setSettingsOpen(true)}
+                  />
+                )}
               </XStack>
 
               <YStack marginTop="$2">
@@ -700,7 +720,11 @@ export default function CourseDetailPage() {
                 disabled={!canDelete || deleting}
                 opacity={!canDelete || deleting ? 0.7 : 1}
                 icon={<Trash2 size={16} color="white" />}
-                onPress={handleDelete}
+                onPress={() => {
+                  if (!canDelete) return;
+                  setSettingsOpen(false);
+                  setDeleteConfirmOpen(true);
+                }}
               >
                 Delete course
               </Button>
@@ -717,7 +741,7 @@ export default function CourseDetailPage() {
               borderColor="$gray5"
               disabled={!canRate}
               opacity={!canRate ? 0.7 : 1}
-              icon={<Star size={16} color="#FF9800" />}
+              icon={<Star size={16} color={ratingStarColor} />}
               onPress={() => {
                 if (!canRate) return;
                 setSettingsOpen(false);
@@ -727,6 +751,47 @@ export default function CourseDetailPage() {
               Rate course
             </Button>
           ) : null}
+        </YStack>
+      </AppSheetModal>
+
+      <AppSheetModal
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        snapPoints={[30]}
+        title="Delete course?"
+      >
+        <YStack gap="$3">
+          <Text color={colors.textSecondary} fontSize="$4">
+            This action can’t be undone.
+          </Text>
+
+          <Button
+            size="$5"
+            backgroundColor="$red9"
+            color="white"
+            borderRadius="$6"
+            fontWeight="700"
+            disabled={!canDelete || deleting}
+            opacity={!canDelete || deleting ? 0.7 : 1}
+            icon={<Trash2 size={16} color="white" />}
+            onPress={() => {
+              if (!canDelete) return;
+              handleDelete();
+              setDeleteConfirmOpen(false);
+            }}
+          >
+            Delete course
+          </Button>
+
+          <Button
+            size="$5"
+            backgroundColor={colors.cardBackground}
+            borderRadius="$6"
+            fontWeight="700"
+            onPress={() => setDeleteConfirmOpen(false)}
+          >
+            Cancel
+          </Button>
         </YStack>
       </AppSheetModal>
 
@@ -751,7 +816,7 @@ export default function CourseDetailPage() {
               backgroundColor={colors.cardBackground}
               borderWidth={1}
               borderColor="$gray5"
-              icon={<Star size={16} color="#FF9800" />}
+              icon={<Star size={16} color={ratingStarColor} />}
               onPress={() => handleRate(value)}
             >
               <Text color={colors.textPrimary} fontWeight="700">

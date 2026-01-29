@@ -32,6 +32,7 @@ type AuthContextType = {
   profile: UserProfile | null;
   needsCompleteRegistration: boolean;
   profileLoading: boolean;
+  refreshProfile: () => Promise<void>;
   setNeedsCompleteRegistration: (value: boolean) => void;
   signInWithGoogle: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -46,6 +47,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   needsCompleteRegistration: false,
   profileLoading: false,
+  refreshProfile: async () => {},
   setNeedsCompleteRegistration: () => {},
   signInWithGoogle: async () => {},
   signIn: async () => {},
@@ -280,6 +282,89 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [notify]);
 
+  const refreshProfile = useCallback(async () => {
+    const token = session?.access_token;
+
+    if (needsCompleteRegistration) {
+      console.log("[AuthContext] Skipping profile load - registration needed");
+      return;
+    }
+
+    if (!token) return;
+
+    setProfileLoading(true);
+
+    try {
+      console.log("[AuthContext] Loading profile with token...");
+      const backendProfile = await profileApi.getProfile(token);
+      setProfile(backendProfile);
+      setNeedsCompleteRegistrationState(false);
+    } catch (error: unknown) {
+      console.log("[AuthContext] Error loading profile:", error);
+
+      if (error instanceof ApiError) {
+        console.log(
+          "[AuthContext] ApiError - code:",
+          error.code,
+          "status:",
+          error.status,
+          "message:",
+          error.message,
+        );
+
+        if (error.code === "unauthorized") {
+          console.log("[AuthContext] Unauthorized - signing out");
+          notify({
+            type: "error",
+            title: "Session expired",
+            message: "Please sign in again.",
+          });
+          await signOut();
+          router.replace("/(auth)/welcome");
+          return;
+        }
+
+        if (error.code === "needs_complete_registration") {
+          console.log("[AuthContext] Needs complete registration");
+          setProfile(null);
+          setNeedsCompleteRegistrationState(true);
+          return;
+        }
+
+        if (error.code === "network") {
+          console.warn(
+            "[AuthContext] Network error - continuing without profile",
+          );
+          return;
+        }
+
+        console.log("[AuthContext] Other ApiError - showing notification");
+        notify({
+          type: "error",
+          title: "Couldn't load profile",
+          message: error.message,
+        });
+        return;
+      }
+
+      console.log("[AuthContext] Unknown error type:", typeof error);
+
+      notify({
+        type: "error",
+        title: "Couldn’t load profile",
+        message: "Please try again.",
+      });
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [
+    needsCompleteRegistration,
+    notify,
+    router,
+    session?.access_token,
+    signOut,
+  ]);
+
   useEffect(() => {
     const token = session?.access_token;
 
@@ -419,6 +504,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         needsCompleteRegistration,
         profileLoading,
+        refreshProfile,
         setNeedsCompleteRegistration: (value: boolean) =>
           setNeedsCompleteRegistrationState(value),
         signIn,

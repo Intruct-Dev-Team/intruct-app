@@ -36,7 +36,7 @@ export function CreatingCourseModal() {
   return (
     <Modal visible={creatingModalOpen} transparent animationType="fade">
       <Pressable style={styles.backdrop} onPress={closeCreatingModal}>
-        <Pressable onPress={(e) => e.stopPropagation()}>
+        <Pressable onPress={() => {}}>
           <YStack
             backgroundColor={colors.cardBackground}
             borderRadius="$6"

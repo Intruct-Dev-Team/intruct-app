@@ -20,7 +20,7 @@ import { H2, XStack, YStack } from "tamagui";
 export default function HomeScreen() {
   const colors = useThemeColors();
   const router = useRouter();
-  const { profile, session } = useAuth();
+  const { profile, session, refreshProfile } = useAuth();
   const { openCreatingModal } = useCourseGeneration();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,11 +69,11 @@ export default function HomeScreen() {
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      await loadData({ showLoading: false });
+      await Promise.all([loadData({ showLoading: false }), refreshProfile()]);
     } finally {
       setRefreshing(false);
     }
-  }, [loadData]);
+  }, [loadData, refreshProfile]);
 
   useFocusEffect(
     useCallback(() => {
