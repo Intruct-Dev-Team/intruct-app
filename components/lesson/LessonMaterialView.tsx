@@ -4,9 +4,11 @@ import { useTheme } from "@/contexts/theme-context";
 import { useThemeColors } from "@/hooks/use-theme-colors";
 import { t } from "@/localization/i18n";
 import type { LessonMaterial } from "@/types";
-import React from "react";
+import katex from "katex";
+import React, { useMemo, useState } from "react";
 import { ScrollView } from "react-native";
-import Markdown from "react-native-markdown-display";
+import Markdown, { MarkdownIt } from "react-native-markdown-display";
+import { WebView } from "react-native-webview";
 import { Button, H2, Text, YStack } from "tamagui";
 
 interface LessonMaterialViewProps {
@@ -16,6 +18,88 @@ interface LessonMaterialViewProps {
   onComplete: () => void;
   nextLabel?: string;
   showHeader?: boolean;
+}
+
+const MATH_BLOCK_REGEX = /\$\$([\s\S]+?)\$\$/g;
+const MATH_INLINE_REGEX = /\$(?!\$)([^$\n]+?)\$/g;
+
+const markdownItInstance = MarkdownIt({ typographer: true });
+
+const renderMathInHtml = (html: string) => {
+  const withBlocks = html.replace(MATH_BLOCK_REGEX, (_match, expr) => {
+    return katex.renderToString(expr, {
+      throwOnError: false,
+      displayMode: true,
+      output: "html",
+    });
+  });
+
+  return withBlocks.replace(MATH_INLINE_REGEX, (_match, expr) => {
+    return katex.renderToString(expr, {
+      throwOnError: false,
+      displayMode: false,
+      output: "html",
+    });
+  });
+};
+
+function MathMarkdownWebView({
+  content,
+  textColor,
+  backgroundColor,
+}: {
+  content: string;
+  textColor: string;
+  backgroundColor: string;
+}) {
+  const [height, setHeight] = useState(1);
+
+  const html = useMemo(() => {
+    const markdownHtml = markdownItInstance.render(content);
+    const htmlWithMath = renderMathInHtml(markdownHtml);
+
+    return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css" />
+    <style>
+      html, body { margin: 0; padding: 0; background: ${backgroundColor}; }
+      body { color: ${textColor}; font-size: 16px; line-height: 24px; }
+      .katex { color: ${textColor}; }
+    </style>
+  </head>
+  <body>
+    <div id="content">${htmlWithMath}</div>
+    <script>
+      (function() {
+        function sendHeight() {
+          var height = document.documentElement.scrollHeight || document.body.scrollHeight || 0;
+          window.ReactNativeWebView.postMessage(String(height));
+        }
+        window.addEventListener('load', sendHeight);
+        setTimeout(sendHeight, 0);
+      })();
+    </script>
+  </body>
+</html>`;
+  }, [backgroundColor, content, textColor]);
+
+  return (
+    <WebView
+      originWhitelist={["*"]}
+      scrollEnabled={false}
+      style={{ height, backgroundColor: "transparent" }}
+      source={{ html }}
+      onMessage={(event) => {
+        const nextHeight = Number(event.nativeEvent.data);
+        if (Number.isFinite(nextHeight) && nextHeight > 0) {
+          setHeight(nextHeight);
+        }
+      }}
+    />
+  );
 }
 
 export default function LessonMaterialView(props: LessonMaterialViewProps) {
@@ -139,6 +223,9 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
   for (let index = 0; index < visibleMaterials.length; index += 1) {
     const material = visibleMaterials[index];
     const key = (material as any).id ?? String(index);
+    const content = material.content ?? "";
+    const hasMath =
+      /\$\$[\s\S]+?\$\$/.test(content) || /\$(?!\$)([^$\n]+?)\$/.test(content);
     materialNodes.push(
       <YStack
         key={key}
@@ -147,7 +234,15 @@ export default function LessonMaterialView(props: LessonMaterialViewProps) {
         padding="$4"
         borderRadius="$6"
       >
-        <Markdown style={markdownStyles}>{material.content}</Markdown>
+        {hasMath ? (
+          <MathMarkdownWebView
+            content={content}
+            textColor={materialTextColor}
+            backgroundColor={colors.background}
+          />
+        ) : (
+          <Markdown style={markdownStyles}>{content}</Markdown>
+        )}
       </YStack>,
     );
   }
