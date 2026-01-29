@@ -1,0 +1,18 @@
+➢ Kratak opis aplikacije (do 80 karaktera):
+AI kurs-evi po meri: kreiraj, uči i prati napredak.
+
+➢ Pun opis aplikacije (do 4000 karaktera):
+Intruct ti pomaže da brzo pretvoriš svoje materijale u strukturisane kurseve i
+učiš po sopstvenom tempu. Dodaj PDF ili TXT, a aplikacija kreira module i lekcije
+sa jasnim ciljevima. Prati napredak, nastavi tamo gde si stao i ostani motivisan
+uz statistiku i nizove aktivnosti.
+
+Ključne mogućnosti:
+- Kreiranje kurseva iz dokumenata i beleški
+- Pregled sadržaja po modulima i lekcijama
+- Praćenje napretka i procenta završenosti
+- Personalizovana statistika (završeni kursevi, u toku, niz)
+- Uređivanje i deljenje javnih kurseva
+
+Bilo da učiš za ispit, usavršavaš veštine ili praviš interne treninge, Intruct
+ti omogućava da učiš brže, organizovanije i uz jasnu sliku napretka.

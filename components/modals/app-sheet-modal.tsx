@@ -30,6 +30,12 @@ export function AppSheetModal({
       onOpenChange={onOpenChange}
       modal
       snapPoints={snapPoints}
+      animationConfig={{
+        type: "spring",
+        damping: 20,
+        stiffness: 300,
+        mass: 0.7,
+      }}
       dismissOnSnapToBottom
       dismissOnOverlayPress
     >
@@ -37,11 +43,16 @@ export function AppSheetModal({
 
       <Sheet.Frame
         backgroundColor={colors.background}
-        padding="$4"
+        paddingHorizontal="$4"
+        paddingTop="$4"
         paddingBottom="$6"
         gap="$4"
       >
-        <Sheet.Handle />
+        <Sheet.Handle
+          backgroundColor={colors.textTertiary}
+          opacity={0.6}
+          height={4}
+        />
 
         {title ? (
           <XStack justifyContent="space-between" alignItems="center">

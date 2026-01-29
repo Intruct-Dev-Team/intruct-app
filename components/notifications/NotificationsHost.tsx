@@ -70,7 +70,8 @@ export function NotificationsHost() {
         top={Math.max(8, insets.top + 8)}
         left={0}
         right={0}
-        zIndex={1000}
+        zIndex={9999}
+        elevation={9999}
         pointerEvents="box-none"
         paddingHorizontal="$4"
         alignItems="stretch"
