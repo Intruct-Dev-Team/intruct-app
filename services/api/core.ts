@@ -52,6 +52,7 @@ export interface UserProfileResponse {
   completed_courses: number;
   in_progress_courses: number;
   streak: number;
+  is_streak_active_today: boolean;
 }
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -173,4 +174,5 @@ export const mapUserProfile = (data: UserProfileResponse): UserProfile => ({
   completedCourses: data.completed_courses,
   inProgressCourses: data.in_progress_courses,
   streak: data.streak,
+  isStreakActiveToday: data.is_streak_active_today,
 });

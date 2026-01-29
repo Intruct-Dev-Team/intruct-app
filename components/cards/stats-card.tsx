@@ -7,11 +7,24 @@ interface StatsCardProps {
   type: "completed" | "inProgress" | "streak";
   value: number | string;
   label: string;
+  isActive?: boolean; // Optional: for streak to indicate if active/inactive
 }
 
-export function StatsCard({ icon: Icon, type, value, label }: StatsCardProps) {
+export function StatsCard({
+  icon: Icon,
+  type,
+  value,
+  label,
+  isActive,
+}: StatsCardProps) {
   const colors = useThemeColors();
   const stat = colors.stats[type];
+
+  // For streak, use gray if not active, otherwise use the default color
+  const iconColor =
+    type === "streak" && isActive === false ? "$gray9" : stat.icon;
+  const backgroundColor =
+    type === "streak" && isActive === false ? "$gray2" : stat.background;
 
   return (
     <Card
@@ -23,7 +36,7 @@ export function StatsCard({ icon: Icon, type, value, label }: StatsCardProps) {
     >
       <YStack gap="$2.5" alignItems="flex-start">
         <View
-          backgroundColor={stat.background}
+          backgroundColor={backgroundColor}
           padding="$2.5"
           borderRadius="$3"
           width={44}
@@ -31,7 +44,7 @@ export function StatsCard({ icon: Icon, type, value, label }: StatsCardProps) {
           alignItems="center"
           justifyContent="center"
         >
-          <Icon size={20} color={stat.icon} />
+          <Icon size={20} color={iconColor} />
         </View>
         <Text fontSize="$9" fontWeight="700" color={colors.textPrimary}>
           {value}

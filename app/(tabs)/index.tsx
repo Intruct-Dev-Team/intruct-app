@@ -172,8 +172,9 @@ export default function HomeScreen() {
         <StatsCard
           icon={Flame}
           type="streak"
-          value={"null"}
+          value={profile.streak}
           label="Day Streak"
+          isActive={profile.isStreakActiveToday}
         />
       </XStack>
 

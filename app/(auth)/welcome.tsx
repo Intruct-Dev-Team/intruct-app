@@ -43,15 +43,12 @@ export default function WelcomeScreen() {
             <YStack
               width={140}
               height={140}
-              borderRadius="$4"
-              backgroundColor={colors.cardBackground}
-              borderWidth={1}
               borderColor="$gray5"
               alignItems="center"
               justifyContent="center"
             >
               <Image
-                source={require("../../assets/images/icons/icon.png")}
+                source={require("../../assets/images/icons/splash-icon.png")}
                 style={{ width: 124, height: 124 }}
                 resizeMode="contain"
                 accessibilityLabel="Intruct"

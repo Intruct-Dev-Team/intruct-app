@@ -675,33 +675,37 @@ export default function CourseDetailPage() {
         }
       >
         <YStack gap="$3">
-          <Button
-            size="$5"
-            backgroundColor={colors.primary}
-            color={colors.primaryText}
-            borderRadius="$6"
-            fontWeight="700"
-            disabled={!canPublish || publishing}
-            opacity={!canPublish || publishing ? 0.7 : 1}
-            icon={<Globe size={16} color={colors.primaryText} />}
-            onPress={handlePublish}
-          >
-            Publish course
-          </Button>
+          {isMine && (
+            <>
+              <Button
+                size="$5"
+                backgroundColor={colors.primary}
+                color={colors.primaryText}
+                borderRadius="$6"
+                fontWeight="700"
+                disabled={!canPublish || publishing}
+                opacity={!canPublish || publishing ? 0.7 : 1}
+                icon={<Globe size={16} color={colors.primaryText} />}
+                onPress={handlePublish}
+              >
+                Publish course
+              </Button>
 
-          <Button
-            size="$5"
-            backgroundColor="$red9"
-            color="white"
-            borderRadius="$6"
-            fontWeight="700"
-            disabled={!canDelete || deleting}
-            opacity={!canDelete || deleting ? 0.7 : 1}
-            icon={<Trash2 size={16} color="white" />}
-            onPress={handleDelete}
-          >
-            Delete course
-          </Button>
+              <Button
+                size="$5"
+                backgroundColor="$red9"
+                color="white"
+                borderRadius="$6"
+                fontWeight="700"
+                disabled={!canDelete || deleting}
+                opacity={!canDelete || deleting ? 0.7 : 1}
+                icon={<Trash2 size={16} color="white" />}
+                onPress={handleDelete}
+              >
+                Delete course
+              </Button>
+            </>
+          )}
 
           {course.isPublic ? (
             <Button

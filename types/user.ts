@@ -26,11 +26,12 @@ export interface UserProfile {
   completedCourses: number;
   inProgressCourses: number;
   streak: number;
+  isStreakActiveToday: boolean;
 }
 
 export interface CompleteRegistrationRequest {
   name: string;
-  surname: string;
-  birthdate: string;
+  surname?: string;
+  birthdate?: string;
   avatar?: string;
 }

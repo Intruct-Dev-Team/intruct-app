@@ -37,15 +37,12 @@ export default function LoginScreen() {
               <YStack
                 width={100}
                 height={100}
-                borderRadius="$4"
-                backgroundColor={colors.cardBackground}
-                borderWidth={1}
                 borderColor="$gray5"
                 alignItems="center"
                 justifyContent="center"
               >
                 <Image
-                  source={require("../../assets/images/icons/icon.png")}
+                  source={require("../../assets/images/icons/splash-icon.png")}
                   style={{ width: 84, height: 84 }}
                   resizeMode="contain"
                   accessibilityLabel="Intruct"

@@ -90,3 +90,5 @@ metro.config.js        # Конфигурация Metro bundler
 ### Билд
 
 `cd android && ./gradlew assembleRelease`
+`./gradlew assembleRelease`
+`./gradlew bundleRelease`

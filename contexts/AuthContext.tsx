@@ -1,4 +1,5 @@
 import type { UserProfile } from "@/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -18,6 +19,7 @@ import React, {
 import { useNotifications } from "@/contexts/NotificationsContext";
 import {
   ApiError,
+  lessonProgressApi,
   profileApi,
   setNeedsCompleteRegistrationHandler,
 } from "@/services/api";
@@ -256,7 +258,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
       await GoogleSignin.signOut();
-      setProfile(null);
+      setProfile(null); // Reset in-memory lesson progress cache
+      lessonProgressApi.resetCache(); // Clear all AsyncStorage except theme settings
+      const allKeys = await AsyncStorage.getAllKeys();
+      const keysToDelete = allKeys.filter(
+        (key) => !key.startsWith("theme") && key !== "activeTheme",
+      );
+      await AsyncStorage.multiRemove(keysToDelete);
       notify({
         type: "success",
         title: "Signed out",

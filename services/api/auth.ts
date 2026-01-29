@@ -43,17 +43,30 @@ export const authApi = {
       throw new ApiError(401, "unauthorized", "Token is required");
     }
 
-    if (!payload.name || !payload.surname || !payload.birthdate) {
-      throw new ApiError(422, "validation", "Missing required fields");
+    if (!payload.name) {
+      throw new ApiError(422, "validation", "Name is required");
     }
 
     const baseUrl = getApiBaseUrl();
 
     if (baseUrl) {
       try {
-        const birthdateISO = payload.birthdate.includes("T")
-          ? payload.birthdate
-          : `${payload.birthdate}T00:00:00Z`;
+        // Ensure birthdate is always provided (use current date if missing)
+        let birthdateISO = payload.birthdate;
+        if (!birthdateISO) {
+          const today = new Date();
+          const eighteenYearsAgo = new Date(
+            today.getFullYear() - 18,
+            today.getMonth(),
+            today.getDate(),
+          );
+          const pad = (n: number) => String(n).padStart(2, "0");
+          birthdateISO = `${eighteenYearsAgo.getFullYear()}-${pad(eighteenYearsAgo.getMonth() + 1)}-${pad(eighteenYearsAgo.getDate())}`;
+        }
+
+        const birthdateWithTime = birthdateISO.includes("T")
+          ? birthdateISO
+          : `${birthdateISO}T00:00:00Z`;
 
         let avatarToSend = "";
         if (payload.avatar) {
@@ -66,8 +79,8 @@ export const authApi = {
 
         const requestBody = {
           name: payload.name,
-          surname: payload.surname,
-          birthdate: birthdateISO,
+          surname: payload.surname || "",
+          birthdate: birthdateWithTime,
           avatar: avatarToSend || "",
         };
 

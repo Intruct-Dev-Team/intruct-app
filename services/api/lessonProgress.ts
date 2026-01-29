@@ -93,4 +93,13 @@ export const lessonProgressApi = {
     await loadLessonCompletionFromStorage();
     return getCompletedCountForCourse(courseKey);
   },
+
+  // Reset in-memory cache (called on sign out)
+  resetCache(): void {
+    didLoadLessonCompletionFromStorage = false;
+    inMemoryLessonCompletion = {
+      version: 1,
+      completedByCourse: {},
+    };
+  },
 };

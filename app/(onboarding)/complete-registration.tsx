@@ -2,7 +2,10 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
-import { useThemeColors } from "@/hooks/use-theme-colors";
+import {
+  useResolvedThemeColor,
+  useThemeColors,
+} from "@/hooks/use-theme-colors";
 import { ApiError, authApi } from "@/services/api";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -17,6 +20,19 @@ const pad2 = (value: number) => String(value).padStart(2, "0");
 
 const formatBirthdate = (year: number, month: number, day: number) => {
   return `${year}-${pad2(month)}-${pad2(day)}`;
+};
+
+const getInitials = (name: string, surname: string): string => {
+  const nameTrimmed = name.trim().toUpperCase();
+  const surnameTrimmed = surname.trim().toUpperCase();
+
+  if (nameTrimmed && surnameTrimmed) {
+    return `${nameTrimmed.charAt(0)}${surnameTrimmed.charAt(0)}`;
+  }
+  if (nameTrimmed) {
+    return nameTrimmed.slice(0, 2);
+  }
+  return "?";
 };
 
 const getDaysInMonth = (year: number, month: number) => {
@@ -41,6 +57,8 @@ const isValidBirthdate = (value: string): boolean => {
 
 export default function CompleteRegistrationScreen() {
   const colors = useThemeColors();
+  const resolvedTextColor = useResolvedThemeColor(colors.textPrimary);
+  const resolvedBackgroundColor = useResolvedThemeColor(colors.background);
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { notify } = useNotifications();
@@ -130,10 +148,8 @@ export default function CompleteRegistrationScreen() {
   const canSubmit = useMemo(() => {
     if (isSubmitting) return false;
     if (!name.trim()) return false;
-    if (!surname.trim()) return false;
-    if (!isValidBirthdate(birthdate)) return false;
     return true;
-  }, [birthdate, isSubmitting, name, surname]);
+  }, [isSubmitting, name]);
 
   const handleConfirm = async () => {
     if (!canSubmit) return;
@@ -157,10 +173,27 @@ export default function CompleteRegistrationScreen() {
       );
 
       // Вызываем API для сохранения данных на бекенде
+      // If birthdate is empty, use a default (18 years ago)
+      const birthdateToSend = isValidBirthdate(birthdate)
+        ? birthdate.trim()
+        : (() => {
+            const today = new Date();
+            const eighteenYearsAgo = new Date(
+              today.getFullYear() - 18,
+              today.getMonth(),
+              today.getDate(),
+            );
+            return formatBirthdate(
+              eighteenYearsAgo.getFullYear(),
+              eighteenYearsAgo.getMonth() + 1,
+              eighteenYearsAgo.getDate(),
+            );
+          })();
+
       await authApi.completeRegistration(token, {
         name: name.trim(),
         surname: surname.trim(),
-        birthdate: birthdate.trim(),
+        birthdate: birthdateToSend,
         avatar: avatar.trim() || undefined,
       });
 
@@ -246,8 +279,18 @@ export default function CompleteRegistrationScreen() {
                     width={140}
                     height={140}
                     borderRadius={70}
-                    backgroundColor="$gray3"
-                  />
+                    backgroundColor={colors.primary}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Text
+                      fontSize="$9"
+                      fontWeight="700"
+                      color={colors.primaryText}
+                    >
+                      {getInitials(name, surname)}
+                    </Text>
+                  </YStack>
                 )}
 
                 <Text
@@ -309,7 +352,10 @@ export default function CompleteRegistrationScreen() {
                         enabled={!isSubmitting}
                         selectedValue={birthYear}
                         onValueChange={(value) => setBirthYear(Number(value))}
-                        style={{ color: colors.textPrimary }}
+                        style={{ color: resolvedTextColor }}
+                        {...(Platform.OS === "ios"
+                          ? { itemStyle: { color: resolvedTextColor } }
+                          : { textColor: resolvedTextColor })}
                       >
                         {Array.from(
                           { length: currentYear - 1900 + 1 },
@@ -347,7 +393,10 @@ export default function CompleteRegistrationScreen() {
                         enabled={!isSubmitting}
                         selectedValue={birthMonth}
                         onValueChange={(value) => setBirthMonth(Number(value))}
-                        style={{ color: colors.textPrimary }}
+                        style={{ color: resolvedTextColor }}
+                        {...(Platform.OS === "ios"
+                          ? { itemStyle: { color: resolvedTextColor } }
+                          : { textColor: resolvedTextColor })}
                       >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(
                           (month) => (
@@ -384,7 +433,10 @@ export default function CompleteRegistrationScreen() {
                         enabled={!isSubmitting}
                         selectedValue={birthDay}
                         onValueChange={(value) => setBirthDay(Number(value))}
-                        style={{ color: colors.textPrimary }}
+                        style={{ color: resolvedTextColor }}
+                        {...(Platform.OS === "ios"
+                          ? { itemStyle: { color: resolvedTextColor } }
+                          : { textColor: resolvedTextColor })}
                       >
                         {Array.from({ length: maxDay }, (_, i) => i + 1).map(
                           (day) => (

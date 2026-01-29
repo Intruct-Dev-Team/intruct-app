@@ -61,15 +61,12 @@ export default function RegisterScreen() {
               <YStack
                 width={100}
                 height={100}
-                borderRadius="$4"
-                backgroundColor={colors.cardBackground}
-                borderWidth={1}
                 borderColor="$gray5"
                 alignItems="center"
                 justifyContent="center"
               >
                 <Image
-                  source={require("../../assets/images/icons/icon.png")}
+                  source={require("../../assets/images/icons/splash-icon.png")}
                   style={{ width: 84, height: 84 }}
                   resizeMode="contain"
                   accessibilityLabel="Intruct"
@@ -98,7 +95,7 @@ export default function RegisterScreen() {
             {/* Form Section */}
             <YStack gap="$4">
               <AuthInput
-                label="Full Name"
+                label="Name"
                 placeholder="Enter your full name"
                 value={name}
                 onChangeText={setName}
