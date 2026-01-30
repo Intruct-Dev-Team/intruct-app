@@ -28,7 +28,7 @@ export default function HelpCenterScreen() {
         id: "app-language",
         question: "What does Language in App Settings change?",
         answer:
-          "It saves your preferred UI language. Full app translation switching may be added later.",
+          "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.",
       },
       {
         id: "file-picker",

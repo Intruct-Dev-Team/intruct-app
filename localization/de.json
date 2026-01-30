@@ -157,7 +157,7 @@
   "What does Content Language mean?": "Was bedeutet Inhaltssprache?",
   "It is the default language used for generated course content. You can set it in Settings → AI Settings → Content Language.": "Das ist die Standardsprache für generierte Kursinhalte. Du kannst sie unter Einstellungen → AI-Einstellungen → Inhaltssprache festlegen.",
   "What does Language in App Settings change?": "Was ändert die App-Sprache in den Einstellungen?",
-  "It saves your preferred UI language. Full app translation switching may be added later.": "Sie speichert deine bevorzugte UI-Sprache. Ein vollständiger Sprachwechsel könnte später hinzugefügt werden.",
+  "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.": "Sie ändert die Sprache der App‑Oberfläche. „Inhaltssprache“ bestimmt die Sprache der generierten Kursinhalte. Beides kannst du in den Einstellungen anpassen.",
   "Why can’t I attach a file?": "Warum kann ich keine Datei anhängen?",
   "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.": "Wenn sich die Dateiauswahl nicht öffnet, versuche es erneut. Auf iOS prüfe auch die Files-Berechtigungen und stelle sicher, dass die Datei zugänglich ist.",
   "Manage your account details": "Kontodetails verwalten",

@@ -157,7 +157,7 @@
   "What does Content Language mean?": "Что означает «Язык контента»?",
   "It is the default language used for generated course content. You can set it in Settings → AI Settings → Content Language.": "Это язык по умолчанию для сгенерированного контента. Его можно задать в Настройки → Настройки AI → Язык контента.",
   "What does Language in App Settings change?": "Что меняет «Язык приложения»?",
-  "It saves your preferred UI language. Full app translation switching may be added later.": "Сохраняет предпочитаемый язык интерфейса. Полное переключение языка может быть добавлено позже.",
+  "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.": "Он меняет язык интерфейса приложения. «Язык контента» определяет язык сгенерированного контента курса. Оба параметра можно изменить в настройках.",
   "Why can’t I attach a file?": "Почему я не могу прикрепить файл?",
   "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.": "Если выбор файла не открывается, попробуйте снова. На iOS проверьте доступ к Files и убедитесь, что файл доступен.",
   "Manage your account details": "Управление данными аккаунта",

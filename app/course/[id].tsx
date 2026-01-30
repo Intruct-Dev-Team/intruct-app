@@ -275,10 +275,13 @@ export default function CourseDetailPage() {
   const localProgress = completedLessonIds.size;
   const effectiveProgress = Math.max(backendProgress, localProgress);
 
-  const completionSet =
-    completedLessonIds.size > 0
-      ? completedLessonIds
-      : new Set(orderedLessons.slice(0, backendProgress).map((l) => l.id));
+  const backendCompletionSet = new Set(
+    orderedLessons.slice(0, backendProgress).map((l) => l.id),
+  );
+  const completionSet = new Set([
+    ...backendCompletionSet,
+    ...completedLessonIds,
+  ]);
 
   const nextLessonId = orderedLessons.find((l) => !completionSet.has(l.id))?.id;
 
@@ -426,7 +429,16 @@ export default function CourseDetailPage() {
                               pathname: "/course/lesson/[id]",
                               params: {
                                 id: lesson.id,
+                                lessonNumber: String(
+                                  lesson.serialNumber ?? idx + 1,
+                                ),
                                 ...(courseKey ? { courseKey } : {}),
+                                ...(Number.isFinite(effectiveProgress)
+                                  ? {
+                                      currentProgress:
+                                        String(effectiveProgress),
+                                    }
+                                  : {}),
                                 ...(isLessonCompleted
                                   ? { skipFinish: "1" }
                                   : {}),
@@ -523,7 +535,16 @@ export default function CourseDetailPage() {
                                 pathname: "/course/lesson/[id]",
                                 params: {
                                   id: lesson.id,
+                                  lessonNumber: String(
+                                    lesson.serialNumber ?? idx + 1,
+                                  ),
                                   ...(courseKey ? { courseKey } : {}),
+                                  ...(Number.isFinite(effectiveProgress)
+                                    ? {
+                                        currentProgress:
+                                          String(effectiveProgress),
+                                      }
+                                    : {}),
                                 },
                               } as any);
                             }}
@@ -572,7 +593,16 @@ export default function CourseDetailPage() {
                                     pathname: "/course/lesson/[id]",
                                     params: {
                                       id: lesson.id,
+                                      lessonNumber: String(
+                                        lesson.serialNumber ?? lidx + 1,
+                                      ),
                                       ...(courseKey ? { courseKey } : {}),
+                                      ...(Number.isFinite(effectiveProgress)
+                                        ? {
+                                            currentProgress:
+                                              String(effectiveProgress),
+                                          }
+                                        : {}),
                                       ...(isLessonCompleted
                                         ? { skipFinish: "1" }
                                         : {}),
@@ -673,7 +703,16 @@ export default function CourseDetailPage() {
                                       pathname: "/course/lesson/[id]",
                                       params: {
                                         id: lesson.id,
+                                        lessonNumber: String(
+                                          lesson.serialNumber ?? lidx + 1,
+                                        ),
                                         ...(courseKey ? { courseKey } : {}),
+                                        ...(Number.isFinite(effectiveProgress)
+                                          ? {
+                                              currentProgress:
+                                                String(effectiveProgress),
+                                            }
+                                          : {}),
                                       },
                                     } as any);
                                   }}

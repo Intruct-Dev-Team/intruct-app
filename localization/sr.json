@@ -157,7 +157,7 @@
   "What does Content Language mean?": "Šta znači Jezik sadržaja?",
   "It is the default language used for generated course content. You can set it in Settings → AI Settings → Content Language.": "To je podrazumevani jezik za generisani sadržaj. Možete ga postaviti u Podešavanja → AI podešavanja → Jezik sadržaja.",
   "What does Language in App Settings change?": "Šta menja Jezik aplikacije u podešavanjima?",
-  "It saves your preferred UI language. Full app translation switching may be added later.": "Čuva željeni jezik interfejsa. Potpuno prebacivanje jezika može biti dodato kasnije.",
+  "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.": "Menja jezik interfejsa aplikacije. „Jezik sadržaja“ određuje jezik generisanog kursnog sadržaja. Oboje možeš da podesiš u podešavanjima.",
   "Why can’t I attach a file?": "Zašto ne mogu da priložim fajl?",
   "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.": "Ako se birač fajlova ne otvori, pokušajte ponovo. Na iOS-u proverite dozvole za Files i da je fajl dostupan.",
   "Manage your account details": "Upravljajte detaljima naloga",

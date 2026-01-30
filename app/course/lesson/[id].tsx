@@ -20,10 +20,14 @@ export default function LessonScreen() {
     id,
     courseKey: courseKeyParam,
     skipFinish,
+    currentProgress: currentProgressParam,
+    lessonNumber: lessonNumberParam,
   } = useLocalSearchParams<{
     id: string;
     courseKey?: string;
     skipFinish?: string;
+    currentProgress?: string;
+    lessonNumber?: string;
   }>();
   const router = useRouter();
   const colors = useThemeColors();
@@ -170,6 +174,12 @@ export default function LessonScreen() {
                   id: String(id),
                   ...(courseKey ? { courseKey } : {}),
                   ...(skipFinish ? { skipFinish } : {}),
+                  ...(currentProgressParam
+                    ? { currentProgress: currentProgressParam }
+                    : {}),
+                  ...(lessonNumberParam
+                    ? { lessonNumber: lessonNumberParam }
+                    : {}),
                 },
               } as any);
             }}
@@ -207,6 +217,22 @@ export default function LessonScreen() {
     );
   }
 
+  const parsedCurrentProgress =
+    typeof currentProgressParam === "string"
+      ? Number(currentProgressParam)
+      : NaN;
+  const parsedLessonNumber =
+    typeof lessonNumberParam === "string" ? Number(lessonNumberParam) : NaN;
+  const resolvedLessonNumber = Number.isFinite(parsedLessonNumber)
+    ? parsedLessonNumber
+    : typeof lesson.serialNumber === "number"
+      ? lesson.serialNumber
+      : NaN;
+  const shouldUpdateLocalCompletion =
+    !Number.isFinite(parsedCurrentProgress) ||
+    !Number.isFinite(resolvedLessonNumber) ||
+    resolvedLessonNumber > parsedCurrentProgress;
+
   const handleMaterialComplete = () => {
     setCompletedPhases((prev) =>
       prev.includes("material") ? prev : [...prev, "material"],
@@ -237,7 +263,7 @@ export default function LessonScreen() {
 
         await lessonsApi.finishLesson(lessonIdNumber, token);
 
-        if (courseKey) {
+        if (courseKey && shouldUpdateLocalCompletion) {
           await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);
         }
 
@@ -280,7 +306,7 @@ export default function LessonScreen() {
 
         await lessonsApi.finishLesson(lessonIdNumber, token);
 
-        if (courseKey) {
+        if (courseKey && shouldUpdateLocalCompletion) {
           await lessonProgressApi.markLessonCompleted(courseKey, lesson.id);
         }
 

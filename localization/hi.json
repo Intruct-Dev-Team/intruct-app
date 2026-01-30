@@ -157,7 +157,7 @@
   "What does Content Language mean?": "Content Language का क्या मतलब है?",
   "It is the default language used for generated course content. You can set it in Settings → AI Settings → Content Language.": "यह जनरेट किए गए कोर्स कंटेंट की डिफ़ॉल्ट भाषा है। आप इसे Settings → AI Settings → Content Language में सेट कर सकते हैं।",
   "What does Language in App Settings change?": "App Settings में Language बदलने से क्या होता है?",
-  "It saves your preferred UI language. Full app translation switching may be added later.": "यह आपकी पसंदीदा UI भाषा सेव करता है। पूरी ऐप अनुवाद स्विचिंग बाद में जोड़ी जा सकती है।",
+  "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.": "यह ऐप की UI भाषा बदलता है। “Content Language” जनरेटेड कोर्स कंटेंट की भाषा तय करता है। दोनों को आप Settings में बदल सकते हैं।",
   "Why can’t I attach a file?": "मैं फ़ाइल क्यों नहीं जोड़ पा रहा/रही?",
   "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.": "अगर फ़ाइल पिकर नहीं खुलता, फिर से कोशिश करें। iOS पर Files परमिशन भी जांचें और सुनिश्चित करें कि फ़ाइल एक्सेस हो सकती है।",
   "Manage your account details": "अपना अकाउंट विवरण मैनेज करें",

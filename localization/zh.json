@@ -157,7 +157,7 @@
   "What does Content Language mean?": "“内容语言”是什么意思？",
   "It is the default language used for generated course content. You can set it in Settings → AI Settings → Content Language.": "它是生成课程内容所使用的默认语言。你可以在 设置 → AI 设置 → 内容语言 中进行设置。",
   "What does Language in App Settings change?": "应用设置中的“语言”会改变什么？",
-  "It saves your preferred UI language. Full app translation switching may be added later.": "它会保存你偏好的界面语言。完整的应用语言切换可能会在之后添加。",
+  "It changes the app UI language. Content Language controls the language of generated course content. You can adjust both in Settings.": "它会更改应用界面语言。“内容语言”控制生成课程内容的语言。你可以在设置中调整两者。",
   "Why can’t I attach a file?": "为什么我无法添加文件？",
   "If the file picker fails to open, try again. On iOS, also check Files permissions and make sure the file is accessible.": "如果文件选择器无法打开，请重试。在 iOS 上，也请检查“文件”权限，并确保文件可访问。",
   "Manage your account details": "管理你的账号信息",
